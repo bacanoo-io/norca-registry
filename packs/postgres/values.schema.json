@@ -1,0 +1,96 @@
+{
+  "$comment": "SPDX-FileCopyrightText: 2026 Norca contributors; SPDX-License-Identifier: MPL-2.0",
+  "type": "object",
+  "properties": {
+    "job_name": {"type": "string", "pattern": "^([a-zA-Z0-9][a-zA-Z0-9_-]{0,57})?$"},
+    "namespace": {"type": "string"},
+    "region": {"type": "string"},
+    "datacenters": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "node_pool": {"type": "string"},
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["attribute", "operator"],
+        "properties": {
+          "attribute": {"type": "string"},
+          "operator": {"type": "string", "minLength": 1},
+          "value": {"type": "string"}
+        }
+      }
+    },
+    "image": {"type": "string", "minLength": 1},
+    "image_digest": {"type": "string", "pattern": "^(sha256:[a-f0-9]{64})?$"},
+    "uid": {"type": "integer", "minimum": 1},
+    "gid": {"type": "integer", "minimum": 1},
+    "resources": {
+      "type": "object",
+      "required": ["cpu", "memory"],
+      "properties": {
+        "cpu": {"type": "integer", "minimum": 100},
+        "memory": {"type": "integer", "minimum": 256}
+      }
+    },
+    "host_volume": {"type": "string", "minLength": 1},
+    "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+    "host_network": {"type": "string"},
+    "settings": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_.]*$",
+        "not": {"enum": ["ssl", "ssl_cert_file", "ssl_key_file", "hba_file", "data_directory", "port", "listen_addresses"]}
+      },
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "startup_timeout": {"type": "string", "pattern": "^[0-9]+(s|m|h)$"},
+    "healthy_deadline": {"type": "string", "pattern": "^[0-9]+(s|m|h)$"},
+    "superuser": {"type": "string", "pattern": "^[a-z_][a-z0-9_]{0,62}$"},
+    "superuser_secret_path": {"type": "string", "minLength": 1},
+    "databases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "user", "secret_path"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z_][a-z0-9_]{0,62}$", "not": {"enum": ["postgres", "template0", "template1"]}},
+          "user": {"type": "string", "pattern": "^[a-z_][a-z0-9_]{0,62}$", "not": {"pattern": "^pg_"}},
+          "secret_path": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "monitoring_enabled": {"type": "boolean"},
+    "monitoring_user": {"type": "string", "pattern": "^[a-z_][a-z0-9_]{0,62}$", "not": {"pattern": "^pg_"}},
+    "monitoring_secret_path": {"type": "string", "minLength": 1},
+    "tls_mode": {"enum": ["none", "mtls", "secret"]},
+    "tls_secret_path": {"type": "string", "minLength": 1},
+    "tls_required": {"type": "boolean"},
+    "dump_enabled": {"type": "boolean"},
+    "dump_cron": {"type": "string", "minLength": 9},
+    "dump_bucket": {"type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"},
+    "dump_prefix": {"type": "string", "pattern": "^([a-zA-Z0-9._-]+/)*$"},
+    "dump_storage_service": {"type": "string"},
+    "dump_storage_endpoint": {"type": "string", "pattern": "^([a-zA-Z0-9.\\[\\]:-]+:[0-9]{1,5})?$"},
+    "dump_storage_use_ssl": {"type": "boolean"},
+    "dump_storage_region": {"type": "string", "minLength": 1},
+    "dump_storage_secret_path": {"type": "string", "minLength": 1},
+    "dump_upload_image": {"type": "string", "minLength": 1},
+    "dump_resources": {
+      "type": "object",
+      "required": ["cpu", "memory"],
+      "properties": {
+        "cpu": {"type": "integer", "minimum": 100},
+        "memory": {"type": "integer", "minimum": 128}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"tls_required": {"const": true}}, "required": ["tls_required"]},
+      "then": {"properties": {"tls_mode": {"enum": ["mtls", "secret"]}}, "required": ["tls_mode"]}
+    },
+    {
+      "if": {"properties": {"dump_enabled": {"const": true}, "dump_storage_endpoint": {"const": ""}}, "required": ["dump_enabled", "dump_storage_endpoint"]},
+      "then": {"properties": {"dump_storage_service": {"minLength": 1}}}
+    }
+  ]
+}

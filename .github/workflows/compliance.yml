@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+#
+# License headers (reuse lint) and DCO sign-offs, like the Compliance workflow
+# of the Norca repository. The packs reference third-party images and never
+# ship their code, so there are no dependency license checks here.
+#
+# Actions are pinned by commit:
+#   actions/checkout v7.0.1, fsfe/reuse-action v5.0.0.
+name: Compliance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  reuse:
+    name: REUSE
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: fsfe/reuse-action@bb774aa972c2a89ff34781233d275075cbddf542 # v5.0.0
+
+  dco:
+    name: DCO
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Check Signed-off-by
+        run: |
+          missing=$(git log --no-merges --format='%H %(trailers:key=Signed-off-by,valueonly,separator=;)' \
+            origin/${{ github.base_ref }}..HEAD | awk 'NF<2 {print $1}')
+          if [ -n "$missing" ]; then echo "Missing DCO sign-off: $missing" >&2; exit 1; fi

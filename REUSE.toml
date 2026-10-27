@@ -1,0 +1,10 @@
+version = 1
+
+# The packs, their examples, scripts and documentation: MPL 2.0. The files
+# carry SPDX headers; files that can't (JSON schemas, which carry a
+# $comment instead) are covered here.
+[[annotations]]
+path = ["**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Norca contributors"
+SPDX-License-Identifier = "MPL-2.0"

@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+
+# LF everywhere: pack digests (pack.lock, OCI artifacts, signatures) are
+# computed over the file contents, so a checkout must not convert line endings.
+* text=auto eol=lf
+*.png binary

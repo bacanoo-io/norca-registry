@@ -1,0 +1,67 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+#
+# Checks the packs with scripts/check-packs.sh (pack fmt -check, render with
+# the defaults and the example variable files, local job validation). The
+# license headers and DCO sign-offs are checked in compliance.yml; release.yml
+# calls this workflow before it creates a release.
+#
+# Norca has no published release yet, so the job builds the norca binary from
+# the Norca sources: NORCA_SOURCE and NORCA_REF name the repository and the
+# branch or tag. Switch to a release download once Norca publishes binaries.
+#
+# Actions are pinned by commit, like in the Norca repository:
+#   actions/checkout v7.0.1, actions/setup-go v7.0.0.
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  NORCA_SOURCE: https://github.com/bacanoo-io/norca
+  NORCA_REF: main
+
+jobs:
+  packs:
+    name: Packs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: registry
+
+      - name: Check out Norca
+        run: git clone --depth 1 --branch "$NORCA_REF" "$NORCA_SOURCE" norca
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: norca/nomad/go.mod
+          cache-dependency-path: norca/nomad/go.sum
+
+      - name: Build norca
+        working-directory: norca/nomad
+        run: |
+          go build -o "$RUNNER_TEMP/norca" .
+          "$RUNNER_TEMP/norca" version
+
+      - name: Check the packs
+        working-directory: registry
+        env:
+          NORCA: ${{ runner.temp }}/norca
+          OUT: ${{ runner.temp }}/rendered
+        run: scripts/check-packs.sh

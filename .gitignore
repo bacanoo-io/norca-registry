@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+
+# Rendered jobs and pack bundles of local checks
+/out/
+/render/
+*.rendered.nomad
+*.tar
+
+# Local pack cache and agent data of manual tests
+.nomad/
+/data/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db

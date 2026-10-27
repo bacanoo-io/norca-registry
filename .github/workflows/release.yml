@@ -1,0 +1,84 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+#
+# Release pipeline, started by pushing a tag v<version>, e.g. v0.1.0 or
+# v0.2.0-rc.1. It runs the pack and compliance checks and creates a draft
+# GitHub release whose notes (.github/release-notes.md) list the packs of the
+# tag with their versions and the command that adds the registry at that tag.
+# Users consume the registry with "norca pack registry add", so the release
+# carries no extra assets besides GitHub's source archives.
+#
+# Actions are pinned by commit: actions/checkout v7.0.1.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check:
+    name: Check
+    uses: ./.github/workflows/check.yml
+
+  compliance:
+    name: Compliance
+    uses: ./.github/workflows/compliance.yml
+
+  release:
+    name: GitHub release
+    needs: [check, compliance]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Release notes
+        env:
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          version="${TAG#v}"
+          tag_url="$REPO_URL/tree/$TAG"
+          # One row per pack: name and version from the pack block of metadata.hcl.
+          {
+            echo "| Pack | Version |"
+            echo "| --- | --- |"
+            for meta in packs/*/metadata.hcl; do
+              dir="$(dirname "$meta")"
+              awk -v url="$tag_url/$dir" '
+                /^pack[[:space:]]*\{/ { inpack = 1; next }
+                inpack && /^\}/ { inpack = 0 }
+                inpack && $1 == "name" { gsub(/"/, "", $3); name = $3 }
+                inpack && $1 == "version" { gsub(/"/, "", $3); ver = $3 }
+                END {
+                  if (name == "" || ver == "") { print "missing pack name or version in " FILENAME > "/dev/stderr"; exit 1 }
+                  printf "| [%s](%s) | %s |\n", name, url, ver
+                }' "$meta"
+            done
+          } > packs.md
+          sed -e "s|{{VERSION}}|$version|g" -e "s|{{TAG}}|$TAG|g" -e "s|{{TAG_URL}}|$tag_url|g" \
+            -e "s|{{REPO_URL}}|$REPO_URL|g" -e "/{{PACKS}}/{r packs.md" -e "d}" \
+            .github/release-notes.md > release-notes.md
+          cat release-notes.md
+
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=(--draft --verify-tag --title "Norca pack registry ${TAG#v}" --notes-file release-notes.md)
+          case "$TAG" in *-*) flags+=(--prerelease) ;; esac
+          gh release create "$TAG" "${flags[@]}"

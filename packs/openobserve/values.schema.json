@@ -1,0 +1,117 @@
+{
+  "$comment": "SPDX-FileCopyrightText: 2026 Norca contributors; SPDX-License-Identifier: MPL-2.0",
+  "$defs": {
+    "role": {
+      "type": "object",
+      "required": ["count", "cpu", "memory"],
+      "properties": {
+        "count": {"type": "integer", "minimum": 1},
+        "cpu": {"type": "integer", "minimum": 100},
+        "memory": {"type": "integer", "minimum": 256}
+      }
+    },
+    "duration": {"type": "string", "pattern": "^[0-9]+(s|m|h)$"},
+    "org": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$"},
+    "email": {"type": "string", "pattern": "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$"}
+  },
+  "type": "object",
+  "properties": {
+    "job_name": {"type": "string", "pattern": "^([a-zA-Z0-9][a-zA-Z0-9_-]{0,50})?$"},
+    "namespace": {"type": "string"},
+    "region": {"type": "string"},
+    "datacenters": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "node_pool": {"type": "string"},
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["attribute", "operator"],
+        "properties": {
+          "attribute": {"type": "string"},
+          "operator": {"type": "string", "minLength": 1},
+          "value": {"type": "string"}
+        }
+      }
+    },
+    "image": {"type": "string", "minLength": 1},
+    "image_digest": {"type": "string", "pattern": "^(sha256:[a-f0-9]{64})?$"},
+    "extra_env": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^ZO_[A-Z0-9_]+$",
+        "not": {"pattern": "(PASSWORD|SECRET|TOKEN|ACCESS_KEY|DSN|_TLS_|NODE_ROLE|LOCAL_MODE|_ADDR$|_PORT$|DATA_DIR)"}
+      },
+      "additionalProperties": {"type": "string"}
+    },
+    "telemetry_enabled": {"type": "boolean"},
+    "web_url": {"type": "string", "pattern": "^(https?://[^/?#]+(/[^?#]*)?)?$"},
+    "mode": {"enum": ["single", "cluster"]},
+    "http_port": {"type": "integer", "minimum": 1, "maximum": 65535},
+    "grpc_port": {"type": "integer", "minimum": 1, "maximum": 65535},
+    "host_network": {"type": "string"},
+    "startup_timeout": {"$ref": "#/$defs/duration"},
+    "healthy_deadline": {"$ref": "#/$defs/duration"},
+    "host_volume": {"type": "string", "minLength": 1},
+    "resources": {
+      "type": "object",
+      "required": ["cpu", "memory"],
+      "properties": {
+        "cpu": {"type": "integer", "minimum": 100},
+        "memory": {"type": "integer", "minimum": 512}
+      }
+    },
+    "roles": {
+      "type": "object",
+      "required": ["router", "ingester", "querier", "compactor", "alertmanager"],
+      "propertyNames": {"enum": ["router", "ingester", "querier", "compactor", "alertmanager"]},
+      "additionalProperties": {"$ref": "#/$defs/role"}
+    },
+    "cluster_disk_mb": {"type": "integer", "minimum": 1024},
+    "ingester_host_volume": {"type": "string"},
+    "postgres_service": {"type": "string"},
+    "postgres_endpoint": {"type": "string", "pattern": "^([a-zA-Z0-9.\\[\\]:-]+:[0-9]{1,5})?$"},
+    "postgres_database": {"type": "string", "minLength": 1},
+    "postgres_user": {"type": "string", "minLength": 1},
+    "postgres_secret_path": {"type": "string", "minLength": 1},
+    "postgres_dsn_secret_path": {"type": "string"},
+    "nats_service": {"type": "string"},
+    "nats_endpoints": {"type": "array", "items": {"type": "string", "pattern": "^[a-zA-Z0-9.\\[\\]:-]+:[0-9]{1,5}$"}},
+    "nats_secret_path": {"type": "string"},
+    "nats_replicas": {"type": "integer", "minimum": 1, "maximum": 5},
+    "nats_prefix": {"type": "string", "pattern": "^[a-zA-Z0-9_]{1,32}$"},
+    "s3_service": {"type": "string"},
+    "s3_endpoint": {"type": "string", "pattern": "^(https?://[^/?#]+)?$"},
+    "s3_use_ssl": {"type": "boolean"},
+    "s3_bucket": {"type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"},
+    "s3_region": {"type": "string", "minLength": 1},
+    "s3_secret_path": {"type": "string", "minLength": 1},
+    "s3_create_bucket": {"type": "boolean"},
+    "tls_mode": {"enum": ["mtls", "secret", "none"]},
+    "tls_secret_path": {"type": "string", "minLength": 1},
+    "tls_cert_domain": {"type": "string", "pattern": "^([a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?)?$"},
+    "tls_restart_interval": {"type": "string", "$comment": "deprecated and ignored since pack version 0.2.0, removed in 0.3.0"},
+    "root_email": {"$ref": "#/$defs/email"},
+    "root_secret_path": {"type": "string", "minLength": 1},
+    "bootstrap_enabled": {"type": "boolean"},
+    "bootstrap_image": {"type": "string", "minLength": 1},
+    "organizations": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/org"}},
+    "ingest_organization": {"$ref": "#/$defs/org"},
+    "ingest_service_account": {"$ref": "#/$defs/email"},
+    "ingest_secret_path": {"type": "string", "minLength": 1},
+    "acl_policy_enabled": {"type": "boolean"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "cluster"}, "postgres_endpoint": {"const": ""}, "postgres_dsn_secret_path": {"const": ""}}, "required": ["mode", "postgres_endpoint", "postgres_dsn_secret_path"]},
+      "then": {"properties": {"postgres_service": {"minLength": 1}}}
+    },
+    {
+      "if": {"properties": {"mode": {"const": "cluster"}, "nats_endpoints": {"maxItems": 0}}, "required": ["mode", "nats_endpoints"]},
+      "then": {"properties": {"nats_service": {"minLength": 1}}}
+    },
+    {
+      "if": {"properties": {"mode": {"const": "cluster"}, "s3_endpoint": {"const": ""}}, "required": ["mode", "s3_endpoint"]},
+      "then": {"properties": {"s3_service": {"minLength": 1}}}
+    }
+  ]
+}
