@@ -60,7 +60,15 @@ name, defaults to the Norca region (`NOMAD_REGION`).
 `nomad/natsbridge/examples/natsbridge.nomad.hcl`, connected to the client
 service of the cluster through `nomadService`, publishing to
 `<prefix>.<region>.<topic>` into the JetStream stream
-`NORCA_EVENTS_<region>` (`bridge_jetstream_stream`).
+`NORCA_EVENTS_<region>` (`bridge_jetstream_stream`). With
+`bridge_sync_pushes` it also syncs the cluster pack registries of a source when
+a push notice arrives on `<prefix>.packs.pushed`, and with
+`bridge_sync_regions` it publishes the registry events and syncs a registry
+when the one of the same name and source in another region found other packs
+(the bridge's inbound mode, see `nomad/natsbridge/README.md` in the Norca
+repository). Both need `object "packs.norca.io/Registry"` with `read` and
+`write` in the `namespace "*"` block of the bridge's ACL policy; the output of
+the pack prints the policy with it.
 
 ## Drivers
 
@@ -186,7 +194,10 @@ is a complete variable file.
   `<users_secret_prefix>/<bridge_job_name>`, which only the bridge job reads.
   It may publish `<bridge_subject_prefix>.>`, look up and create streams
   (`$JS.API.STREAM.INFO.*`, `$JS.API.STREAM.CREATE.*`) and receive replies on
-  `_INBOX.>`; consumers of the events need a user in the same account.
+  `_INBOX.>`; with `bridge_sync_pushes` also `<prefix>.packs.pushed` and
+  `<prefix>.packs.pushed.>`, with `bridge_sync_regions` `<prefix>.*.CustomObject`.
+  Consumers of the events, and the CI that publishes push notices, need a user
+  in the same account.
 
   ```shell
   nk -gen user > bridge.seed && nk -inkey bridge.seed -pubout   # the public key: bridge_nkey
@@ -361,6 +372,7 @@ See `variables.hcl` for all of them; the most important:
 | `users`, `users_secret_prefix`, `users_default_account`, `system_account`, `bridge_nkey` | `[]`, `nats/users`, `APP`, `SYS`, `""` | `auth_mode = "userpass"`: users, accounts, permissions; passwords from the secret store |
 | `disruption_max_unavailable` | `"1"` | empty removes the block |
 | `bridge_enabled` | `false` | deploys the bridge |
+| `bridge_sync_pushes`, `bridge_sync_regions` | `false`, `false` | the bridge syncs the cluster pack registries on push notices / on the registry events of other regions |
 | `metrics_enabled`, `metrics_image`, `metrics_port` | `false`, `natsio/prometheus-nats-exporter:0.20.2`, `0` | the Prometheus exporter (0 = dynamic port) |
 
 ## Metrics

@@ -466,6 +466,18 @@ variable "bridge_jetstream_stream" {
   default     = "NORCA_EVENTS_$${NOMAD_REGION}"
 }
 
+variable "bridge_sync_pushes" {
+  description = "The bridge also syncs the cluster pack registries of a source when a push notice for it arrives on <bridge_subject_prefix>.packs.pushed (norca-natsbridge notify-push, e.g. in the release workflow of a pack registry). It needs the registry permissions in the bridge's ACL policy (see the output of the pack)."
+  type        = bool
+  default     = false
+}
+
+variable "bridge_sync_regions" {
+  description = "The bridge also publishes the events of the cluster pack registries and syncs a registry when the registry of the same name and source in another region found other packs (<bridge_subject_prefix>.*.CustomObject, over the supercluster). It needs the registry permissions in the bridge's ACL policy."
+  type        = bool
+  default     = false
+}
+
 variable "bridge_resources" {
   description = "CPU (MHz) and memory (MB) of a bridge instance."
   type = object({
@@ -495,6 +507,11 @@ rule "users" {
     ])
   ])
   error_message = "users: name must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$; account must be empty or match it; publish_allow, publish_deny, subscribe_allow and subscribe_deny must hold NATS subjects (tokens separated by dots, * for one token, > as the last token) without duplicates."
+}
+
+rule "bridge_sync" {
+  condition     = !(var.bridge_sync_pushes || var.bridge_sync_regions) || var.bridge_enabled
+  error_message = "bridge_sync_pushes and bridge_sync_regions need bridge_enabled."
 }
 
 rule "bridge_nkey" {

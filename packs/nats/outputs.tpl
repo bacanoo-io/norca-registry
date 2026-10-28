@@ -52,6 +52,12 @@ cannot create policies). Save it as [[ $bridge ]]-policy.hcl and apply it with
 
 namespace "*" {
   capabilities = ["read-job"]
+[[- if or $v.bridge_sync_pushes $v.bridge_sync_regions ]]
+  # Read and sync the cluster pack registries (bridge_sync_pushes, bridge_sync_regions).
+  object "packs.norca.io/Registry" {
+    capabilities = ["read", "write"]
+  }
+[[- end ]]
 }
 namespace "[[ $ns ]]" {
   capabilities = ["read-job"]

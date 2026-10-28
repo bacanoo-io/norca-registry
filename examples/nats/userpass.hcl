@@ -30,3 +30,9 @@ users = [
 bridge_enabled = true
 # Replace with the public key of your bridge.seed (this one is an example).
 bridge_nkey ="UDXU4RCSJNZOIQHZNWXHXORDPRTGNJAHAHFRGZNEEJCPQTT2M7NLCNF4"
+
+# The bridge also syncs the cluster pack registries on push notices
+# (norca-natsbridge notify-push) and on the registry events of other regions;
+# its ACL policy then needs the registry permissions (see the pack output).
+bridge_sync_pushes  = true
+bridge_sync_regions = true

@@ -83,6 +83,14 @@ job [[ $bridge | quote ]] {
         NATSBRIDGE_JETSTREAM_STREAM = [[ $v.bridge_jetstream_stream | quote ]]
         NATSBRIDGE_JETSTREAM_CREATE = "true"
 [[- end ]]
+[[- if $v.bridge_sync_pushes ]]
+        # Sync the cluster pack registries on push notices.
+        NATSBRIDGE_SYNC_PUSHES      = "true"
+[[- end ]]
+[[- if $v.bridge_sync_regions ]]
+        # Publish the registry events, sync on those of other regions.
+        NATSBRIDGE_SYNC_REGIONS     = "true"
+[[- end ]]
 [[- if $userpass ]]
         NATS_NKEY                   = "${NOMAD_SECRETS_DIR}/nats/userpass.seed"
 [[- end ]]
