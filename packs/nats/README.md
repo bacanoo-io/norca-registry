@@ -20,9 +20,9 @@ deployments.
 
 **Job `nats`** (name: `job_name`), one group of `count` servers (default 3):
 
-- one server per node (`distinct_hosts`), optionally spread over zones with
-  the fork's `separate` block (`separate_scope`, e.g.
-  `${attr.platform.aws.placement.availability-zone}`);
+- one server per node (`distinct_hosts`), optionally spread over datacenters
+  (one per availability zone) with the fork's `separate` block
+  (`separate_scope`, e.g. `${node.datacenter}`);
 - **routes** between the servers, discovered through the `<job>-cluster`
   service with Nomad native service discovery (`nomadService` in the
   configuration template). The service is a group service, so it is
@@ -264,7 +264,7 @@ client {
    gateway_enabled = true
    tls_enabled     = true
    auth_mode       = "token"
-   separate_scope  = "$${attr.platform.aws.placement.availability-zone}"
+   separate_scope  = "$${node.datacenter}"
    remote_gateways = [
      { name = "gcp",     urls = ["nats://10.20.0.11:7222", "nats://10.20.0.12:7222"] },
      { name = "hetzner", urls = ["nats://10.30.0.11:7222", "nats://10.30.0.12:7222"] },

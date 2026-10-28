@@ -48,7 +48,7 @@ variable "distinct_hosts" {
 }
 
 variable "separate_scope" {
-  description = "Optional topology domain for the fork's separate block, e.g. \"$${attr.platform.aws.placement.availability-zone}\" or \"$${meta.zone}\": the servers avoid sharing a domain. Empty renders no separate block."
+  description = "Optional topology domain for the fork's separate block, e.g. \"$${node.datacenter}\" (one datacenter per availability zone): the servers avoid sharing a domain. Empty renders no separate block."
   type        = string
   default     = ""
 }
