@@ -46,9 +46,10 @@ a current release (`consul_version`, see [Provisional defaults](#provisional-def
 (3 or 5; 1 only for development):
 
 - one server per node (`distinct_hosts`), only on nodes with the node meta
-  `consul_server = "true"` (`server_node_meta`), spread over the zones of the
-  node meta `zone` (`zone_attribute`; `zone_separate_required` adds the fork's
-  `separate` block for at most one server per zone);
+  `consul_server = "true"` (`server_node_meta`), spread over the Norca
+  datacenters of the nodes, one per availability zone (`datacenter_attribute`,
+  default `${node.datacenter}`; `datacenter_separate_required` adds the fork's
+  `separate` block for at most one server per datacenter);
 - the Raft data on the client host volume `consul-server`
   (`server_host_volume`), mounted at `/consul/data`;
 - static ports on the host network (`host_network`, e.g. the WireGuard
@@ -76,14 +77,15 @@ the secrets come from Norca Variables. There is no circular dependency.
 
 ## Prerequisites
 
-1. **Server nodes.** Pick `server_count` nodes, one per zone, and set on each
-   (client configuration):
+1. **Server nodes.** Pick `server_count` nodes, one per datacenter (one
+   datacenter per availability zone), and set on each (agent configuration):
 
    ```hcl
+   datacenter = "eu-central-1a"   # one datacenter per availability zone
+
    client {
      meta {
        consul_server = "true"
-       zone          = "eu-central-1a"   # filled in by the installer
      }
      host_volume "consul-server" {
        path = "/srv/consul"
@@ -412,7 +414,7 @@ See `variables.hcl` for all of them; the most important:
 | `server_count` | `3` | 3 or 5 (1 for development) |
 | `driver` | `docker` | `docker`, `exec`, `raw_exec` |
 | `image_registry`, `image_digest` | `docker.io`, `""` | internal mirror, pinning |
-| `server_node_meta`, `zone_attribute` | `consul_server`, `${meta.zone}` | placement |
+| `server_node_meta`, `datacenter_attribute` | `consul_server`, `${node.datacenter}` | placement |
 | `host_network` | `""` | private network (VPN) interface |
 | `datacenter`, `domain` | `dc1`, `consul` | part of the certificate name |
 | `tls_enabled` | `true` | |
