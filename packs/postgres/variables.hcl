@@ -9,6 +9,10 @@ variable "job_name" {
   description = "Name of the job. Empty uses the pack name (\"postgres\"). It is also the name of the service in the native catalog (<job>) and names the dump job (<job>-dump)."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9][a-zA-Z0-9_-]{0,57})?$"
+  }
 }
 
 variable "namespace" {
@@ -27,6 +31,11 @@ variable "datacenters" {
   description = "Datacenters of the jobs."
   type        = list(string)
   default     = ["*"]
+
+  validation {
+    min_items       = 1
+    item_min_length = 1
+  }
 }
 
 variable "node_pool" {
@@ -53,24 +62,42 @@ variable "image" {
   description = "PostgreSQL image (docker driver): the official image, pinned to a minor release. PostgreSQL 15 or newer (the setup task uses the getenv command of psql). A new major version needs a dump and restore (or pg_upgrade); the pack does not upgrade the data directory."
   type        = string
   default     = "docker.io/library/postgres:18.6"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "image_digest" {
   description = "Digest of the image (sha256:...), appended as image@digest to pin the content. Empty uses the tag alone."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^(sha256:[a-f0-9]{64})?$"
+  }
 }
 
 variable "uid" {
   description = "User id the server runs as: 999 (postgres) in the Debian images, 70 in the Alpine images. It must own the host volume directory."
   type        = number
   default     = 999
+
+  validation {
+    integer = true
+    min     = 1
+  }
 }
 
 variable "gid" {
   description = "Group id the server runs as (999 in the Debian images, 70 in the Alpine images)."
   type        = number
   default     = 999
+
+  validation {
+    integer = true
+    min     = 1
+  }
 }
 
 variable "resources" {
@@ -89,12 +116,22 @@ variable "host_volume" {
   description = "Client host volume with the data, mounted at /var/lib/postgresql. The image keeps its data directory below it (PGDATA /var/lib/postgresql/18/docker for PostgreSQL 18, a directory per major version). The directory must be owned by uid:gid."
   type        = string
   default     = "postgres"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "port" {
   description = "Static port of the server on the node (5432 in the container)."
   type        = number
   default     = 5432
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 65535
+  }
 }
 
 variable "host_network" {
@@ -113,12 +150,20 @@ variable "startup_timeout" {
   description = "Time the server has after its start to pass the startup check (crash recovery after an unclean stop can take a while)."
   type        = string
   default     = "5m"
+
+  validation {
+    pattern = "^[0-9]+(s|m|h)$"
+  }
 }
 
 variable "healthy_deadline" {
   description = "Deadline of the server to become healthy during updates and migrations."
   type        = string
   default     = "10m"
+
+  validation {
+    pattern = "^[0-9]+(s|m|h)$"
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -129,12 +174,20 @@ variable "superuser" {
   description = "Name of the superuser the image creates at the first start (POSTGRES_USER)."
   type        = string
   default     = "postgres"
+
+  validation {
+    pattern = "^[a-z_][a-z0-9_]{0,62}$"
+  }
 }
 
 variable "superuser_secret_path" {
   description = "Secret with the password of the superuser (item password), read from a file (POSTGRES_PASSWORD_FILE) at the first start, and by the setup and dump tasks."
   type        = string
   default     = "postgres/superuser"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "databases" {
@@ -157,12 +210,20 @@ variable "monitoring_user" {
   description = "Name of the monitoring role."
   type        = string
   default     = "monitoring"
+
+  validation {
+    pattern = "^[a-z_][a-z0-9_]{0,62}$"
+  }
 }
 
 variable "monitoring_secret_path" {
   description = "Secret with the password of the monitoring role (item password). The otel-collector pack reads the same secret (postgres_secret_path)."
   type        = string
   default     = "postgres/monitoring"
+
+  validation {
+    min_length = 1
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -173,12 +234,20 @@ variable "tls_mode" {
   description = "TLS of the server: \"none\" (default, plain connections), \"mtls\" (Norca's workload certificate of the service, mtls { mode = \"app\" }: valid for <job>.service.<namespace>.nomad, renewed automatically) or \"secret\" (the PEM certificate and key of tls_secret_path). Non-TLS connections stay allowed unless tls_required."
   type        = string
   default     = "none"
+
+  ui {
+    options = ["none", "mtls", "secret"]
+  }
 }
 
 variable "tls_secret_path" {
   description = "Secret with the PEM certificate (item cert, with the chain) and key (item key) for tls_mode = \"secret\"."
   type        = string
   default     = "postgres/tls"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "tls_required" {
@@ -201,18 +270,30 @@ variable "dump_cron" {
   description = "Schedule of the dump job (cron syntax, UTC)."
   type        = string
   default     = "0 2 * * *"
+
+  validation {
+    min_length = 9
+  }
 }
 
 variable "dump_bucket" {
   description = "Bucket of the dumps (it must exist; e.g. buckets of the rustfs pack). Expire old dumps with a lifecycle rule."
   type        = string
   default     = "postgres-dump"
+
+  validation {
+    pattern = "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+  }
 }
 
 variable "dump_prefix" {
   description = "Prefix of the dump objects in dump_bucket."
   type        = string
   default     = "postgres/"
+
+  validation {
+    pattern = "^([a-zA-Z0-9._-]+/)*$"
+  }
 }
 
 variable "dump_storage_service" {
@@ -225,6 +306,10 @@ variable "dump_storage_endpoint" {
   description = "host:port of the S3 store, instead of the catalog lookup (a store in another namespace, region or outside the cluster)."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9.\\[\\]:-]+:[0-9]{1,5})?$"
+  }
 }
 
 variable "dump_storage_use_ssl" {
@@ -237,18 +322,30 @@ variable "dump_storage_region" {
   description = "Region of the S3 store (the AWS SigV4 scope; s3_region of the rustfs pack)."
   type        = string
   default     = "us-east-1"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "dump_storage_secret_path" {
   description = "Secret with the S3 credentials of the uploads, items access_key and secret_key."
   type        = string
   default     = "postgres/dump-storage"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "dump_upload_image" {
   description = "Image of the upload task (curl 7.75 or newer for --aws-sigv4)."
   type        = string
   default     = "docker.io/curlimages/curl:8.22.0"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "dump_resources" {
@@ -261,4 +358,77 @@ variable "dump_resources" {
     cpu    = 500
     memory = 512
   }
+}
+
+# ---------------------------------------------------------------------------
+# Rules: conditions on the items of lists and maps and across variables,
+# checked before rendering by the CLI and by the servers that render the pack.
+# ---------------------------------------------------------------------------
+
+rule "constraints" {
+  condition     = alltrue([for x in var.constraints : x.attribute != null && x.operator != ""])
+  error_message = "constraints: each item needs attribute and operator; operator must not be empty."
+}
+
+rule "resources" {
+  condition = (
+    floor(var.resources.cpu) == var.resources.cpu &&
+    var.resources.cpu >= 100 &&
+    floor(var.resources.memory) == var.resources.memory &&
+    var.resources.memory >= 256
+  )
+  error_message = "resources: needs cpu and memory; cpu must be at least 100; memory must be at least 256."
+}
+
+rule "settings" {
+  condition = (
+    alltrue([
+      for k in keys(var.settings) :
+      (
+        can(regex("^[a-z][a-z0-9_.]*$", k)) &&
+        !contains(["ssl", "ssl_cert_file", "ssl_key_file", "hba_file", "data_directory", "port", "listen_addresses"], k)
+      )
+    ]) &&
+    alltrue([for v in values(var.settings) : v != ""])
+  )
+  error_message = "settings: the names must match ^[a-z][a-z0-9_.]*$ and not be ssl, ssl_cert_file, ssl_key_file, hba_file, data_directory, port, listen_addresses; the values must not be empty."
+}
+
+rule "databases" {
+  condition = alltrue([
+    for x in var.databases :
+    (
+      can(regex("^[a-z_][a-z0-9_]{0,62}$", x.name)) &&
+      !contains(["postgres", "template0", "template1"], x.name) &&
+      can(regex("^[a-z_][a-z0-9_]{0,62}$", x.user)) &&
+      !can(regex("^pg_", x.user)) &&
+      x.secret_path != ""
+    )
+  ])
+  error_message = "databases: each item needs name and user and secret_path; name must match ^[a-z_][a-z0-9_]{0,62}$ and not be postgres, template0, template1; user must match ^[a-z_][a-z0-9_]{0,62}$ and not match ^pg_; secret_path must not be empty."
+}
+
+rule "monitoring_user" {
+  condition     = !can(regex("^pg_", var.monitoring_user))
+  error_message = "monitoring_user must not match ^pg_."
+}
+
+rule "dump_resources" {
+  condition = (
+    floor(var.dump_resources.cpu) == var.dump_resources.cpu &&
+    var.dump_resources.cpu >= 100 &&
+    floor(var.dump_resources.memory) == var.dump_resources.memory &&
+    var.dump_resources.memory >= 128
+  )
+  error_message = "dump_resources: needs cpu and memory; cpu must be at least 100; memory must be at least 128."
+}
+
+rule "tls_mode" {
+  condition     = !var.tls_required || contains(["mtls", "secret"], var.tls_mode)
+  error_message = "tls_mode must be mtls or secret when tls_required is set."
+}
+
+rule "dump_storage_service" {
+  condition     = !(var.dump_enabled && var.dump_storage_endpoint == "") || var.dump_storage_service != ""
+  error_message = "dump_storage_service is required when dump_enabled is set and dump_storage_endpoint is empty."
 }

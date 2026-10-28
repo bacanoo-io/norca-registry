@@ -9,6 +9,10 @@ variable "job_name" {
   description = "Name of the job. Empty uses the pack name (\"openobserve\"). It is also the name of the HTTP service (<job>: the UI, the API and OTLP/HTTP) and prefixes the gRPC service (<job>-grpc)."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9][a-zA-Z0-9_-]{0,50})?$"
+  }
 }
 
 variable "namespace" {
@@ -27,6 +31,11 @@ variable "datacenters" {
   description = "Datacenters of the job."
   type        = list(string)
   default     = ["*"]
+
+  validation {
+    min_items       = 1
+    item_min_length = 1
+  }
 }
 
 variable "node_pool" {
@@ -53,12 +62,20 @@ variable "image" {
   description = "OpenObserve image (docker driver): the official open source image (AGPL-3.0), pinned to a release. public.ecr.aws/zinclabs/openobserve is the same image."
   type        = string
   default     = "docker.io/openobserve/openobserve:v1.0.4"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "image_digest" {
   description = "Digest of the image (sha256:...), appended as image@digest to pin the content. Empty uses the tag alone."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^(sha256:[a-f0-9]{64})?$"
+  }
 }
 
 variable "extra_env" {
@@ -77,6 +94,10 @@ variable "web_url" {
   description = "ZO_WEB_URL: the URL users open, used in links (alerts, reports). Empty keeps OpenObserve's default."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^(https?://[^/?#]+(/[^?#]*)?)?$"
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -87,18 +108,34 @@ variable "mode" {
   description = "single (default): one instance with every role, SQLite metadata and the data on a host volume. cluster: a group per node role (router, ingester, querier, compactor, alertmanager) with PostgreSQL metadata, NATS as coordinator and the data in S3 (RustFS)."
   type        = string
   default     = "single"
+
+  ui {
+    options = ["single", "cluster"]
+  }
 }
 
 variable "http_port" {
   description = "Static HTTP(S) port of the UI, the API and OTLP/HTTP on the node: of the instance (single) or of the routers (cluster)."
   type        = number
   default     = 5080
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 65535
+  }
 }
 
 variable "grpc_port" {
   description = "Static gRPC port (OTLP/gRPC) on the node: of the instance (single) or of the routers (cluster). The other cluster nodes use dynamic ports."
   type        = number
   default     = 5081
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 65535
+  }
 }
 
 variable "host_network" {
@@ -111,12 +148,20 @@ variable "startup_timeout" {
   description = "Time an instance has after its start to pass the startup check."
   type        = string
   default     = "5m"
+
+  validation {
+    pattern = "^[0-9]+(s|m|h)$"
+  }
 }
 
 variable "healthy_deadline" {
   description = "Deadline of an instance to become healthy during updates and migrations."
   type        = string
   default     = "10m"
+
+  validation {
+    pattern = "^[0-9]+(s|m|h)$"
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -127,6 +172,10 @@ variable "host_volume" {
   description = "Single mode: client host volume with the data (SQLite, WAL, parquet files), mounted at /data. The image runs as root."
   type        = string
   default     = "openobserve"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "resources" {
@@ -185,6 +234,11 @@ variable "cluster_disk_mb" {
   description = "Cluster mode: size of the sticky ephemeral disk of every instance (WAL of the ingesters, caches), in MB."
   type        = number
   default     = 10240
+
+  validation {
+    integer = true
+    min     = 1024
+  }
 }
 
 variable "ingester_host_volume" {
@@ -207,24 +261,40 @@ variable "postgres_endpoint" {
   description = "Cluster mode: host:port of PostgreSQL instead of the catalog lookup."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9.\\[\\]:-]+:[0-9]{1,5})?$"
+  }
 }
 
 variable "postgres_database" {
   description = "Cluster mode: database of the metadata (ZO_META_POSTGRES_DBNAME)."
   type        = string
   default     = "openobserve"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "postgres_user" {
   description = "Cluster mode: role of OpenObserve in PostgreSQL (ZO_META_POSTGRES_USER), the owner of postgres_database."
   type        = string
   default     = "openobserve"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "postgres_secret_path" {
   description = "Cluster mode: secret with the password of postgres_user (item password), e.g. the secret of the database entry of the postgres pack."
   type        = string
   default     = "postgres/openobserve"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "postgres_dsn_secret_path" {
@@ -243,6 +313,10 @@ variable "nats_endpoints" {
   description = "Cluster mode: host:port of the NATS servers instead of the catalog lookup."
   type        = list(string)
   default     = []
+
+  validation {
+    item_pattern = "^[a-zA-Z0-9.\\[\\]:-]+:[0-9]{1,5}$"
+  }
 }
 
 variable "nats_secret_path" {
@@ -255,12 +329,22 @@ variable "nats_replicas" {
   description = "Cluster mode: replicas of the JetStream KV buckets and streams of OpenObserve (ZO_NATS_REPLICAS): at most the number of NATS servers; fixed once the buckets exist."
   type        = number
   default     = 3
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 5
+  }
 }
 
 variable "nats_prefix" {
   description = "Cluster mode: prefix of the JetStream buckets and streams (ZO_NATS_PREFIX): different installations sharing one NATS need different prefixes."
   type        = string
   default     = "o2_"
+
+  validation {
+    pattern = "^[a-zA-Z0-9_]{1,32}$"
+  }
 }
 
 variable "s3_service" {
@@ -273,6 +357,10 @@ variable "s3_endpoint" {
   description = "Cluster mode: URL of the S3 store (http(s)://host:port) instead of the catalog lookup."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^(https?://[^/?#]+)?$"
+  }
 }
 
 variable "s3_use_ssl" {
@@ -285,18 +373,30 @@ variable "s3_bucket" {
   description = "Cluster mode: bucket of the data (ZO_S3_BUCKET_NAME). OpenObserve does not create it; the bootstrap task does (s3_create_bucket), or the buckets variable of the rustfs pack."
   type        = string
   default     = "openobserve"
+
+  validation {
+    pattern = "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+  }
 }
 
 variable "s3_region" {
   description = "Cluster mode: region of the S3 store (ZO_S3_REGION_NAME; s3_region of the rustfs pack)."
   type        = string
   default     = "us-east-1"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "s3_secret_path" {
   description = "Cluster mode: secret with the S3 credentials, items access_key and secret_key: a RustFS user limited to s3_bucket, or the root credentials."
   type        = string
   default     = "openobserve/s3"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "s3_create_bucket" {
@@ -313,18 +413,30 @@ variable "tls_mode" {
   description = "TLS of HTTP and gRPC: \"mtls\" (default: Norca's workload certificates, mtls { mode = \"app\" } on the services, valid for <job>.service.<namespace>.nomad and <job>-grpc.service.<namespace>.nomad, trusted through the trust bundle of the region), \"secret\" (the PEM certificate, key and CA of tls_secret_path) or \"none\" (plain HTTP and gRPC)."
   type        = string
   default     = "mtls"
+
+  ui {
+    options = ["mtls", "secret", "none"]
+  }
 }
 
 variable "tls_secret_path" {
   description = "tls_mode = \"secret\": secret with the PEM certificate (item cert, with the chain), key (item key) and the CA that issued it (item ca)."
   type        = string
   default     = "openobserve/tls"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "tls_cert_domain" {
   description = "tls_mode = \"secret\", cluster mode: the DNS name in the certificate the nodes verify on internal gRPC calls (ZO_GRPC_TLS_CERT_DOMAIN). Every node uses the same certificate."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?)?$"
+  }
 }
 
 variable "tls_restart_interval" {
@@ -341,12 +453,20 @@ variable "root_email" {
   description = "Email of the root user (ZO_ROOT_USER_EMAIL, lower case), created at the first start with the password of root_secret_path."
   type        = string
   default     = "root@openobserve.internal"
+
+  validation {
+    pattern = "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$"
+  }
 }
 
 variable "root_secret_path" {
   description = "Secret with the password of the root user (item password: 8-128 characters with a lower-case and an upper-case letter, a digit and a special character, or OpenObserve refuses to start). Used at the first start only; afterwards the password is stored in OpenObserve."
   type        = string
   default     = "openobserve/root"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "bootstrap_enabled" {
@@ -359,34 +479,131 @@ variable "bootstrap_image" {
   description = "Image of the bootstrap task (curl and a shell; the OpenObserve image has neither)."
   type        = string
   default     = "docker.io/curlimages/curl:8.22.0"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "organizations" {
   description = "Organizations (identifiers) the bootstrap task makes sure of. \"default\" exists with the root user; others are created by a first ingestion of one record into the stream norca_bootstrap."
   type        = list(string)
   default     = ["default"]
+
+  validation {
+    min_items    = 1
+    unique       = true
+    item_pattern = "^[A-Za-z0-9_-]{1,64}$"
+  }
 }
 
 variable "ingest_organization" {
   description = "Organization of the ingest service account; the collectors write into it."
   type        = string
   default     = "default"
+
+  validation {
+    pattern = "^[A-Za-z0-9_-]{1,64}$"
+  }
 }
 
 variable "ingest_service_account" {
   description = "Email of the service account of the collectors, created in ingest_organization by the bootstrap task."
   type        = string
   default     = "otel-collector@openobserve.internal"
+
+  validation {
+    pattern = "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$"
+  }
 }
 
 variable "ingest_secret_path" {
   description = "Secret the bootstrap task writes the ingest credentials into (items username, password: the token of the service account, organization) and the otel-collector pack reads. Writing needs the ACL policy of the pack (acl_policy_enabled) when ACLs are enabled."
   type        = string
   default     = "openobserve/ingest"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "acl_policy_enabled" {
   description = "Install the ACL policy of the pack, bound to its job: the bootstrap task writes the ingest secret. Disable it on agents without ACLs (dev agents), where policies can't be written."
   type        = bool
   default     = true
+}
+
+# ---------------------------------------------------------------------------
+# Rules: conditions on the items of lists and maps and across variables,
+# checked before rendering by the CLI and by the servers that render the pack.
+# ---------------------------------------------------------------------------
+
+rule "constraints" {
+  condition     = alltrue([for x in var.constraints : x.attribute != null && x.operator != ""])
+  error_message = "constraints: each item needs attribute and operator; operator must not be empty."
+}
+
+rule "extra_env" {
+  condition = alltrue([
+    for k in keys(var.extra_env) :
+    (
+      can(regex("^ZO_[A-Z0-9_]+$", k)) &&
+      !can(regex("(PASSWORD|SECRET|TOKEN|ACCESS_KEY|DSN|_TLS_|NODE_ROLE|LOCAL_MODE|_ADDR$|_PORT$|DATA_DIR)", k))
+    )
+  ])
+  error_message = "extra_env: the names must match ^ZO_[A-Z0-9_]+$ and not match (PASSWORD|SECRET|TOKEN|ACCESS_KEY|DSN|_TLS_|NODE_ROLE|LOCAL_MODE|_ADDR$|_PORT$|DATA_DIR)."
+}
+
+rule "resources" {
+  condition = (
+    floor(var.resources.cpu) == var.resources.cpu &&
+    var.resources.cpu >= 100 &&
+    floor(var.resources.memory) == var.resources.memory &&
+    var.resources.memory >= 512
+  )
+  error_message = "resources: needs cpu and memory; cpu must be at least 100; memory must be at least 512."
+}
+
+rule "roles" {
+  condition = (
+    var.roles.router != null &&
+    var.roles.ingester != null &&
+    var.roles.querier != null &&
+    var.roles.compactor != null &&
+    var.roles.alertmanager != null &&
+    alltrue([
+      for k in keys(var.roles) :
+      contains(["router", "ingester", "querier", "compactor", "alertmanager"], k)
+    ]) &&
+    alltrue([
+      for v in values(var.roles) :
+      (
+        floor(v.count) == v.count &&
+        v.count >= 1 &&
+        floor(v.cpu) == v.cpu &&
+        v.cpu >= 100 &&
+        floor(v.memory) == v.memory &&
+        v.memory >= 256
+      )
+    ])
+  )
+  error_message = "roles: the names must be one of router, ingester, querier, compactor, alertmanager; each value needs count and cpu and memory; count must be at least 1; cpu must be at least 100; memory must be at least 256; needs router and ingester and querier and compactor and alertmanager."
+}
+
+rule "postgres_service" {
+  condition = (
+    !(var.mode == "cluster" && var.postgres_endpoint == "" && var.postgres_dsn_secret_path == "") ||
+    var.postgres_service != ""
+  )
+  error_message = "postgres_service is required when mode is cluster and postgres_endpoint is empty and postgres_dsn_secret_path is empty."
+}
+
+rule "nats_service" {
+  condition     = !(var.mode == "cluster" && length(var.nats_endpoints) == 0) || var.nats_service != ""
+  error_message = "nats_service is required when mode is cluster and nats_endpoints is empty."
+}
+
+rule "s3_service" {
+  condition     = !(var.mode == "cluster" && var.s3_endpoint == "") || var.s3_service != ""
+  error_message = "s3_service is required when mode is cluster and s3_endpoint is empty."
 }

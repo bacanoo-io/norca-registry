@@ -15,5 +15,3 @@ pack {
     features = ["releases", "custom-objects", "admission-cel", "object-webhooks", "object-limits"]
   }
 }
-
-variables_schema = file("values.schema.json")

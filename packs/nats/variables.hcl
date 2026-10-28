@@ -254,6 +254,10 @@ variable "auth_mode" {
   description = "Client authentication: \"none\", \"token\" (item client_token), \"nkey\" (item client_nkeys: public user NKeys, comma or newline separated), \"config\" (item auth_config: a raw NATS config snippet with authorization/accounts or operator/resolver settings for JWT credentials) or \"userpass\" (the users of the variable users in NATS accounts, their passwords from the built-in secret store; no Variable item)."
   type        = string
   default     = "none"
+
+  ui {
+    options = ["none", "token", "nkey", "config", "userpass"]
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -278,24 +282,40 @@ variable "users_secret_prefix" {
   description = "auth_mode = \"userpass\": prefix of the secret paths of the users: the password of a user is the item password of <users_secret_prefix>/<name>, the NKey seed of the bridge the item seed of <users_secret_prefix>/<bridge_job_name>."
   type        = string
   default     = "nats/users"
+
+  validation {
+    pattern = "^[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*$"
+  }
 }
 
 variable "users_default_account" {
   description = "auth_mode = \"userpass\": account of the users without an account, and of the bridge's user."
   type        = string
   default     = "APP"
+
+  validation {
+    pattern = "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
+  }
 }
 
 variable "system_account" {
   description = "auth_mode = \"userpass\": users with this account are in the system account of the servers (the nats CLI's server commands: server report, raft peer-remove, ...). It has no JetStream. Without such a user the servers keep their internal system account."
   type        = string
   default     = "SYS"
+
+  validation {
+    pattern = "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
+  }
 }
 
 variable "bridge_nkey" {
   description = "auth_mode = \"userpass\" with bridge_enabled: the public NKey (U...) of the bridge's NATS user (the bridge has no password option), in users_default_account, allowed to publish <bridge_subject_prefix>.> and to look up and create its JetStream stream. The bridge reads the seed from the item seed of the secret <users_secret_prefix>/<bridge_job_name>."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^(U[A-Z2-7]{55})?$"
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -428,6 +448,10 @@ variable "bridge_subject_prefix" {
   description = "Subject prefix; events go to <prefix>.<region>.<topic>."
   type        = string
   default     = "nomad"
+
+  validation {
+    pattern = "^[^\\s.*>\"'\\\\{}]+(\\.[^\\s.*>\"'\\\\{}]+)*$"
+  }
 }
 
 variable "bridge_topics" {
@@ -452,4 +476,38 @@ variable "bridge_resources" {
     cpu    = 100
     memory = 64
   }
+}
+
+# ---------------------------------------------------------------------------
+# Rules: conditions on the items of lists and maps and across variables,
+# checked before rendering by the CLI and by the servers that render the pack.
+# ---------------------------------------------------------------------------
+
+rule "users" {
+  condition = alltrue([
+    for u in var.users :
+    can(regex("^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$", u.name)) &&
+    (try(u.account, "") == "" || can(regex("^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$", try(u.account, "")))) &&
+    alltrue([
+      for subjects in [for k in ["publish_allow", "publish_deny", "subscribe_allow", "subscribe_deny"] : try(u[k], [])] :
+      length(distinct(subjects)) == length(subjects) &&
+      alltrue([for subject in subjects : can(regex("^(([^\\s.*>\"'\\\\{}]+|\\*)\\.)*([^\\s.*>\"'\\\\{}]+|\\*|>)$", subject))])
+    ])
+  ])
+  error_message = "users: name must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$; account must be empty or match it; publish_allow, publish_deny, subscribe_allow and subscribe_deny must hold NATS subjects (tokens separated by dots, * for one token, > as the last token) without duplicates."
+}
+
+rule "bridge_nkey" {
+  condition     = !(var.auth_mode == "userpass" && var.bridge_enabled) || var.bridge_nkey != ""
+  error_message = "bridge_nkey is required when auth_mode is userpass and bridge_enabled is set."
+}
+
+rule "users_userpass" {
+  condition     = !(var.auth_mode == "userpass" && !var.bridge_enabled) || length(var.users) > 0
+  error_message = "users needs at least 1 item when auth_mode is userpass and bridge_enabled is false."
+}
+
+rule "users_without_userpass" {
+  condition     = var.auth_mode == "userpass" || length(var.users) == 0
+  error_message = "users must be empty when auth_mode is not userpass."
 }

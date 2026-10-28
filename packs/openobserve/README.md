@@ -431,8 +431,9 @@ Pack version 0.2.0 replaces the `tls-restart` sidecar, which restarted the
 | `acl_policy_enabled` | `true` | |
 | `startup_timeout`, `healthy_deadline` | `5m`, `10m` | |
 
-The values are checked against [`values.schema.json`](values.schema.json)
-before rendering and again by the servers.
+The values are checked against the `validation` blocks and rules of
+[`variables.hcl`](variables.hcl) before rendering; the servers check the
+`validation` blocks again.
 
 ## Health checks
 

@@ -9,6 +9,10 @@ variable "job_name" {
   description = "Name of the system job. Empty uses the pack name (\"otel-collector\"). It also names the services (<job>: health, <job>-otlp-grpc, <job>-otlp-http)."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9][a-zA-Z0-9_-]{0,52})?$"
+  }
 }
 
 variable "namespace" {
@@ -27,6 +31,11 @@ variable "datacenters" {
   description = "Datacenters of the job."
   type        = list(string)
   default     = ["*"]
+
+  validation {
+    min_items       = 1
+    item_min_length = 1
+  }
 }
 
 variable "node_pool" {
@@ -53,12 +62,20 @@ variable "image" {
   description = "Image of the collector (docker driver): the contrib distribution of the OpenTelemetry Collector (Apache-2.0), which has every receiver the pack uses."
   type        = string
   default     = "docker.io/otel/opentelemetry-collector-contrib:0.162.0"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "image_digest" {
   description = "Digest of the image (sha256:...), appended as image@digest to pin the content. Empty uses the tag alone."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^(sha256:[a-f0-9]{64})?$"
+  }
 }
 
 variable "resources" {
@@ -77,12 +94,20 @@ variable "collection_interval" {
   description = "Interval of the host metrics, the scrapes and the PostgreSQL statistics."
   type        = string
   default     = "30s"
+
+  validation {
+    pattern = "^[0-9]+(s|m)$"
+  }
 }
 
 variable "log_level" {
   description = "Log level of the collector itself (service.telemetry.logs.level): debug, info, warn, error."
   type        = string
   default     = "info"
+
+  ui {
+    options = ["debug", "info", "warn", "error"]
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -99,12 +124,24 @@ variable "otlp_grpc_port" {
   description = "Static OTLP/gRPC port on every node."
   type        = number
   default     = 4317
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 65535
+  }
 }
 
 variable "otlp_http_port" {
   description = "Static OTLP/HTTP port on every node."
   type        = number
   default     = 4318
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 65535
+  }
 }
 
 variable "host_network" {
@@ -121,24 +158,40 @@ variable "openobserve_service" {
   description = "HTTP service of OpenObserve in the native catalog, in the namespace of the job (the openobserve pack registers \"openobserve\": the instance or the routers). The first instance is the endpoint. Ignored when openobserve_endpoint is set."
   type        = string
   default     = "openobserve"
+
+  validation {
+    pattern = "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+  }
 }
 
 variable "openobserve_endpoint" {
   description = "Base URL of OpenObserve (e.g. https://observe.example.com:5080) instead of the catalog lookup."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^(https?://[^/?#]+)?$"
+  }
 }
 
 variable "openobserve_tls" {
   description = "TLS to OpenObserve: \"mtls\" (default: the collector gets its own workload identity, mtls { mode = \"app\" } on its health service, and trusts the trust bundle of the region; the name checked is openobserve_server_name), \"secret\" (the CA of openobserve_ca_secret_path), \"system\" (the system CAs) or \"none\" (plain HTTP)."
   type        = string
   default     = "mtls"
+
+  ui {
+    options = ["mtls", "secret", "system", "none"]
+  }
 }
 
 variable "openobserve_server_name" {
   description = "Name the certificate of OpenObserve must carry. Empty: <openobserve_service>.service.<namespace>.nomad, the name of Norca's workload certificate."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?)?$"
+  }
 }
 
 variable "openobserve_ca_secret_path" {
@@ -151,12 +204,20 @@ variable "openobserve_organization" {
   description = "Organization the collector writes into. Empty uses the item organization of the ingest secret."
   type        = string
   default     = ""
+
+  validation {
+    pattern = "^([A-Za-z0-9_-]{1,64})?$"
+  }
 }
 
 variable "ingest_secret_path" {
   description = "Secret with the ingest credentials (items username, password, organization), written by the bootstrap task of the openobserve pack."
   type        = string
   default     = "openobserve/ingest"
+
+  validation {
+    min_length = 1
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -185,6 +246,10 @@ variable "nomad_address" {
   description = "Address of the local Norca agent as the collector (host networking) reaches it: the metrics and the catalog for the discovery of the other sources. https:// when the agent has tls { http = true }."
   type        = string
   default     = "http://127.0.0.1:4646"
+
+  validation {
+    pattern = "^https?://[^/?#]+$"
+  }
 }
 
 variable "nomad_ca_secret_path" {
@@ -197,6 +262,11 @@ variable "discovery_namespaces" {
   description = "Namespaces the collector looks for metrics services in (nomad_sd_configs of the Prometheus receiver, one per namespace, with the collector's workload identity). Only the instances on the collector's own node are scraped."
   type        = list(string)
   default     = ["default"]
+
+  validation {
+    unique       = true
+    item_pattern = "^[a-zA-Z0-9-]{1,128}$"
+  }
 }
 
 variable "nats_metrics_enabled" {
@@ -209,6 +279,10 @@ variable "nats_metrics_service" {
   description = "Service of the NATS exporters (<job>-metrics of the nats pack)."
   type        = string
   default     = "nats-metrics"
+
+  validation {
+    pattern = "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+  }
 }
 
 variable "forgejo_metrics_enabled" {
@@ -221,18 +295,30 @@ variable "forgejo_service" {
   description = "HTTP service of Forgejo; instances with the tag https are scraped over HTTPS."
   type        = string
   default     = "forgejo"
+
+  validation {
+    pattern = "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+  }
 }
 
 variable "forgejo_metrics_secret_path" {
   description = "Secret with the bearer token of Forgejo's /metrics (item token; the same secret as in the forgejo pack). Optional: without it no token is sent."
   type        = string
   default     = "forgejo/metrics"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "forgejo_tls_server_name" {
   description = "Name the certificate of Forgejo carries (HTTPS instances are scraped by address): domain of the forgejo pack."
   type        = string
   default     = "forgejo.internal"
+
+  validation {
+    pattern = "^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$"
+  }
 }
 
 variable "mtls_gateway_metrics_enabled" {
@@ -245,6 +331,10 @@ variable "mtls_gateway_metrics_service" {
   description = "Service of the gateway statistics (<service_name>-metrics of the mtls-gateway pack)."
   type        = string
   default     = "mtls-gateway-metrics"
+
+  validation {
+    pattern = "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+  }
 }
 
 variable "consul_metrics_enabled" {
@@ -257,12 +347,20 @@ variable "consul_metrics_service" {
   description = "Service of the Consul agents' HTTP ports (<job>-metrics of the consul pack)."
   type        = string
   default     = "consul-metrics"
+
+  validation {
+    pattern = "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+  }
 }
 
 variable "consul_metrics_secret_path" {
   description = "Secret with the Consul ACL token of the metrics (item token; the same secret as metrics_token_secret_path of the consul pack). Optional."
   type        = string
   default     = "consul/metrics"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "postgres_metrics_enabled" {
@@ -275,28 +373,69 @@ variable "postgres_service" {
   description = "Service of PostgreSQL in the native catalog, in the namespace of the job (nomadService only sees the job's namespace)."
   type        = string
   default     = "postgres"
+
+  validation {
+    pattern = "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+  }
 }
 
 variable "postgres_user" {
   description = "Monitoring role (monitoring_user of the postgres pack, with pg_monitor)."
   type        = string
   default     = "monitoring"
+
+  validation {
+    pattern = "^[a-z_][a-z0-9_]{0,62}$"
+  }
 }
 
 variable "postgres_secret_path" {
   description = "Secret with the password of the monitoring role (item password; monitoring_secret_path of the postgres pack). Optional."
   type        = string
   default     = "postgres/monitoring"
+
+  validation {
+    min_length = 1
+  }
 }
 
 variable "postgres_tls" {
   description = "TLS of the PostgreSQL connections, matching tls_mode of the postgres pack: \"none\" (plain; the receiver's own default would require TLS), \"require\" (encrypted, not verified) or \"verify-ca\" (encrypted, the server certificate checked against the trust bundle of the region; for tls_mode = \"mtls\" of the postgres pack, needs openobserve_tls = \"mtls\")."
   type        = string
   default     = "none"
+
+  ui {
+    options = ["none", "require", "verify-ca"]
+  }
 }
 
 variable "self_metrics_enabled" {
   description = "Scrape the collector's own metrics (on 127.0.0.1 and a dynamic port)."
   type        = bool
   default     = true
+}
+
+# ---------------------------------------------------------------------------
+# Rules: conditions on the items of lists and maps and across variables,
+# checked before rendering by the CLI and by the servers that render the pack.
+# ---------------------------------------------------------------------------
+
+rule "constraints" {
+  condition     = alltrue([for x in var.constraints : x.attribute != null && x.operator != ""])
+  error_message = "constraints: each item needs attribute and operator; operator must not be empty."
+}
+
+rule "resources" {
+  condition = (
+    floor(var.resources.cpu) == var.resources.cpu &&
+    var.resources.cpu >= 50 &&
+    floor(var.resources.memory) == var.resources.memory &&
+    var.resources.memory >= 128
+  )
+  error_message = "resources: needs cpu and memory; cpu must be at least 50; memory must be at least 128."
+}
+
+rule "openobserve_ca_secret_path" {
+  condition     = var.openobserve_tls != "secret" || var.openobserve_ca_secret_path != ""
+  error_message = "openobserve_ca_secret_path is required when openobserve_tls is secret."
 }
