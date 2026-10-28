@@ -18,8 +18,9 @@ needs, in the fixed order of the extended pack format.
 | `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
 | `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |
 
-The variables are checked against `values.schema.json` before rendering and
-again by the servers.
+The values are checked against the `validation` blocks and rules of
+[`variables.hcl`](variables.hcl) before rendering; the servers check the
+`validation` blocks again.
 
 ## Install
 

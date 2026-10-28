@@ -5,7 +5,8 @@
 # Checks every pack of the registry with a norca binary, without a cluster:
 #   - norca pack fmt -check (HCL files and HCL templates),
 #   - norca pack render with the default values and with every variable file
-#     in examples/<pack>/ (this also checks values.schema.json),
+#     in examples/<pack>/ (this also checks the validation blocks and rules
+#     of variables.hcl),
 #   - norca job validate of every rendered job (local validation: no agent
 #     is contacted).
 #

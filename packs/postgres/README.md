@@ -204,8 +204,9 @@ gunzip -c postgres-<time>.sql.gz | norca alloc exec -i -task postgres <alloc ID>
 | `dump_upload_image`, `dump_resources` | `docker.io/curlimages/curl:8.22.0`, `{cpu = 500, memory = 512}` | |
 | `startup_timeout`, `healthy_deadline` | `5m`, `10m` | |
 
-The values are checked against [`values.schema.json`](values.schema.json)
-before rendering and again by the servers.
+The values are checked against the `validation` blocks and rules of
+[`variables.hcl`](variables.hcl) before rendering; the servers check the
+`validation` blocks again.
 
 ## Health checks
 

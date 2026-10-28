@@ -89,8 +89,9 @@ mtls {
 | `envoy_resources` | `{cpu = 100, memory = 128}` | resources of the task defined by the pack |
 | `metrics_enabled`, `metrics_port` | `false`, `0` | `/stats/prometheus` of the Envoy task defined by the pack, see [Metrics](#metrics) |
 
-The values are checked against [`values.schema.json`](values.schema.json)
-before rendering and again by the servers.
+The values are checked against the `validation` blocks and rules of
+[`variables.hcl`](variables.hcl) before rendering; the servers check the
+`validation` blocks again.
 
 ### The Envoy image without the pack
 

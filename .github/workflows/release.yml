@@ -8,7 +8,18 @@
 # Users consume the registry with "norca pack registry add", so the release
 # carries no extra assets besides GitHub's source archives.
 #
-# Actions are pinned by commit: actions/checkout v7.0.1.
+# With the repository variable NATS_NOTIFY = "true", the notify job then
+# publishes a push notice for the registry on NATS (norca-natsbridge
+# notify-push): the clusters whose NATS bridges run with -sync-pushes sync
+# their cluster registries of this repository at once instead of on their
+# sync interval. It needs the secret NATS_URL and, unless the URL carries
+# the credentials, NATS_CREDS (the content of a credentials file allowed to
+# publish <prefix>.packs.pushed); the variable NATSBRIDGE_SUBJECT_PREFIX sets
+# the prefix (default "nomad"). Like check.yml, it builds the tool from the
+# Norca sources (NORCA_SOURCE, NORCA_REF).
+#
+# Actions are pinned by commit, like in the Norca repository:
+#   actions/checkout v7.0.1, actions/setup-go v7.0.0.
 name: Release
 
 on:
@@ -82,3 +93,45 @@ jobs:
           flags=(--draft --verify-tag --title "Norca pack registry ${TAG#v}" --notes-file release-notes.md)
           case "$TAG" in *-*) flags+=(--prerelease) ;; esac
           gh release create "$TAG" "${flags[@]}"
+
+  notify:
+    name: Notify the clusters
+    needs: [release]
+    if: ${{ vars.NATS_NOTIFY == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NORCA_SOURCE: https://github.com/bacanoo-io/norca
+      NORCA_REF: main
+    steps:
+      - name: Check out Norca
+        run: git clone --depth 1 --branch "$NORCA_REF" "$NORCA_SOURCE" norca
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: norca/nomad/natsbridge/go.mod
+          cache-dependency-path: norca/nomad/natsbridge/go.sum
+
+      - name: Build norca-natsbridge
+        working-directory: norca/nomad/natsbridge
+        run: go build -o "$RUNNER_TEMP/norca-natsbridge" ./cmd/norca-natsbridge
+
+      - name: Publish the push notice
+        env:
+          NATS_URL: ${{ secrets.NATS_URL }}
+          NATS_CREDS_FILE_CONTENT: ${{ secrets.NATS_CREDS }}
+          NATSBRIDGE_SUBJECT_PREFIX: ${{ vars.NATSBRIDGE_SUBJECT_PREFIX }}
+          SOURCE: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if [ -z "$NATS_URL" ]; then
+            echo "::error::NATS_NOTIFY is set but the secret NATS_URL is missing"
+            exit 1
+          fi
+          args=(-source "$SOURCE")
+          if [ -n "$NATS_CREDS_FILE_CONTENT" ]; then
+            umask 077
+            printf '%s\n' "$NATS_CREDS_FILE_CONTENT" > "$RUNNER_TEMP/nats.creds"
+            args+=(-nats-creds "$RUNNER_TEMP/nats.creds")
+          fi
+          "$RUNNER_TEMP/norca-natsbridge" notify-push "${args[@]}"
+          echo "push notice published for $SOURCE ($GITHUB_REF_NAME)"

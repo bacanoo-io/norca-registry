@@ -14,5 +14,3 @@ pack {
     norca = ">= 0.1.0"
   }
 }
-
-variables_schema = file("values.schema.json")

@@ -317,8 +317,9 @@ unless the release notes say otherwise.
 | `dump_enabled`, `dump_cron`, `dump_bucket`, `dump_prefix`, `dump_resources` | `false`, `0 3 * * *`, `forgejo-dump`, `forgejo/`, `{cpu = 500, memory = 512}` | the dump job |
 | `startup_timeout`, `healthy_deadline` | `5m`, `10m` | |
 
-The values are checked against [`values.schema.json`](values.schema.json)
-before rendering and again by the servers.
+The values are checked against the `validation` blocks and rules of
+[`variables.hcl`](variables.hcl) before rendering; the servers check the
+`validation` blocks again.
 
 ## Metrics
 

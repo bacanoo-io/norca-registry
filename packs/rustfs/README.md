@@ -160,8 +160,9 @@ behind a load balancer) as the backup endpoint.
 | `startup_timeout`, `healthy_deadline` | `3m`, `10m` | startup check, updates |
 | `metrics_enabled`, `traces_enabled`, `otlp_endpoint` | `false`, `false`, `http://${attr.unique.network.ip-address}:4318` | OTLP export, see [Metrics](#metrics) |
 
-The values are checked against [`values.schema.json`](values.schema.json)
-before rendering and again by the servers.
+The values are checked against the `validation` blocks and rules of
+[`variables.hcl`](variables.hcl) before rendering; the servers check the
+`validation` blocks again.
 
 ## Health checks
 

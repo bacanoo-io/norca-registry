@@ -203,8 +203,9 @@ exports fail until the collector restarted.
 | `postgres_metrics_enabled`, `postgres_service`, `postgres_user`, `postgres_secret_path`, `postgres_tls` | `true`, `postgres`, `monitoring`, `postgres/monitoring`, `none` | |
 | `self_metrics_enabled` | `true` | |
 
-The values are checked against [`values.schema.json`](values.schema.json)
-before rendering and again by the servers.
+The values are checked against the `validation` blocks and rules of
+[`variables.hcl`](variables.hcl) before rendering; the servers check the
+`validation` blocks again.
 
 ## Health checks
 

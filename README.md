@@ -57,6 +57,16 @@ git clone https://github.com/bacanoo-io/norca-registry
 norca pack run ./norca-registry/packs/nats -f nats.hcl
 ```
 
+### On a cluster
+
+The packs can also be installed from the Norca UI (Packages → Catalog): add
+the repository as a cluster registry (Packages → Registries, type Git,
+source `https://github.com/bacanoo-io/norca-registry`, reference a release
+tag) and pick a sync interval. The servers fetch it, and the install form of
+every pack is built from its `variables.hcl`. A release of this repository
+can also notify the clusters over NATS so that they sync at once, see the
+notify job in [`release.yml`](.github/workflows/release.yml).
+
 Example variable files for the packs are in [`examples/<pack>/`](examples);
 the Norca repository's [deployment examples](https://github.com/bacanoo-io/norca/tree/main/example)
 use the packs of this registry.
@@ -87,9 +97,8 @@ an offline bundle (`norca pack bundle create`); see
 ```
 README.md, LICENSE, REUSE.toml
 packs/<name>/            one pack per directory (the layout "norca pack registry add" expects)
-  metadata.hcl           name, version, requirements, variables_schema
-  variables.hcl          variables with descriptions and defaults
-  values.schema.json     JSON Schema of the variable values (optional)
+  metadata.hcl           name, version, requirements
+  variables.hcl          variables with descriptions, defaults, validation blocks and rules
   templates/*.nomad.tpl  jobs; *.kind.hcl.tpl, *.acl.hcl.tpl, ... other resources
   templates/_*.tpl       helper templates
   outputs.tpl            text printed after a deployment
@@ -107,8 +116,9 @@ the Norca repository.
 - Write packs as described in Norca's
   [writing packs](https://github.com/bacanoo-io/norca/blob/main/nomad/pack/docs/writing-packs.md)
   and [extended package format](https://github.com/bacanoo-io/norca/blob/main/nomad/pack/docs/releases.md#extended-package-format):
-  `[[ ]]` delimiters, `var "name" .` / `vars .` to read variables, a
-  `values.schema.json` for anything the variable types can't express.
+  `[[ ]]` delimiters, `var "name" .` / `vars .` to read variables,
+  `validation` blocks and `rule` blocks in `variables.hcl` for anything the
+  variable types can't express.
 - New files carry the SPDX header `SPDX-FileCopyrightText: 2026 Norca
   contributors` / `SPDX-License-Identifier: MPL-2.0` (`#` comments in HCL, a
   `[[/* ... */]]` comment in templates whose output is printed, `$comment` in
