@@ -466,6 +466,18 @@ variable "bridge_jetstream_stream" {
   default     = "NORCA_EVENTS_$${NOMAD_REGION}"
 }
 
+variable "bridge_jetstream_replicas" {
+  description = "Replicas of the stream the bridge creates (1 to 5, at most the number of NATS servers). With 3 servers spread over datacenters, 3 keeps the events of the region when a server or a datacenter fails. An existing stream is not changed (nats stream edit <stream> --replicas 3)."
+  type        = number
+  default     = 1
+
+  validation {
+    min     = 1
+    max     = 5
+    integer = true
+  }
+}
+
 variable "bridge_sync_pushes" {
   description = "The bridge also syncs the cluster pack registries of a source when a push notice for it arrives on <bridge_subject_prefix>.packs.pushed (norca-natsbridge notify-push, e.g. in the release workflow of a pack registry). It needs the registry permissions in the bridge's ACL policy (see the output of the pack)."
   type        = bool

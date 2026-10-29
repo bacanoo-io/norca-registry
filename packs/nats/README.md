@@ -60,7 +60,9 @@ name, defaults to the Norca region (`NOMAD_REGION`).
 `nomad/natsbridge/examples/natsbridge.nomad.hcl`, connected to the client
 service of the cluster through `nomadService`, publishing to
 `<prefix>.<region>.<topic>` into the JetStream stream
-`NORCA_EVENTS_<region>` (`bridge_jetstream_stream`). With
+`NORCA_EVENTS_<region>` (`bridge_jetstream_stream`), with
+`bridge_jetstream_replicas` replicas (default 1; 3 with servers in three
+datacenters, so the events survive the loss of one). With
 `bridge_sync_pushes` it also syncs the cluster pack registries of a source when
 a push notice arrives on `<prefix>.packs.pushed`, and with
 `bridge_sync_regions` it publishes the registry events and syncs a registry

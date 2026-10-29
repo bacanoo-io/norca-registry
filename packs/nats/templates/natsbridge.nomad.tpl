@@ -82,6 +82,7 @@ job [[ $bridge | quote ]] {
         NATSBRIDGE_JETSTREAM        = "true"
         NATSBRIDGE_JETSTREAM_STREAM = [[ $v.bridge_jetstream_stream | quote ]]
         NATSBRIDGE_JETSTREAM_CREATE = "true"
+        NATSBRIDGE_JETSTREAM_REPLICAS = "[[ $v.bridge_jetstream_replicas ]]"
 [[- end ]]
 [[- if $v.bridge_sync_pushes ]]
         # Sync the cluster pack registries on push notices.
