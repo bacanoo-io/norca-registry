@@ -24,9 +24,6 @@ A new version is applied with a reload of the servers:
 [[- range $u := $v.users ]]
   norca secret put -namespace [[ $ns ]] [[ $v.users_secret_prefix ]]/[[ $u.name ]] password=-      # account [[ $u.account | default $v.users_default_account ]]
 [[- end ]]
-[[- if $v.bridge_enabled ]]
-  norca secret put -namespace [[ $ns ]] [[ $v.users_secret_prefix ]]/[[ $v.bridge_job_name ]] seed=@bridge.seed      # the seed of bridge_nkey
-[[- end ]]
 [[- end ]]
 [[- if or $v.tls_enabled (and (ne $v.auth_mode "none") (not $userpass)) ]]
 
@@ -41,38 +38,5 @@ The servers start only when the Variable [[ $secrets ]] exists, e.g.:
     client_nkeys=<UA...,UB...>
 [[- else if eq $v.auth_mode "config" ]]
     auth_config=@auth.conf
-[[- end ]]
-[[- end ]]
-[[- if $v.bridge_enabled ]]
-[[- $bridge := $v.bridge_job_name ]]
-
-Bridge job "[[ $bridge ]]": it needs this ACL policy bound to the job (the pack
-cannot create policies). Save it as [[ $bridge ]]-policy.hcl and apply it with
-  norca acl policy apply -namespace [[ $ns ]] -job [[ $bridge ]] [[ $bridge ]] [[ $bridge ]]-policy.hcl
-
-namespace "*" {
-  capabilities = ["read-job"]
-[[- if or $v.bridge_sync_pushes $v.bridge_sync_regions ]]
-  # Read and sync the cluster pack registries (bridge_sync_pushes, bridge_sync_regions).
-  object "packs.norca.io/Registry" {
-    capabilities = ["read", "write"]
-  }
-[[- end ]]
-}
-namespace "[[ $ns ]]" {
-  capabilities = ["read-job"]
-  variables {
-    path "nomad/jobs/[[ $bridge ]]/*" {
-      capabilities = ["list", "read", "write"]
-    }
-  }
-}
-node {
-  policy = "read"
-}
-[[- if or $v.tls_enabled (and (ne $v.auth_mode "none") (not $userpass)) ]]
-
-The bridge's NATS credentials go into its own Variable, e.g.:
-  norca var put -namespace [[ $ns ]] nomad/jobs/[[ $bridge ]][[ if $v.tls_enabled ]] nats_ca=@ca.pem[[ end ]][[ if eq $v.auth_mode "token" ]] nats_token=<token>[[ else if eq $v.auth_mode "nkey" ]] nats_nkey_seed=@bridge.nk[[ else if eq $v.auth_mode "config" ]] nats_creds=@bridge.creds[[ end ]]
 [[- end ]]
 [[- end ]]

@@ -198,8 +198,8 @@ norca pack run nats --registry=norca -f nats.hcl
 **Permissions: the account is the boundary.** The user gets no subject
 permissions inside its account `OPENOBSERVE`, and the account gives it
 nothing outside: its own subjects and its own JetStream, no access to the
-streams, KV buckets and subjects of the other accounts (the event stream of
-the bridge, applications), and they none to its. A narrower list inside the
+streams, KV buckets and subjects of the other accounts (the applications),
+and they none to its. A narrower list inside the
 account isn't practical, as checked in the v1.0.4 source
 (`src/infra/src/db/nats.rs`, `src/infra/src/queue/nats.rs`):
 
