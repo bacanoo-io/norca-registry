@@ -194,6 +194,16 @@ job [[ $job | quote ]] {
           client_advertise: "{{ env "NOMAD_ADDR_client" }}"
           http: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NOMAD_IP_monitor" }}[[ end ]]:{{ env "NOMAD_PORT_monitor" }}"
           lame_duck_duration: "[[ $v.lame_duck_duration ]]"
+[[- if $v.jetstream_enabled ]]
+          # Placement tags of JetStream: the Norca datacenter of the server
+          # (unique_tag "dc" spreads the replicas over the datacenters).
+          server_tags: [
+            "dc:{{ env "NOMAD_DC" }}"
+[[- range $v.jetstream_server_tags ]]
+            [[ . | quote ]]
+[[- end ]]
+          ]
+[[- end ]]
           lame_duck_grace_period: "5s"
 [[- if $v.debug ]]
           debug: true
@@ -245,6 +255,16 @@ configuration parser rejects. */]]
 [[- end ]]
             max_memory_store: [[ $v.jetstream_max_memory ]]
             max_file_store: [[ $v.jetstream_max_file ]]
+[[- if ne $v.jetstream_sync_interval "" ]]
+            sync_interval: [[ $v.jetstream_sync_interval | quote ]]
+[[- end ]]
+[[- if ne $v.jetstream_max_outstanding_catchup "" ]]
+            max_outstanding_catchup: [[ $v.jetstream_max_outstanding_catchup ]]
+[[- end ]]
+[[- if ne $v.jetstream_unique_tag "" ]]
+            # Replicas of a stream on servers of different datacenters.
+            unique_tag: [[ $v.jetstream_unique_tag | quote ]]
+[[- end ]]
 [[- if ne $v.jetstream_domain "" ]]
             domain: [[ $v.jetstream_domain | quote ]]
 [[- end ]]
@@ -256,6 +276,12 @@ configuration parser rejects. */]]
             name: "{{ $name }}"
             listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NOMAD_IP_cluster" }}[[ end ]]:{{ env "NOMAD_PORT_cluster" }}"
             advertise: "{{ env "NOMAD_ADDR_cluster" }}"
+[[- if ne $v.cluster_compression "" ]]
+            compression: [[ $v.cluster_compression | quote ]]
+[[- end ]]
+[[- if ne $v.cluster_pool_size 0 ]]
+            pool_size: [[ $v.cluster_pool_size ]]
+[[- end ]]
             # The own address is always listed (the server ignores a route
             # to itself): JetStream clustering needs at least one route.
             routes: [

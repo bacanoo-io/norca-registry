@@ -78,11 +78,19 @@ job [[ $bridge | quote ]] {
         NATSBRIDGE_TOPICS           = [[ $v.bridge_topics | quote ]]
 [[- if and $v.jetstream_enabled (ne $v.bridge_jetstream_stream "") ]]
         # JetStream: wait for the acknowledgements, deduplicate redeliveries
-        # (Nats-Msg-Id), create the stream for <prefix>.<region>.> if missing.
-        NATSBRIDGE_JETSTREAM        = "true"
-        NATSBRIDGE_JETSTREAM_STREAM = [[ $v.bridge_jetstream_stream | quote ]]
-        NATSBRIDGE_JETSTREAM_CREATE = "true"
-        NATSBRIDGE_JETSTREAM_REPLICAS = "[[ $v.bridge_jetstream_replicas ]]"
+        # (Nats-Msg-Id), create the stream for <prefix>.<region>.> if missing
+        # and keep its limits and options at these values.
+        NATSBRIDGE_JETSTREAM              = "true"
+        NATSBRIDGE_JETSTREAM_STREAM       = [[ $v.bridge_jetstream_stream | quote ]]
+        NATSBRIDGE_JETSTREAM_CREATE       = "true"
+        NATSBRIDGE_JETSTREAM_REPLICAS     = "[[ $v.bridge_jetstream_replicas ]]"
+        NATSBRIDGE_JETSTREAM_MAX_AGE      = [[ $v.bridge_jetstream_max_age | quote ]]
+        NATSBRIDGE_JETSTREAM_MAX_BYTES    = [[ $v.bridge_jetstream_max_bytes | quote ]]
+        NATSBRIDGE_JETSTREAM_STORAGE      = [[ $v.bridge_jetstream_storage | quote ]]
+        NATSBRIDGE_JETSTREAM_COMPRESSION  = [[ if eq $v.bridge_jetstream_storage "memory" ]]"none"[[ else ]][[ $v.bridge_jetstream_compression | quote ]][[ end ]]
+        NATSBRIDGE_JETSTREAM_ALLOW_DIRECT = "[[ $v.bridge_jetstream_allow_direct ]]"
+        NATSBRIDGE_JETSTREAM_DENY_DELETE  = "[[ $v.bridge_jetstream_deny_delete ]]"
+        NATSBRIDGE_JETSTREAM_DENY_PURGE   = "[[ $v.bridge_jetstream_deny_purge ]]"
 [[- end ]]
 [[- if $v.bridge_sync_pushes ]]
         # Sync the cluster pack registries on push notices.
