@@ -8,18 +8,15 @@
 # Users consume the registry with "norca pack registry add", so the release
 # carries no extra assets besides GitHub's source archives.
 #
-# With the repository variable NATS_NOTIFY = "true", the notify job then
-# publishes a push notice for the registry on NATS (norca-natsbridge
-# notify-push): the clusters whose NATS bridges run with -sync-pushes sync
-# their cluster registries of this repository at once instead of on their
-# sync interval. It needs the secret NATS_URL and, unless the URL carries
-# the credentials, NATS_CREDS (the content of a credentials file allowed to
-# publish <prefix>.packs.pushed); the variable NATSBRIDGE_SUBJECT_PREFIX sets
-# the prefix (default "nomad"). Like check.yml, it builds the tool from the
-# Norca sources (NORCA_SOURCE, NORCA_REF).
+# With the repository variable NORCA_ADDR (the HTTP address of a Norca
+# server, e.g. https://norca.example.com:4646) and the secret NORCA_TOKEN (an
+# ACL token that may write the cluster pack registries), the notify job then
+# sends a push notice for the registry to POST /v1/pack-registries/notify-push:
+# the leader syncs the cluster registries of this repository at once instead
+# of on their sync interval. Without either the job is skipped.
 #
 # Actions are pinned by commit, like in the Norca repository:
-#   actions/checkout v7.0.1, actions/setup-go v7.0.0.
+#   actions/checkout v7.0.1.
 name: Release
 
 on:
@@ -97,41 +94,20 @@ jobs:
   notify:
     name: Notify the clusters
     needs: [release]
-    if: ${{ vars.NATS_NOTIFY == 'true' }}
+    if: ${{ vars.NORCA_ADDR != '' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    env:
-      NORCA_SOURCE: https://github.com/bacanoo-io/norca
-      NORCA_REF: main
+    timeout-minutes: 5
     steps:
-      - name: Check out Norca
-        run: git clone --depth 1 --branch "$NORCA_REF" "$NORCA_SOURCE" norca
-
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: norca/nomad/natsbridge/go.mod
-          cache-dependency-path: norca/nomad/natsbridge/go.sum
-
-      - name: Build norca-natsbridge
-        working-directory: norca/nomad/natsbridge
-        run: go build -o "$RUNNER_TEMP/norca-natsbridge" ./cmd/norca-natsbridge
-
-      - name: Publish the push notice
+      - name: Send the push notice
         env:
-          NATS_URL: ${{ secrets.NATS_URL }}
-          NATS_CREDS_FILE_CONTENT: ${{ secrets.NATS_CREDS }}
-          NATSBRIDGE_SUBJECT_PREFIX: ${{ vars.NATSBRIDGE_SUBJECT_PREFIX }}
+          NORCA_ADDR: ${{ vars.NORCA_ADDR }}
+          NORCA_TOKEN: ${{ secrets.NORCA_TOKEN }}
           SOURCE: ${{ github.server_url }}/${{ github.repository }}
         run: |
-          if [ -z "$NATS_URL" ]; then
-            echo "::error::NATS_NOTIFY is set but the secret NATS_URL is missing"
-            exit 1
+          if [ -z "$NORCA_TOKEN" ]; then
+            echo "::notice::NORCA_ADDR is set but the secret NORCA_TOKEN is missing: no push notice sent"
+            exit 0
           fi
-          args=(-source "$SOURCE")
-          if [ -n "$NATS_CREDS_FILE_CONTENT" ]; then
-            umask 077
-            printf '%s\n' "$NATS_CREDS_FILE_CONTENT" > "$RUNNER_TEMP/nats.creds"
-            args+=(-nats-creds "$RUNNER_TEMP/nats.creds")
-          fi
-          "$RUNNER_TEMP/norca-natsbridge" notify-push "${args[@]}"
-          echo "push notice published for $SOURCE ($GITHUB_REF_NAME)"
+          body="$(jq -cn --arg source "$SOURCE" '{Source: $source}')"
+          curl --fail-with-body --silent --show-error --retry 3 --max-time 30             -X POST "${NORCA_ADDR%/}/v1/pack-registries/notify-push"             -H "Authorization: Bearer $NORCA_TOKEN"             -H "Content-Type: application/json"             --data "$body"
+          echo "push notice sent for $SOURCE ($GITHUB_REF_NAME)"

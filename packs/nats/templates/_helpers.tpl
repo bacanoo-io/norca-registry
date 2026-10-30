@@ -82,7 +82,6 @@ rendering an empty password (which NATS would accept without a password). */ -]]
 [[- $a := $u.account | default $v.users_default_account ]]
 [[- if not (has $a $accounts) ]][[ $accounts = append $accounts $a ]][[ end ]]
 [[- end ]]
-[[- if and $v.bridge_enabled (not (has $v.users_default_account $accounts)) ]][[ $accounts = append $accounts $v.users_default_account ]][[ end ]]
 
           # auth_mode = "userpass": every account has its own subjects[[ if $v.jetstream_enabled ]] and
           # JetStream streams[[ end ]]. The passwords (plain or bcrypt) come from the secret
@@ -103,25 +102,6 @@ rendering an empty password (which NATS would accept without a password). */ -]]
 [[- template "nats.permissions" $u ]]
                 }
 [[- end ]]
-[[- end ]]
-[[- if and $v.bridge_enabled (eq $a $v.users_default_account) ]]
-                # The event stream bridge (job [[ $v.bridge_job_name ]]): publishes the events
-                # and looks up, creates or updates its stream; replies come to its inboxes. With the
-                # registry syncs it also reads the push notices and the registry events of
-                # the other regions: with JetStream through its durable consumers (stream
-                # names, consumers, pulls, acks); bridges before Norca 0.3.0 and bridges
-                # without JetStream subscribe to them.
-[[- $bridgePubs := list (printf "%s.>" $v.bridge_subject_prefix) "$JS.API.STREAM.INFO.*" "$JS.API.STREAM.CREATE.*" "$JS.API.STREAM.UPDATE.*" ]]
-[[- $bridgeSubs := list "_INBOX.>" ]]
-[[- if and (or $v.bridge_sync_pushes $v.bridge_sync_regions) $v.jetstream_enabled (ne $v.bridge_jetstream_stream "") ]]
-[[- $bridgePubs = concat $bridgePubs (list "$JS.API.STREAM.NAMES" "$JS.API.CONSUMER.CREATE.>" "$JS.API.CONSUMER.DURABLE.CREATE.>" "$JS.API.CONSUMER.INFO.>" "$JS.API.CONSUMER.MSG.NEXT.>" "$JS.ACK.>") ]]
-[[- end ]]
-[[- if $v.bridge_sync_pushes ]][[ $bridgeSubs = append $bridgeSubs (printf "%s.packs.pushed" $v.bridge_subject_prefix) ]][[ $bridgeSubs = append $bridgeSubs (printf "%s.packs.pushed.>" $v.bridge_subject_prefix) ]][[ end ]]
-[[- if $v.bridge_sync_regions ]][[ $bridgeSubs = append $bridgeSubs (printf "%s.*.CustomObject" $v.bridge_subject_prefix) ]][[ end ]]
-                {
-                  nkey: [[ $v.bridge_nkey | quote ]]
-[[- template "nats.permissions" (dict "publish_allow" $bridgePubs "subscribe_allow" $bridgeSubs) ]]
-                }
 [[- end ]]
               ]
             }
@@ -151,18 +131,13 @@ rendering an empty password (which NATS would accept without a password). */ -]]
 [[- fail (printf "auth_mode must be none, token, nkey, config or userpass, got %q" $v.auth_mode) -]]
 [[- end -]]
 [[- if eq $v.auth_mode "userpass" -]]
-[[- if and (not $v.users) (not $v.bridge_enabled) -]]
+[[- if not $v.users -]]
 [[- fail "auth_mode = \"userpass\" needs at least one entry in users (without users nobody could connect)" -]]
 [[- end -]]
 [[- $names := list -]]
 [[- range $u := $v.users -]]
 [[- if has $u.name $names ]][[ fail (printf "users: the name %q is used twice" $u.name) ]][[ end -]]
 [[- $names = append $names $u.name -]]
-[[- end -]]
-[[- if $v.bridge_enabled -]]
-[[- if eq $v.bridge_nkey "" ]][[ fail "auth_mode = \"userpass\" with bridge_enabled needs bridge_nkey (the public NKey of the bridge's user)" ]][[ end -]]
-[[- if has $v.bridge_job_name $names ]][[ fail (printf "users: %q is the secret of the bridge (<users_secret_prefix>/<bridge_job_name>); use another name" $v.bridge_job_name) ]][[ end -]]
-[[- if eq $v.users_default_account $v.system_account ]][[ fail "users_default_account must not be the system account (the bridge's user is in users_default_account)" ]][[ end -]]
 [[- end -]]
 [[- else if $v.users -]]
 [[- fail "users needs auth_mode = \"userpass\"" -]]
@@ -172,13 +147,5 @@ rendering an empty password (which NATS would accept without a password). */ -]]
 [[- end -]]
 [[- if and $v.remote_gateways (not $v.gateway_enabled) -]]
 [[- fail "remote_gateways needs gateway_enabled = true" -]]
-[[- end -]]
-[[- if $v.bridge_enabled -]]
-[[- if not (has $v.bridge_driver (list "docker" "raw_exec" "exec")) -]]
-[[- fail (printf "bridge_driver must be docker, raw_exec or exec, got %q" $v.bridge_driver) -]]
-[[- end -]]
-[[- if and (eq $v.bridge_driver "docker") (eq $v.bridge_image "") -]]
-[[- fail "bridge_driver = \"docker\" needs bridge_image" -]]
-[[- end -]]
 [[- end -]]
 [[- end -]]
