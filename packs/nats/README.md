@@ -5,16 +5,15 @@ SPDX-License-Identifier: MPL-2.0
 
 # nats
 
-A NATS cluster for one Norca region, and optionally the event stream → NATS
-bridge of the region (`nomad/natsbridge` in the Norca repository). In the multi-cloud setup of the
-development plan ("Multi-cloud connectivity": one Norca region per cloud,
-a VPN between them) the pack is deployed once per region; the gateways join
-the regional clusters into a **NATS supercluster**, JetStream keeps durable
-streams, and leaf nodes can attach edge sites.
+A NATS cluster for the applications of one Norca region. In a multi-cloud
+setup (one Norca region per cloud, a VPN between them) the pack is deployed
+once per region; the gateways join the regional clusters into a **NATS
+supercluster**, JetStream keeps durable streams, and leaf nodes can attach
+edge sites.
 
-NATS is only the event and notification bridge: nothing in Norca reads from
-it, so a NATS outage delays events but does not affect scheduling or
-deployments.
+The event stream of Norca is not on this NATS: the servers publish it on
+their own system bus. Nothing in Norca reads from this cluster, so a NATS
+outage does not affect scheduling or deployments.
 
 ## What it deploys
 
@@ -56,24 +55,6 @@ Server names are `<cluster_name>-<alloc index>` (stable across reschedules,
 unique in the supercluster); the cluster name, which is also the gateway
 name, defaults to the Norca region (`NOMAD_REGION`).
 
-**Job `natsbridge`** (only with `bridge_enabled = true`): the bridge of
-`nomad/natsbridge/examples/natsbridge.nomad.hcl`, connected to the client
-service of the cluster through `nomadService`, publishing to
-`<prefix>.<region>.<topic>` into the JetStream stream
-`NORCA_EVENTS_<region>` (`bridge_jetstream_stream`), with
-`bridge_jetstream_replicas` replicas (default 1; 3 with servers in three
-datacenters, so the events survive the loss of one), limited to
-`bridge_jetstream_max_age` (72h) and `bridge_jetstream_max_bytes` (512MB),
-S2-compressed (see [The bridge's stream](#the-bridges-stream)). With
-`bridge_sync_pushes` it also syncs the cluster pack registries of a source when
-a push notice arrives on `<prefix>.packs.pushed`, and with
-`bridge_sync_regions` it publishes the registry events and syncs a registry
-when the one of the same name and source in another region found other packs
-(the bridge's inbound mode, see `nomad/natsbridge/README.md` in the Norca
-repository). Both need `object "packs.norca.io/Registry"` with `read` and
-`write` in the `namespace "*"` block of the bridge's ACL policy; the output of
-the pack prints the policy with it.
-
 ## Drivers
 
 | `driver` | Server | Notes |
@@ -90,11 +71,6 @@ With `artifact_url`, e.g.
 --var artifact_checksum=sha256:<sha256 of the archive> \
 --var binary=local/nats-server-v2.15.0-linux-amd64/nats-server
 ```
-
-The bridge has no published image: `bridge_driver = "raw_exec"` (default)
-or `exec` with `bridge_binary`/`bridge_artifact_url`, or `docker` with your
-own `bridge_image`. Build the binary in a Norca checkout with
-`cd nomad/natsbridge && go build -o norca-natsbridge ./cmd/norca-natsbridge`.
 
 ## Storage
 
@@ -177,7 +153,7 @@ users = [
   {
     name            = "orders"
     publish_allow   = ["orders.>", "$JS.API.>"]
-    subscribe_allow = ["orders.>", "nomad.>", "_INBOX.>"]
+    subscribe_allow = ["orders.>", "_INBOX.>"]
   },
   # the system account (system_account, "SYS"): nats server report, raft peer-remove
   { name = "ops", account = "SYS" },
@@ -209,22 +185,6 @@ is a complete variable file.
 - **The system account.** Users whose account is `system_account` (`SYS`)
   are in the servers' system account: the `nats` CLI's server commands. Without
   such a user the servers keep their internal system account.
-- **The bridge** (`bridge_enabled`): norca-natsbridge has no password option,
-  so its user is an NKey user in `users_default_account`, with the public key
-  `bridge_nkey` and the seed in the item `seed` of the secret
-  `<users_secret_prefix>/<bridge_job_name>`, which only the bridge job reads.
-  It may publish `<bridge_subject_prefix>.>`, look up, create and update streams
-  (`$JS.API.STREAM.INFO.*`, `$JS.API.STREAM.CREATE.*`, `$JS.API.STREAM.UPDATE.*`) and receive replies on
-  `_INBOX.>`; with `bridge_sync_pushes` also `<prefix>.packs.pushed` and
-  `<prefix>.packs.pushed.>`, with `bridge_sync_regions` `<prefix>.*.CustomObject`.
-  Consumers of the events, and the CI that publishes push notices, need a user
-  in the same account.
-
-  ```shell
-  nk -gen user > bridge.seed && nk -inkey bridge.seed -pubout   # the public key: bridge_nkey
-  norca secret put nats/users/natsbridge seed=@bridge.seed
-  ```
-
 - **The metrics exporter** needs no user: it reads the HTTP monitoring port,
   which NATS serves without authentication (keep it on the private network),
   and sees all accounts there.
@@ -257,10 +217,8 @@ one at a time (rolling update, lame duck), like every other variable.
 
 **Switching an existing installation** from `none`/`token`/`nkey` to
 `userpass` moves the clients from the global account into named accounts: the
-JetStream streams of the global account (e.g. the bridge's
-`NORCA_EVENTS_<region>`) stay on disk but are not visible in the new accounts.
-Recreate them (the bridge creates its stream again) or migrate them before the
-switch.
+JetStream streams of the global account stay on disk but are not visible in
+the new accounts. Recreate or migrate them before the switch.
 
 ## Multi-region walkthrough
 
@@ -301,7 +259,6 @@ client {
      { name = "gcp",     urls = ["nats://10.20.0.11:7222", "nats://10.20.0.12:7222"] },
      { name = "hetzner", urls = ["nats://10.30.0.11:7222", "nats://10.30.0.12:7222"] },
    ]
-   bridge_enabled  = true
    ```
 
    `gcp.hcl` and `hetzner.hcl` are the same with their own `region` and the
@@ -327,25 +284,6 @@ client {
    JetStream meta group spans the whole supercluster: `cluster_size` is the
    number of servers in all regions, one meta leader), `/healthz`.
 
-5. **The bridge** of every region needs its ACL policy (the pack cannot
-   create ACL policies; `norca pack run` prints the policy text):
-
-   ```
-   norca acl policy apply -region aws -namespace default -job natsbridge \
-     natsbridge natsbridge-policy.hcl
-   norca var put -region aws nomad/jobs/natsbridge nats_token=<token> nats_ca=@ca.pem
-   ```
-
-   The policy is
-   [`nomad/natsbridge/examples/natsbridge-policy.hcl`](https://github.com/bacanoo-io/norca/blob/main/nomad/natsbridge/examples/natsbridge-policy.hcl)
-   of the Norca repository (read-job
-   in all namespaces, node read, list/read/write on
-   `nomad/jobs/natsbridge/*` for the checkpoint and the leader election
-   lease). The bridge reads its own NATS credentials from
-   `nomad/jobs/<bridge_job_name>`: `nats_token`, `nats_creds` (JWT
-   credentials file), `nats_nkey_seed`, `nats_ca`, `nats_cert`/`nats_key`;
-   all are optional.
-
 ### JetStream in the supercluster
 
 - A supercluster has **one JetStream meta group** spanning all regions
@@ -354,47 +292,14 @@ client {
   needs only the majority of its own replicas. Losing a cloud therefore stops
   neither the streams of the other regions nor, with 3 regions of 3 servers,
   the meta group.
-- Stream names are global in the supercluster: keep the region in the name.
-  The bridge default is `NORCA_EVENTS_<region>` for the subjects
-  `nomad.<region>.>`; it creates the stream in its own region (the cluster it
-  is connected to) if missing, with the settings of
-  [The bridge's stream](#the-bridges-stream).
-- A central history or audit service can read all regions with a **mirror or
-  sources** stream in its own region (`--source NORCA_EVENTS_aws
-  --source NORCA_EVENTS_gcp ...`) or a consumer per region stream; plain
-  subscribers use `nomad.*.>` (all regions) or `nomad.<region>.>`.
+- Stream names are global in the supercluster: keep the region in the name,
+  e.g. `ORDERS_<region>`. A stream is created in the cluster of the client
+  that creates it.
+- A central service can read all regions with a **mirror or sources** stream
+  in its own region (`--source ORDERS_aws --source ORDERS_gcp ...`) or a
+  consumer per region stream.
 - Keep `jetstream_domain` empty in the supercluster. Edge sites can attach as
   leaf nodes (`leafnodes_enabled`, port 7422) with their own domain.
-
-## The bridge's stream
-
-The bridge creates `bridge_jetstream_stream` for `<prefix>.<region>.>` and
-owns it: on every start it sets the limits and options below on the existing
-stream too (the bridge's NATS user may update it). Storage and the deny flags
-are only applied when the stream is created; to change them delete the stream
-(`nats stream rm`) and restart the bridge.
-
-| Variable | Default | |
-|---|---|---|
-| `bridge_jetstream_replicas` | `1` | 3 with servers in three datacenters |
-| `bridge_jetstream_max_age` | `72h` | older events are dropped; `0`: no age limit |
-| `bridge_jetstream_max_bytes` | `512MB` | size on each server, oldest events dropped first; `0`: no limit |
-| `bridge_jetstream_storage` | `file` | `memory`: no disk, survives a server but not the restart of all of them; at most `jetstream_max_memory` |
-| `bridge_jetstream_compression` | `s2` | `none`; file storage only |
-| `bridge_jetstream_allow_direct` | `true` | every replica answers direct gets |
-| `bridge_jetstream_deny_delete`, `bridge_jetstream_deny_purge` | `false` | an audit log that can't be edited |
-
-Set at least one of the limits: an unlimited stream fills `jetstream_max_file`
-and then every publish fails, which stops the bridge. A full stream drops its
-oldest events (`discard: old`). The duplicate window is 10m and covers the
-redeliveries after a bridge restart (`Nats-Msg-Id`); `max_age` must not be
-shorter.
-
-Do you need a stored history at all? Without `bridge_jetstream_stream` (empty)
-the bridge publishes with core NATS: live subscribers get every event, nothing
-is stored, and the bridge still loses nothing on its side (it resumes from its
-checkpoint). Consumers that were away can read the missed events from the
-Norca event API as long as the servers keep them in their event buffer.
 
 ## Variables
 
@@ -412,12 +317,9 @@ See `variables.hcl` for all of them; the most important:
 | `storage` | `ephemeral_disk` | `ephemeral_disk`, `host_volume`, `path` |
 | `jetstream_unique_tag`, `jetstream_server_tags` | `""`, `[]` | `"dc"`: stream replicas in different datacenters |
 | `jetstream_sync_interval`, `jetstream_max_outstanding_catchup` | `""`, `""` | server defaults when empty |
-| `bridge_jetstream_*` | | see [The bridge's stream](#the-bridges-stream) |
 | `tls_enabled`, `auth_mode` | `false`, `none` | secrets from `secrets_variable`; `auth_mode`: `none`, `token`, `nkey`, `config`, `userpass` |
-| `users`, `users_secret_prefix`, `users_default_account`, `system_account`, `bridge_nkey` | `[]`, `nats/users`, `APP`, `SYS`, `""` | `auth_mode = "userpass"`: users, accounts, permissions; passwords from the secret store |
+| `users`, `users_secret_prefix`, `users_default_account`, `system_account` | `[]`, `nats/users`, `APP`, `SYS` | `auth_mode = "userpass"`: users, accounts, permissions; passwords from the secret store |
 | `disruption_max_unavailable` | `"1"` | empty removes the block |
-| `bridge_enabled` | `false` | deploys the bridge |
-| `bridge_sync_pushes`, `bridge_sync_regions` | `false`, `false` | the bridge syncs the cluster pack registries on push notices / on the registry events of other regions |
 | `metrics_enabled`, `metrics_image`, `metrics_port` | `false`, `natsio/prometheus-nats-exporter:0.20.2`, `0` | the Prometheus exporter (0 = dynamic port) |
 
 ## Metrics
@@ -463,13 +365,11 @@ shows the jobs without submitting them.
   see above), no exports/imports between accounts, no per-account JetStream
   limits, leaf node authorization not configured. Checked with
   `nats-server -t` and a local single server (passwords with quotes,
-  backslashes and `{{ }}`, bcrypt, account isolation, the bridge's
-  permissions, the reload), not on a cluster yet.
+  backslashes and `{{ }}`, bcrypt, account isolation, permissions, the
+  reload), not on a cluster yet.
 - `raw_exec` binds to the node address but has no isolation, and cannot mount
   host volumes; `SIGHUP`/`SIGUSR2` need a Unix node.
 - The routes and gateways have no password authentication; protect them with
   mutual TLS and the VPN.
 - Removing a server for good (scaling down, a lost node with `host_volume` or
   `path` storage) leaves an offline JetStream peer to remove manually.
-- A change of the server list restarts the bridge (it resumes from its
-  checkpoint; JetStream drops the duplicates).

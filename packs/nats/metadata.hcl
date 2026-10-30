@@ -7,8 +7,8 @@ app {
 
 pack {
   name        = "nats"
-  description = "A NATS cluster per Norca region (JetStream, supercluster gateways, TLS and client auth from Variables, or users in accounts with passwords from the built-in secret store) and the optional event stream to NATS bridge."
-  version     = "0.5.0"
+  description = "A NATS cluster per Norca region (JetStream, supercluster gateways, TLS and client auth from Variables, or users in accounts with passwords from the built-in secret store)."
+  version     = "0.6.0"
 
   requires {
     norca = ">= 0.1.0"

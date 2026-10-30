@@ -20,11 +20,12 @@ admission policies next to jobs, a JSON Schema for the variables).
 | [forgejo](packs/forgejo/README.md) | 0.2.0 | Forgejo (GPL-3.0-or-later, referenced, never shipped) as the internal git server and container registry: SQLite and repositories on a host volume, packages and LFS in RustFS, secrets from the built-in secret store, optional HTTPS, SSH, initial admin and periodic dumps; the Docker auth setup of the nodes; optional /metrics |
 | [loadbalancer-operator](packs/loadbalancer-operator/README.md) | 0.1.0 | The LoadBalancer operator as an operator pack: object kind (webhooks, limits), ACL policy bound to the controller job, admission policy, controller job |
 | [mtls-gateway](packs/mtls-gateway/README.md) | 0.2.1 | The cross-region native mTLS gateway of a region (`mtls { mode = "gateway" }`): SNI passthrough Envoy on the gateway nodes, injected by the servers or defined by the pack; optional Envoy statistics |
-| [nats](packs/nats/README.md) | 0.5.0 | NATS cluster per region (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store) and the event stream → NATS bridge, optional Prometheus exporter |
+| [nats](packs/nats/README.md) | 0.6.0 | NATS cluster per region for the applications (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store), optional Prometheus exporter |
 | [openobserve](packs/openobserve/README.md) | 0.2.0 | OpenObserve (AGPL-3.0, referenced, never shipped) as the observability backend (logs, metrics, traces): single node on a host volume or a cluster of node roles on PostgreSQL, NATS (its own NATS user and account) and RustFS, TLS with Norca's workload certificates, root user and the ingest credentials of the collectors in the built-in secret store |
 | [otel-collector](packs/otel-collector/README.md) | 0.1.1 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host, Norca agent, NATS, RustFS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve with the ingest credentials of the secret store, trusting Norca's CA |
 | [postgres](packs/postgres/README.md) | 0.1.0 | A single PostgreSQL server (PostgreSQL License, referenced, never shipped): data on a host volume, superuser, application databases and a `pg_monitor` role from the built-in secret store, optional TLS with Norca's workload certificates, optional periodic dumps to S3 |
 | [rustfs](packs/rustfs/README.md) | 0.2.0 | RustFS (Apache-2.0) as the S3 store of the Norca backups: single node or distributed, credentials from the built-in secret store, host volumes, health check roles, optional bucket creation, optional OTLP metrics |
+| [traefik](packs/traefik/README.md) | 0.1.0 | Traefik Proxy (MIT, the official image) as the edge router of a region: entrypoints for HTTP, HTTPS, TCP and UDP edited as a table in the install form, certificates from the built-in secret store applied without a restart, routes from the tags of the native catalog and static configuration; examples for web, WebSocket, gRPC and TCP. Needs Norca 0.3.0 |
 
 The packs need Norca 0.1.0 or newer; packs with `requires` in their
 `metadata.hcl` state the server features they use.
@@ -64,8 +65,8 @@ the repository as a cluster registry (Packages → Registries, type Git,
 source `https://github.com/bacanoo-io/norca-registry`, reference a release
 tag) and pick a sync interval. The servers fetch it, and the install form of
 every pack is built from its `variables.hcl`. A release of this repository
-can also notify the clusters over NATS so that they sync at once, see the
-notify job in [`release.yml`](.github/workflows/release.yml).
+can also notify a cluster so that it syncs at once (a push notice to its HTTP
+API), see the notify job in [`release.yml`](.github/workflows/release.yml).
 
 Example variable files for the packs are in [`examples/<pack>/`](examples);
 the Norca repository's [deployment examples](https://github.com/bacanoo-io/norca/tree/main/example)

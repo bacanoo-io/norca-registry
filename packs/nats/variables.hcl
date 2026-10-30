@@ -337,7 +337,7 @@ variable "users" {
 }
 
 variable "users_secret_prefix" {
-  description = "auth_mode = \"userpass\": prefix of the secret paths of the users: the password of a user is the item password of <users_secret_prefix>/<name>, the NKey seed of the bridge the item seed of <users_secret_prefix>/<bridge_job_name>."
+  description = "auth_mode = \"userpass\": prefix of the secret paths of the users: the password of a user is the item password of <users_secret_prefix>/<name>."
   type        = string
   default     = "nats/users"
 
@@ -347,7 +347,7 @@ variable "users_secret_prefix" {
 }
 
 variable "users_default_account" {
-  description = "auth_mode = \"userpass\": account of the users without an account, and of the bridge's user."
+  description = "auth_mode = \"userpass\": account of the users without an account."
   type        = string
   default     = "APP"
 
@@ -363,16 +363,6 @@ variable "system_account" {
 
   validation {
     pattern = "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
-  }
-}
-
-variable "bridge_nkey" {
-  description = "auth_mode = \"userpass\" with bridge_enabled: the public NKey (U...) of the bridge's NATS user (the bridge has no password option), in users_default_account, allowed to publish <bridge_subject_prefix>.> and to look up, create and update its JetStream stream. The bridge reads the seed from the item seed of the secret <users_secret_prefix>/<bridge_job_name>."
-  type        = string
-  default     = ""
-
-  validation {
-    pattern = "^(U[A-Z2-7]{55})?$"
   }
 }
 
@@ -457,168 +447,6 @@ variable "metrics_resources" {
 }
 
 # ---------------------------------------------------------------------------
-# Event stream -> NATS bridge (optional)
-# ---------------------------------------------------------------------------
-
-variable "bridge_enabled" {
-  description = "Also deploy the event stream to NATS bridge (norca-natsbridge) of the region. It needs an ACL policy bound to its job, see the README and the output of the pack."
-  type        = bool
-  default     = false
-}
-
-variable "bridge_job_name" {
-  description = "Name of the bridge job. Its credentials Variable is nomad/jobs/<bridge_job_name>; its checkpoint and lease are stored below it."
-  type        = string
-  default     = "natsbridge"
-}
-
-variable "bridge_count" {
-  description = "Instances of the bridge; one publishes, the others stand by (leader election over a Variable lease)."
-  type        = number
-  default     = 2
-}
-
-variable "bridge_driver" {
-  description = "Task driver of the bridge: \"raw_exec\", \"exec\" or \"docker\" (with bridge_image)."
-  type        = string
-  default     = "raw_exec"
-}
-
-variable "bridge_binary" {
-  description = "Path of norca-natsbridge for raw_exec/exec: absolute on the node, or relative to the task directory with bridge_artifact_url."
-  type        = string
-  default     = "/usr/local/bin/norca-natsbridge"
-}
-
-variable "bridge_artifact_url" {
-  description = "Optional URL of the norca-natsbridge binary or archive for raw_exec/exec."
-  type        = string
-  default     = ""
-}
-
-variable "bridge_image" {
-  description = "Docker image containing norca-natsbridge as entrypoint (bridge_driver = docker). No official image is published."
-  type        = string
-  default     = ""
-}
-
-variable "bridge_subject_prefix" {
-  description = "Subject prefix; events go to <prefix>.<region>.<topic>."
-  type        = string
-  default     = "nomad"
-
-  validation {
-    pattern = "^[^\\s.*>\"'\\\\{}]+(\\.[^\\s.*>\"'\\\\{}]+)*$"
-  }
-}
-
-variable "bridge_topics" {
-  description = "Event topics to forward (Topic or Topic:key, comma separated). The defaults are those the bridge policy allows."
-  type        = string
-  default     = "Job,Deployment,Evaluation,Allocation,Node,Service,Scaling"
-}
-
-variable "bridge_jetstream_stream" {
-  description = "JetStream stream the bridge publishes into (and creates for <prefix>.<region>.> if missing). Stream names are global in a supercluster, so keep the region in it. Empty publishes with core NATS."
-  type        = string
-  default     = "NORCA_EVENTS_$${NOMAD_REGION}"
-}
-
-variable "bridge_jetstream_replicas" {
-  description = "Replicas of the bridge's stream (1 to 5, at most the number of NATS servers). With 3 servers spread over datacenters, 3 keeps the events of the region when a server or a datacenter fails. The bridge also changes the replicas of an existing stream."
-  type        = number
-  default     = 1
-
-  validation {
-    min     = 1
-    max     = 5
-    integer = true
-  }
-}
-
-variable "bridge_jetstream_max_age" {
-  description = "Events older than this are dropped from the bridge's stream, e.g. \"72h\"; \"0\" keeps them until max_bytes. Without any limit the stream grows until jetstream_max_file is full and the bridge stops. At least the duplicate window (10m)."
-  type        = string
-  default     = "72h"
-
-  validation {
-    pattern = "^(0|[0-9]+(m|h))$"
-  }
-}
-
-variable "bridge_jetstream_max_bytes" {
-  description = "Size limit of the bridge's stream on each server, e.g. \"512MB\"; \"0\" for none. The oldest events are dropped first. Keep it below jetstream_max_file (jetstream_max_memory for memory storage), with room for the other streams."
-  type        = string
-  default     = "512MB"
-
-  validation {
-    pattern = "^[0-9]+([KMGT]i?B?)?$"
-  }
-}
-
-variable "bridge_jetstream_storage" {
-  description = "Storage of the bridge's stream: \"file\" or \"memory\" (faster, no disk; with 3 replicas it survives a server, not the restart of all of them). Only applied when the stream is created."
-  type        = string
-  default     = "file"
-
-  validation {
-    pattern = "^(file|memory)$"
-  }
-}
-
-variable "bridge_jetstream_compression" {
-  description = "Compression of the stored events: \"s2\" (the JSON events shrink well: less disk and less replication traffic between datacenters) or \"none\". File storage only."
-  type        = string
-  default     = "s2"
-
-  validation {
-    pattern = "^(s2|none)$"
-  }
-}
-
-variable "bridge_jetstream_allow_direct" {
-  description = "Every replica of the bridge's stream answers direct gets (reads by sequence or subject), not only its leader: readers in another datacenter are served nearby."
-  type        = bool
-  default     = true
-}
-
-variable "bridge_jetstream_deny_delete" {
-  description = "Forbid deleting single events of the bridge's stream (an audit log). Only applied when the stream is created."
-  type        = bool
-  default     = false
-}
-
-variable "bridge_jetstream_deny_purge" {
-  description = "Forbid purging the bridge's stream. Only applied when the stream is created; the age and size limits still drop old events."
-  type        = bool
-  default     = false
-}
-
-variable "bridge_sync_pushes" {
-  description = "The bridge also syncs the cluster pack registries of a source when a push notice for it arrives on <bridge_subject_prefix>.packs.pushed (norca-natsbridge notify-push, e.g. in the release workflow of a pack registry). It needs the registry permissions in the bridge's ACL policy (see the output of the pack)."
-  type        = bool
-  default     = false
-}
-
-variable "bridge_sync_regions" {
-  description = "The bridge also publishes the events of the cluster pack registries and syncs a registry when the registry of the same name and source in another region found other packs (<bridge_subject_prefix>.*.CustomObject, over the supercluster). It needs the registry permissions in the bridge's ACL policy."
-  type        = bool
-  default     = false
-}
-
-variable "bridge_resources" {
-  description = "CPU (MHz) and memory (MB) of a bridge instance."
-  type = object({
-    cpu    = number
-    memory = number
-  })
-  default = {
-    cpu    = 100
-    memory = 64
-  }
-}
-
-# ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
 # checked before rendering by the CLI and by the servers that render the pack.
 # ---------------------------------------------------------------------------
@@ -637,19 +465,9 @@ rule "users" {
   error_message = "users: name must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$; account must be empty or match it; publish_allow, publish_deny, subscribe_allow and subscribe_deny must hold NATS subjects (tokens separated by dots, * for one token, > as the last token) without duplicates."
 }
 
-rule "bridge_sync" {
-  condition     = !(var.bridge_sync_pushes || var.bridge_sync_regions) || var.bridge_enabled
-  error_message = "bridge_sync_pushes and bridge_sync_regions need bridge_enabled."
-}
-
-rule "bridge_nkey" {
-  condition     = !(var.auth_mode == "userpass" && var.bridge_enabled) || var.bridge_nkey != ""
-  error_message = "bridge_nkey is required when auth_mode is userpass and bridge_enabled is set."
-}
-
 rule "users_userpass" {
-  condition     = !(var.auth_mode == "userpass" && !var.bridge_enabled) || length(var.users) > 0
-  error_message = "users needs at least 1 item when auth_mode is userpass and bridge_enabled is false."
+  condition     = var.auth_mode != "userpass" || length(var.users) > 0
+  error_message = "users needs at least 1 item when auth_mode is userpass."
 }
 
 rule "users_without_userpass" {
