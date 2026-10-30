@@ -70,9 +70,21 @@ a push notice arrives on `<prefix>.packs.pushed`, and with
 `bridge_sync_regions` it publishes the registry events and syncs a registry
 when the one of the same name and source in another region found other packs
 (the bridge's inbound mode, see `nomad/natsbridge/README.md` in the Norca
-repository). Both need `object "packs.norca.io/Registry"` with `read` and
+repository). With JetStream (Norca 0.3.0 or later) the bridge reads these
+messages through durable consumers: the push notices from the stream
+`NORCA_PACK_PUSHES` it creates (kept for 24h), the registry events from the
+event streams of the other regions; messages sent while the bridge is down are
+handled when it is back. Both need `object "packs.norca.io/Registry"` with `read` and
 `write` in the `namespace "*"` block of the bridge's ACL policy; the output of
 the pack prints the policy with it.
+
+**The bridge in every region or in none.** When one region runs the bridge,
+deploy it in every region with the same `bridge_subject_prefix`,
+`bridge_jetstream_stream` (JetStream on or off) and `bridge_sync_pushes` /
+`bridge_sync_regions`. A region without it publishes none of its events and
+takes no part in the registry syncs; with JetStream, a region whose bridge
+publishes with core NATS has no event stream and the other regions don't see
+its registry events.
 
 ## Drivers
 
@@ -217,6 +229,10 @@ is a complete variable file.
   (`$JS.API.STREAM.INFO.*`, `$JS.API.STREAM.CREATE.*`, `$JS.API.STREAM.UPDATE.*`) and receive replies on
   `_INBOX.>`; with `bridge_sync_pushes` also `<prefix>.packs.pushed` and
   `<prefix>.packs.pushed.>`, with `bridge_sync_regions` `<prefix>.*.CustomObject`.
+  With a registry sync and JetStream it may also list streams and use its
+  durable consumers (`$JS.API.STREAM.NAMES`, `$JS.API.CONSUMER.CREATE.>`,
+  `$JS.API.CONSUMER.DURABLE.CREATE.>`, `$JS.API.CONSUMER.INFO.>`,
+  `$JS.API.CONSUMER.MSG.NEXT.>`, `$JS.ACK.>`).
   Consumers of the events, and the CI that publishes push notices, need a user
   in the same account.
 
