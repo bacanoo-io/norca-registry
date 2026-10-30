@@ -62,7 +62,9 @@ service of the cluster through `nomadService`, publishing to
 `<prefix>.<region>.<topic>` into the JetStream stream
 `NORCA_EVENTS_<region>` (`bridge_jetstream_stream`), with
 `bridge_jetstream_replicas` replicas (default 1; 3 with servers in three
-datacenters, so the events survive the loss of one). With
+datacenters, so the events survive the loss of one), limited to
+`bridge_jetstream_max_age` (72h) and `bridge_jetstream_max_bytes` (512MB),
+S2-compressed (see [The bridge's stream](#the-bridges-stream)). With
 `bridge_sync_pushes` it also syncs the cluster pack registries of a source when
 a push notice arrives on `<prefix>.packs.pushed`, and with
 `bridge_sync_regions` it publishes the registry events and syncs a registry
@@ -106,6 +108,23 @@ Size the store with `jetstream_max_file` / `jetstream_max_memory`. A server
 that moves to another node with an empty store keeps its name and catches up
 from the other replicas; a server that disappears for good stays an offline
 peer until it is removed (`nats server raft peer-remove <name>`).
+
+### Placement and tuning over datacenters
+
+- Every server carries the placement tag `dc:<datacenter>` (its Norca
+  datacenter) and the tags of `jetstream_server_tags`. With
+  `jetstream_unique_tag = "dc"` JetStream puts the replicas of every stream on
+  servers of different datacenters, also when there are more servers than
+  datacenters (the `separate` rule only spreads the servers). A stream with
+  more replicas than datacenters can't be placed then.
+- `cluster_compression = "s2_auto"` compresses the routes by their round trip
+  time: little or none inside a datacenter, more between datacenters.
+- `cluster_pool_size` (route connections per server pair) must be the same on
+  all servers; the default (3) fits most clusters.
+- `jetstream_sync_interval` (default 2m) and `jetstream_max_outstanding_catchup`
+  are left to the server unless set; with R3 streams the replicas protect the
+  writes that are not synced yet, `always` is only for single-replica data
+  that must survive a power loss.
 
 ## Secrets: TLS and client authentication
 
@@ -194,8 +213,8 @@ is a complete variable file.
   so its user is an NKey user in `users_default_account`, with the public key
   `bridge_nkey` and the seed in the item `seed` of the secret
   `<users_secret_prefix>/<bridge_job_name>`, which only the bridge job reads.
-  It may publish `<bridge_subject_prefix>.>`, look up and create streams
-  (`$JS.API.STREAM.INFO.*`, `$JS.API.STREAM.CREATE.*`) and receive replies on
+  It may publish `<bridge_subject_prefix>.>`, look up, create and update streams
+  (`$JS.API.STREAM.INFO.*`, `$JS.API.STREAM.CREATE.*`, `$JS.API.STREAM.UPDATE.*`) and receive replies on
   `_INBOX.>`; with `bridge_sync_pushes` also `<prefix>.packs.pushed` and
   `<prefix>.packs.pushed.>`, with `bridge_sync_regions` `<prefix>.*.CustomObject`.
   Consumers of the events, and the CI that publishes push notices, need a user
@@ -337,25 +356,45 @@ client {
   the meta group.
 - Stream names are global in the supercluster: keep the region in the name.
   The bridge default is `NORCA_EVENTS_<region>` for the subjects
-  `nomad.<region>.>`; it creates the stream in its own region if missing,
-  with a single replica. For durability create it beforehand with three
-  replicas, placed in the region:
-
-  ```
-  nats stream add NORCA_EVENTS_aws --subjects 'nomad.aws.>' --replicas 3 \
-    --cluster aws --storage file --retention limits --max-age 7d \
-    --dupe-window 10m --discard old
-  ```
-
-  The duplicate window must cover the bridge's redeliveries after a restart
-  (it deduplicates with `Nats-Msg-Id`; the bridge uses 10m for the streams it
-  creates).
+  `nomad.<region>.>`; it creates the stream in its own region (the cluster it
+  is connected to) if missing, with the settings of
+  [The bridge's stream](#the-bridges-stream).
 - A central history or audit service can read all regions with a **mirror or
   sources** stream in its own region (`--source NORCA_EVENTS_aws
   --source NORCA_EVENTS_gcp ...`) or a consumer per region stream; plain
   subscribers use `nomad.*.>` (all regions) or `nomad.<region>.>`.
 - Keep `jetstream_domain` empty in the supercluster. Edge sites can attach as
   leaf nodes (`leafnodes_enabled`, port 7422) with their own domain.
+
+## The bridge's stream
+
+The bridge creates `bridge_jetstream_stream` for `<prefix>.<region>.>` and
+owns it: on every start it sets the limits and options below on the existing
+stream too (the bridge's NATS user may update it). Storage and the deny flags
+are only applied when the stream is created; to change them delete the stream
+(`nats stream rm`) and restart the bridge.
+
+| Variable | Default | |
+|---|---|---|
+| `bridge_jetstream_replicas` | `1` | 3 with servers in three datacenters |
+| `bridge_jetstream_max_age` | `72h` | older events are dropped; `0`: no age limit |
+| `bridge_jetstream_max_bytes` | `512MB` | size on each server, oldest events dropped first; `0`: no limit |
+| `bridge_jetstream_storage` | `file` | `memory`: no disk, survives a server but not the restart of all of them; at most `jetstream_max_memory` |
+| `bridge_jetstream_compression` | `s2` | `none`; file storage only |
+| `bridge_jetstream_allow_direct` | `true` | every replica answers direct gets |
+| `bridge_jetstream_deny_delete`, `bridge_jetstream_deny_purge` | `false` | an audit log that can't be edited |
+
+Set at least one of the limits: an unlimited stream fills `jetstream_max_file`
+and then every publish fails, which stops the bridge. A full stream drops its
+oldest events (`discard: old`). The duplicate window is 10m and covers the
+redeliveries after a bridge restart (`Nats-Msg-Id`); `max_age` must not be
+shorter.
+
+Do you need a stored history at all? Without `bridge_jetstream_stream` (empty)
+the bridge publishes with core NATS: live subscribers get every event, nothing
+is stored, and the bridge still loses nothing on its side (it resumes from its
+checkpoint). Consumers that were away can read the missed events from the
+Norca event API as long as the servers keep them in their event buffer.
 
 ## Variables
 
@@ -369,7 +408,11 @@ See `variables.hcl` for all of them; the most important:
 | `gateway_enabled`, `remote_gateways` | `false`, `[]` | supercluster |
 | `host_network` | `""` | bind the ports to e.g. the VPN interface |
 | `client_port`, `cluster_port`, `gateway_port`, `monitor_port`, `leafnode_port` | 4222, 6222, 7222, 8222, 7422 | 0 = dynamic |
+| `cluster_compression`, `cluster_pool_size` | `""`, `0` | route compression (`s2_auto` over datacenters), route pooling; server defaults when unset |
 | `storage` | `ephemeral_disk` | `ephemeral_disk`, `host_volume`, `path` |
+| `jetstream_unique_tag`, `jetstream_server_tags` | `""`, `[]` | `"dc"`: stream replicas in different datacenters |
+| `jetstream_sync_interval`, `jetstream_max_outstanding_catchup` | `""`, `""` | server defaults when empty |
+| `bridge_jetstream_*` | | see [The bridge's stream](#the-bridges-stream) |
 | `tls_enabled`, `auth_mode` | `false`, `none` | secrets from `secrets_variable`; `auth_mode`: `none`, `token`, `nkey`, `config`, `userpass` |
 | `users`, `users_secret_prefix`, `users_default_account`, `system_account`, `bridge_nkey` | `[]`, `nats/users`, `APP`, `SYS`, `""` | `auth_mode = "userpass"`: users, accounts, permissions; passwords from the secret store |
 | `disruption_max_unavailable` | `"1"` | empty removes the block |

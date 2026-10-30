@@ -106,7 +106,7 @@ rendering an empty password (which NATS would accept without a password). */ -]]
 [[- end ]]
 [[- if and $v.bridge_enabled (eq $a $v.users_default_account) ]]
                 # The event stream bridge (job [[ $v.bridge_job_name ]]): publishes the events
-                # and looks up or creates its stream; replies come to its inboxes. With the
+                # and looks up, creates or updates its stream; replies come to its inboxes. With the
                 # registry syncs it also receives push notices and the registry events of
                 # the other regions.
 [[- $bridgeSubs := list "_INBOX.>" ]]
@@ -114,7 +114,7 @@ rendering an empty password (which NATS would accept without a password). */ -]]
 [[- if $v.bridge_sync_regions ]][[ $bridgeSubs = append $bridgeSubs (printf "%s.*.CustomObject" $v.bridge_subject_prefix) ]][[ end ]]
                 {
                   nkey: [[ $v.bridge_nkey | quote ]]
-[[- template "nats.permissions" (dict "publish_allow" (list (printf "%s.>" $v.bridge_subject_prefix) "$JS.API.STREAM.INFO.*" "$JS.API.STREAM.CREATE.*") "subscribe_allow" $bridgeSubs) ]]
+[[- template "nats.permissions" (dict "publish_allow" (list (printf "%s.>" $v.bridge_subject_prefix) "$JS.API.STREAM.INFO.*" "$JS.API.STREAM.CREATE.*" "$JS.API.STREAM.UPDATE.*") "subscribe_allow" $bridgeSubs) ]]
                 }
 [[- end ]]
               ]

@@ -155,6 +155,28 @@ variable "cluster_name" {
   default     = ""
 }
 
+variable "cluster_compression" {
+  description = "Compression of the routes between the servers: \"s2_auto\" (by the round trip time; for servers in several datacenters), \"s2_fast\", \"s2_better\", \"s2_best\", \"accept\" (only if the other side asks) or \"off\". Empty: the server default (accept)."
+  type        = string
+  default     = ""
+
+  validation {
+    pattern = "^(|off|accept|s2_auto|s2_fast|s2_better|s2_best)$"
+  }
+}
+
+variable "cluster_pool_size" {
+  description = "Route connections between two servers (route pooling); 0: the server default (3), -1: one connection. All servers must use the same value: changing it disconnects the routes until every server runs with the new value."
+  type        = number
+  default     = 0
+
+  validation {
+    min     = -1
+    max     = 32
+    integer = true
+  }
+}
+
 variable "gateway_enabled" {
   description = "Enable the gateway listener to join a supercluster with the other regions."
   type        = bool
@@ -226,6 +248,42 @@ variable "store_path" {
   description = "Directory on the node for the data (storage = path). Every server keeps its data in a subdirectory named after the server."
   type        = string
   default     = ""
+}
+
+variable "jetstream_unique_tag" {
+  description = "Spread the replicas of every stream over the datacenters: \"dc\" makes JetStream place the replicas on servers with different dc:<datacenter> tags (every server has the tag of its Norca datacenter). Needs at least as many datacenters with a server as the replicas of a stream. Empty: replicas only on different servers."
+  type        = string
+  default     = ""
+
+  validation {
+    pattern = "^([a-z0-9_-]+)?$"
+  }
+}
+
+variable "jetstream_server_tags" {
+  description = "Further tags of every server (besides dc:<datacenter>), for the placement of streams (nats stream add --tag)."
+  type        = list(string)
+  default     = []
+}
+
+variable "jetstream_sync_interval" {
+  description = "How often JetStream syncs its files to disk: a duration (\"2m\", the server default when empty) or \"always\" (every write, slower). Replicated streams (R3) keep the data when one server loses its unsynced writes."
+  type        = string
+  default     = ""
+
+  validation {
+    pattern = "^(always|[0-9]+(ms|s|m|h))?$"
+  }
+}
+
+variable "jetstream_max_outstanding_catchup" {
+  description = "Maximum data in flight while a server catches up on a stream, e.g. \"64MB\" (the server default when empty). Lower it when the servers are joined by a slow link between the datacenters."
+  type        = string
+  default     = ""
+
+  validation {
+    pattern = "^([0-9]+([KMGT]i?B?)?)?$"
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -309,7 +367,7 @@ variable "system_account" {
 }
 
 variable "bridge_nkey" {
-  description = "auth_mode = \"userpass\" with bridge_enabled: the public NKey (U...) of the bridge's NATS user (the bridge has no password option), in users_default_account, allowed to publish <bridge_subject_prefix>.> and to look up and create its JetStream stream. The bridge reads the seed from the item seed of the secret <users_secret_prefix>/<bridge_job_name>."
+  description = "auth_mode = \"userpass\" with bridge_enabled: the public NKey (U...) of the bridge's NATS user (the bridge has no password option), in users_default_account, allowed to publish <bridge_subject_prefix>.> and to look up, create and update its JetStream stream. The bridge reads the seed from the item seed of the secret <users_secret_prefix>/<bridge_job_name>."
   type        = string
   default     = ""
 
@@ -467,7 +525,7 @@ variable "bridge_jetstream_stream" {
 }
 
 variable "bridge_jetstream_replicas" {
-  description = "Replicas of the stream the bridge creates (1 to 5, at most the number of NATS servers). With 3 servers spread over datacenters, 3 keeps the events of the region when a server or a datacenter fails. An existing stream is not changed (nats stream edit <stream> --replicas 3)."
+  description = "Replicas of the bridge's stream (1 to 5, at most the number of NATS servers). With 3 servers spread over datacenters, 3 keeps the events of the region when a server or a datacenter fails. The bridge also changes the replicas of an existing stream."
   type        = number
   default     = 1
 
@@ -476,6 +534,64 @@ variable "bridge_jetstream_replicas" {
     max     = 5
     integer = true
   }
+}
+
+variable "bridge_jetstream_max_age" {
+  description = "Events older than this are dropped from the bridge's stream, e.g. \"72h\"; \"0\" keeps them until max_bytes. Without any limit the stream grows until jetstream_max_file is full and the bridge stops. At least the duplicate window (10m)."
+  type        = string
+  default     = "72h"
+
+  validation {
+    pattern = "^(0|[0-9]+(m|h))$"
+  }
+}
+
+variable "bridge_jetstream_max_bytes" {
+  description = "Size limit of the bridge's stream on each server, e.g. \"512MB\"; \"0\" for none. The oldest events are dropped first. Keep it below jetstream_max_file (jetstream_max_memory for memory storage), with room for the other streams."
+  type        = string
+  default     = "512MB"
+
+  validation {
+    pattern = "^[0-9]+([KMGT]i?B?)?$"
+  }
+}
+
+variable "bridge_jetstream_storage" {
+  description = "Storage of the bridge's stream: \"file\" or \"memory\" (faster, no disk; with 3 replicas it survives a server, not the restart of all of them). Only applied when the stream is created."
+  type        = string
+  default     = "file"
+
+  validation {
+    pattern = "^(file|memory)$"
+  }
+}
+
+variable "bridge_jetstream_compression" {
+  description = "Compression of the stored events: \"s2\" (the JSON events shrink well: less disk and less replication traffic between datacenters) or \"none\". File storage only."
+  type        = string
+  default     = "s2"
+
+  validation {
+    pattern = "^(s2|none)$"
+  }
+}
+
+variable "bridge_jetstream_allow_direct" {
+  description = "Every replica of the bridge's stream answers direct gets (reads by sequence or subject), not only its leader: readers in another datacenter are served nearby."
+  type        = bool
+  default     = true
+}
+
+variable "bridge_jetstream_deny_delete" {
+  description = "Forbid deleting single events of the bridge's stream (an audit log). Only applied when the stream is created."
+  type        = bool
+  default     = false
+}
+
+variable "bridge_jetstream_deny_purge" {
+  description = "Forbid purging the bridge's stream. Only applied when the stream is created; the age and size limits still drop old events."
+  type        = bool
+  default     = false
 }
 
 variable "bridge_sync_pushes" {
