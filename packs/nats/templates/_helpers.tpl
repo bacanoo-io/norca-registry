@@ -107,14 +107,20 @@ rendering an empty password (which NATS would accept without a password). */ -]]
 [[- if and $v.bridge_enabled (eq $a $v.users_default_account) ]]
                 # The event stream bridge (job [[ $v.bridge_job_name ]]): publishes the events
                 # and looks up, creates or updates its stream; replies come to its inboxes. With the
-                # registry syncs it also receives push notices and the registry events of
-                # the other regions.
+                # registry syncs it also reads the push notices and the registry events of
+                # the other regions: with JetStream through its durable consumers (stream
+                # names, consumers, pulls, acks); bridges before Norca 0.3.0 and bridges
+                # without JetStream subscribe to them.
+[[- $bridgePubs := list (printf "%s.>" $v.bridge_subject_prefix) "$JS.API.STREAM.INFO.*" "$JS.API.STREAM.CREATE.*" "$JS.API.STREAM.UPDATE.*" ]]
 [[- $bridgeSubs := list "_INBOX.>" ]]
+[[- if and (or $v.bridge_sync_pushes $v.bridge_sync_regions) $v.jetstream_enabled (ne $v.bridge_jetstream_stream "") ]]
+[[- $bridgePubs = concat $bridgePubs (list "$JS.API.STREAM.NAMES" "$JS.API.CONSUMER.CREATE.>" "$JS.API.CONSUMER.DURABLE.CREATE.>" "$JS.API.CONSUMER.INFO.>" "$JS.API.CONSUMER.MSG.NEXT.>" "$JS.ACK.>") ]]
+[[- end ]]
 [[- if $v.bridge_sync_pushes ]][[ $bridgeSubs = append $bridgeSubs (printf "%s.packs.pushed" $v.bridge_subject_prefix) ]][[ $bridgeSubs = append $bridgeSubs (printf "%s.packs.pushed.>" $v.bridge_subject_prefix) ]][[ end ]]
 [[- if $v.bridge_sync_regions ]][[ $bridgeSubs = append $bridgeSubs (printf "%s.*.CustomObject" $v.bridge_subject_prefix) ]][[ end ]]
                 {
                   nkey: [[ $v.bridge_nkey | quote ]]
-[[- template "nats.permissions" (dict "publish_allow" (list (printf "%s.>" $v.bridge_subject_prefix) "$JS.API.STREAM.INFO.*" "$JS.API.STREAM.CREATE.*" "$JS.API.STREAM.UPDATE.*") "subscribe_allow" $bridgeSubs) ]]
+[[- template "nats.permissions" (dict "publish_allow" $bridgePubs "subscribe_allow" $bridgeSubs) ]]
                 }
 [[- end ]]
               ]
