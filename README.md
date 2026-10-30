@@ -25,6 +25,7 @@ admission policies next to jobs, a JSON Schema for the variables).
 | [otel-collector](packs/otel-collector/README.md) | 0.1.1 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host, Norca agent, NATS, RustFS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve with the ingest credentials of the secret store, trusting Norca's CA |
 | [postgres](packs/postgres/README.md) | 0.1.0 | A single PostgreSQL server (PostgreSQL License, referenced, never shipped): data on a host volume, superuser, application databases and a `pg_monitor` role from the built-in secret store, optional TLS with Norca's workload certificates, optional periodic dumps to S3 |
 | [rustfs](packs/rustfs/README.md) | 0.2.0 | RustFS (Apache-2.0) as the S3 store of the Norca backups: single node or distributed, credentials from the built-in secret store, host volumes, health check roles, optional bucket creation, optional OTLP metrics |
+| [traefik](packs/traefik/README.md) | 0.1.0 | Traefik Proxy (MIT, the official image) as the edge router of a region: entrypoints for HTTP, HTTPS, TCP and UDP edited as a table in the install form, certificates from the built-in secret store applied without a restart, routes from the tags of the native catalog and static configuration; examples for web, WebSocket, gRPC and TCP. Needs Norca 0.3.0 |
 
 The packs need Norca 0.1.0 or newer; packs with `requires` in their
 `metadata.hcl` state the server features they use.
