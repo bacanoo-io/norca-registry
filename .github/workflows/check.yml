@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # Checks the packs with scripts/check-packs.sh (pack fmt -check, render with
-# the defaults and the example variable files, local job validation). The
+# the defaults and the example variable files, local job validation), and
+# tests the operators against the database versions they support. The
 # license headers and DCO sign-offs are checked in compliance.yml; release.yml
 # calls this workflow before it creates a release.
 #
@@ -65,3 +66,46 @@ jobs:
           NORCA: ${{ runner.temp }}/norca
           OUT: ${{ runner.temp }}/rendered
         run: scripts/check-packs.sh
+
+  postgres-operator:
+    name: PostgreSQL operator (${{ matrix.postgres }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # The rules of CREATEROLE changed in PostgreSQL 16.
+        postgres: ['14', '17']
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}-alpine
+        env:
+          POSTGRES_PASSWORD: root
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: registry
+
+      # go.mod takes the SDK from a checkout next to the registry.
+      - name: Check out Norca
+        run: git clone --depth 1 --branch "$NORCA_REF" "$NORCA_SOURCE" norca
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: registry/operators/postgres/go.mod
+          cache-dependency-path: registry/operators/postgres/go.sum
+
+      - name: Test
+        working-directory: registry/operators/postgres
+        env:
+          POSTGRES_TEST_URL: postgres://postgres:root@127.0.0.1:5432/postgres?sslmode=disable
+        run: |
+          go vet ./...
+          go test -count=1 ./...

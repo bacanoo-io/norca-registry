@@ -106,6 +106,7 @@ packs/<name>/            one pack per directory (the layout "norca pack registry
   README.md
 examples/<name>/*.hcl    variable files, checked by scripts/check-packs.sh
 scripts/check-packs.sh   local and CI checks
+operators/<name>/        operators that aren't packs: Go source, a job and an engine to adapt
 ```
 
 ## Contributing

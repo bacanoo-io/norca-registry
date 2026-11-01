@@ -3,7 +3,8 @@
 #
 # License headers (reuse lint) and DCO sign-offs, like the Compliance workflow
 # of the Norca repository. The packs reference third-party images and never
-# ship their code, so there are no dependency license checks here.
+# ship their code, and no binary of the operators is released, so there are no
+# dependency license checks here.
 #
 # Actions are pinned by commit:
 #   actions/checkout v7.0.1, fsfe/reuse-action v5.0.0.
