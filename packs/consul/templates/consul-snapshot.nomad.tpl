@@ -44,7 +44,7 @@ job [[ $snap | quote ]] {
         sidecar = false
       }
 
-      [[ template "consul.runtime" (dict "ctx" . "script" "${NOMAD_TASK_DIR}/save.sh" "args" (list)) ]]
+      [[ template "consul.runtime" (dict "ctx" . "script" "${NORCA_TASK_DIR}/save.sh" "args" (list)) ]]
 
       env {
         CONSUL_BIN       = "[[ template "consul.bin" . ]]"
@@ -64,8 +64,8 @@ job [[ $snap | quote ]] {
         data        = <<-EOT
           #!/bin/sh
           set -eu
-          out="$NOMAD_ALLOC_DIR/data/consul.snap"
-          "$CONSUL_BIN" snapshot save -token-file="$NOMAD_SECRETS_DIR/consul_token" "$out"
+          out="$NORCA_ALLOC_DIR/data/consul.snap"
+          "$CONSUL_BIN" snapshot save -token-file="$NORCA_SECRETS_DIR/consul_token" "$out"
           "$CONSUL_BIN" snapshot inspect "$out"
         EOT
       }
@@ -82,13 +82,13 @@ job [[ $snap | quote ]] {
       config {
         image      = [[ $v.snapshot_upload_image | quote ]]
         entrypoint = ["/bin/sh"]
-        args       = ["${NOMAD_TASK_DIR}/upload.sh"]
+        args       = ["${NORCA_TASK_DIR}/upload.sh"]
       }
 
       env {
-        AWS_CONFIG_FILE = "${NOMAD_SECRETS_DIR}/aws/config"
+        AWS_CONFIG_FILE = "${NORCA_SECRETS_DIR}/aws/config"
         [[- if $v.snapshot_s3_credentials ]]
-        AWS_SHARED_CREDENTIALS_FILE = "${NOMAD_SECRETS_DIR}/aws/credentials"
+        AWS_SHARED_CREDENTIALS_FILE = "${NORCA_SECRETS_DIR}/aws/credentials"
         [[- end ]]
       }
 
@@ -127,10 +127,10 @@ job [[ $snap | quote ]] {
           #!/bin/sh
           set -eu
           key="[[ trimSuffix "/" $v.snapshot_s3_prefix ]]/[[ $v.datacenter ]]/$(date -u +%Y%m%dT%H%M%SZ).snap"
-          aws s3 cp "$NOMAD_ALLOC_DIR/data/consul.snap" "s3://[[ $v.snapshot_s3_bucket ]]/$key"[[ if ne $v.snapshot_s3_endpoint "" ]] \
+          aws s3 cp "$NORCA_ALLOC_DIR/data/consul.snap" "s3://[[ $v.snapshot_s3_bucket ]]/$key"[[ if ne $v.snapshot_s3_endpoint "" ]] \
             --endpoint-url "[[ $v.snapshot_s3_endpoint ]]"[[ end ]][[ if ne $v.snapshot_s3_sse "" ]] \
             --sse "[[ $v.snapshot_s3_sse ]]"[[ end ]]
-          rm -f "$NOMAD_ALLOC_DIR/data/consul.snap"
+          rm -f "$NORCA_ALLOC_DIR/data/consul.snap"
           echo "snapshot: uploaded s3://[[ $v.snapshot_s3_bucket ]]/$key"
         EOT
       }

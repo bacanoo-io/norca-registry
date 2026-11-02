@@ -150,7 +150,7 @@ variable "leafnode_port" {
 # ---------------------------------------------------------------------------
 
 variable "cluster_name" {
-  description = "Name of the cluster of this region, which is also its gateway name in the supercluster. Empty uses the Norca region of the job (NOMAD_REGION). Must be unique per region."
+  description = "Name of the cluster of this region, which is also its gateway name in the supercluster. Empty uses the Norca region of the job (NORCA_REGION). Must be unique per region."
   type        = string
   default     = ""
 }

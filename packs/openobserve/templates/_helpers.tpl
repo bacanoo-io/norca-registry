@@ -256,10 +256,10 @@ TCP checks. */ -]]
 [[- if $cluster ]]
         ZO_LOCAL_MODE          = "false"
         ZO_NODE_ROLE           = [[ $role | quote ]]
-        ZO_HTTP_ADDR           = "${NOMAD_IP_http}"
-        ZO_HTTP_PORT           = "${NOMAD_PORT_http}"
-        ZO_GRPC_ADDR           = "${NOMAD_IP_grpc}"
-        ZO_GRPC_PORT           = "${NOMAD_PORT_grpc}"
+        ZO_HTTP_ADDR           = "${NORCA_IP_http}"
+        ZO_HTTP_PORT           = "${NORCA_PORT_http}"
+        ZO_GRPC_ADDR           = "${NORCA_IP_grpc}"
+        ZO_GRPC_PORT           = "${NORCA_PORT_grpc}"
         ZO_META_STORE          = "postgres"
 [[- if eq $v.postgres_dsn_secret_path "" ]]
         ZO_META_POSTGRES_USER   = [[ $v.postgres_user | quote ]]
@@ -291,7 +291,7 @@ TCP checks. */ -]]
         ZO_GRPC_TLS_ENABLED            = "true"
         ZO_GRPC_TLS_CERT_PATH          = "[[ $tlsDir ]]/cert.pem"
         ZO_GRPC_TLS_KEY_PATH           = "[[ $tlsDir ]]/key.pem"
-        ZO_GRPC_TLS_CERT_DOMAIN        = "[[ if eq $v.tls_mode "mtls" ]][[ $job ]]-grpc.service.${NOMAD_NAMESPACE}.nomad[[ else ]][[ $v.tls_cert_domain ]][[ end ]]"
+        ZO_GRPC_TLS_CERT_DOMAIN        = "[[ if eq $v.tls_mode "mtls" ]][[ $job ]]-grpc.service.${NORCA_NAMESPACE}.nomad[[ else ]][[ $v.tls_cert_domain ]][[ end ]]"
         ZO_GRPC_TLS_ROOT_CERTIFICATES  = "native"
         SSL_CERT_DIR                   = "[[ $tlsDir ]]"
 [[- if $cluster ]]

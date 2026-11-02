@@ -116,7 +116,7 @@ and `metrics_enabled = true`. The pack then merges a small configuration into
 the bootstrap the client writes (`--config-yaml`, which Envoy merges into the
 file given with `-c`):
 
-- the admin interface on `127.0.0.1:${NOMAD_PORT_envoy_admin}` only (a dynamic
+- the admin interface on `127.0.0.1:${NORCA_PORT_envoy_admin}` only (a dynamic
   port; in bridge mode inside the network namespace of the group);
 - a listener on the port `metrics` (dynamic unless `metrics_port`; in host
   mode on the address of the port) whose only route forwards

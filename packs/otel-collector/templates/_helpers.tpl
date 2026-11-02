@@ -57,7 +57,7 @@ consul-template, $${env:...} the collector's environment). */ -]]
 [[- $nomadURL := urlParse $v.nomad_address ]]
           extensions:
             health_check:
-              endpoint: $${env:NOMAD_IP_health}:$${env:NOMAD_PORT_health}
+              endpoint: $${env:NORCA_IP_health}:$${env:NORCA_PORT_health}
             basicauth/openobserve:
               client_auth:
                 username: $${env:OO_USERNAME}
@@ -69,9 +69,9 @@ consul-template, $${env:...} the collector's environment). */ -]]
             otlp:
               protocols:
                 grpc:
-                  endpoint: $${env:NOMAD_IP_otlp_grpc}:$${env:NOMAD_PORT_otlp_grpc}
+                  endpoint: $${env:NORCA_IP_otlp_grpc}:$${env:NORCA_PORT_otlp_grpc}
                 http:
-                  endpoint: $${env:NOMAD_IP_otlp_http}:$${env:NOMAD_PORT_otlp_http}
+                  endpoint: $${env:NORCA_IP_otlp_http}:$${env:NORCA_PORT_otlp_http}
 [[- end ]]
 [[- if $v.hostmetrics_enabled ]]
             host_metrics:
@@ -97,7 +97,7 @@ consul-template, $${env:...} the collector's environment). */ -]]
 [[- if $v.self_metrics_enabled ]]
                   - job_name: otel-collector
                     static_configs:
-                      - targets: ["127.0.0.1:$${env:NOMAD_PORT_telemetry}"]
+                      - targets: ["127.0.0.1:$${env:NORCA_PORT_telemetry}"]
 [[- end ]]
 [[- if $v.nomad_metrics_enabled ]]
                   # The Norca agent of this node (/v1/metrics needs no ACL token).
@@ -239,7 +239,7 @@ consul-template, $${env:...} the collector's environment). */ -]]
                       exporter:
                         prometheus:
                           host: 127.0.0.1
-                          port: $${env:NOMAD_PORT_telemetry}
+                          port: $${env:NORCA_PORT_telemetry}
 [[- else ]]
                 level: none
 [[- end ]]

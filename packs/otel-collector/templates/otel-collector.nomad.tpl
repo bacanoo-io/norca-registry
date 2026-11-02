@@ -6,7 +6,7 @@
 [[- $image := $v.image ]][[ if ne $v.image_digest "" ]][[ $image = printf "%s@%s" $v.image $v.image_digest ]][[ end ]]
 [[- $identity := or (eq $v.openobserve_tls "mtls") (eq $v.postgres_tls "verify-ca") ]]
 [[- $hostfs := and $v.hostmetrics_enabled (ne $v.host_root_volume "") ]]
-[[- $serverName := $v.openobserve_server_name ]][[ if eq $serverName "" ]][[ $serverName = printf "%s.service.${NOMAD_NAMESPACE}.nomad" $v.openobserve_service ]][[ end ]]
+[[- $serverName := $v.openobserve_server_name ]][[ if eq $serverName "" ]][[ $serverName = printf "%s.service.${NORCA_NAMESPACE}.nomad" $v.openobserve_service ]][[ end ]]
 
 # The OpenTelemetry Collector (contrib distribution, Apache-2.0), rendered by
 # the otel-collector pack: one collector on every node, which collects the

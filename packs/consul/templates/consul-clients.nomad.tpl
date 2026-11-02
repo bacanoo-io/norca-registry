@@ -49,7 +49,7 @@ job "[[ $job ]]-clients" {
     }
 
     task "client" {
-      [[ template "consul.runtime" (dict "ctx" . "script" "" "args" (list "agent" "-config-dir=${NOMAD_SECRETS_DIR}/consul.d")) ]]
+      [[ template "consul.runtime" (dict "ctx" . "script" "" "args" (list "agent" "-config-dir=${NORCA_SECRETS_DIR}/consul.d")) ]]
 
       kill_timeout = "30s"
 
@@ -62,11 +62,11 @@ job "[[ $job ]]-clients" {
         change_signal = "SIGHUP"
         data          = <<-EOT
           {{- with nomadVar "[[ $clientVar ]]" }}
-          {{- $ip := env "NOMAD_IP_serf_lan" }}
+          {{- $ip := env "NORCA_IP_serf_lan" }}
           datacenter = "[[ $v.datacenter ]]"
           domain     = "[[ $v.domain ]]"
           server     = false
-          data_dir   = "{{ env "NOMAD_ALLOC_DIR" }}/data/consul"
+          data_dir   = "{{ env "NORCA_ALLOC_DIR" }}/data/consul"
           log_level  = "[[ $v.log_level ]]"
 
           leave_on_terminate   = true
@@ -119,7 +119,7 @@ job "[[ $job ]]-clients" {
           # Only the CA: the client certificate comes from the servers.
           tls {
             defaults {
-              ca_file         = "{{ env "NOMAD_SECRETS_DIR" }}/tls/ca_cert.pem"
+              ca_file         = "{{ env "NORCA_SECRETS_DIR" }}/tls/ca_cert.pem"
               verify_incoming = false
               verify_outgoing = true
             }

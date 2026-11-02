@@ -441,7 +441,7 @@ Reversible choices made without a user decision; change them with variables:
 `norca pack render ./packs/consul --var consul_license_accepted=true`
 renders the jobs without submitting them; `norca pack plan` validates them
 against a cluster. The Norca repository tests a copy of the pack
-(`nomad/pack/internal/cli/consul_pack_test.go`): they render several variable sets,
+(`norca/pack/internal/cli/consul_pack_test.go`): they render several variable sets,
 parse and validate the jobs and plan them against a test agent; they never
 pull or run Consul.
 

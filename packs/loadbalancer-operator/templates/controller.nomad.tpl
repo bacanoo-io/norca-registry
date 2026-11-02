@@ -49,7 +49,7 @@ job [[ $v.job_name | quote ]] {
 [[- else if ne $v.proxy_driver "mock_driver" ]]
           "-proxy-command", [[ $v.binary | quote ]],
 [[- end ]]
-          "-metrics-addr", "${NOMAD_ADDR_metrics}",
+          "-metrics-addr", "${NORCA_ADDR_metrics}",
         ]
 [[- end ]]
       }
@@ -61,7 +61,7 @@ job [[ $v.job_name | quote ]] {
       }
 
       env {
-        NORCA_ADDR = "unix://${NOMAD_SECRETS_DIR}/api.sock"
+        NORCA_ADDR = "unix://${NORCA_SECRETS_DIR}/api.sock"
       }
 
       resources {
@@ -90,9 +90,9 @@ job [[ $v.job_name | quote ]] {
 [[- end ]]
 [[- if ne $v.driver "mock_driver" ]]
           "webhook",
-          "-listen", ":${NOMAD_PORT_webhook}",
-          "-tls-cert", "${NOMAD_SECRETS_DIR}/webhook.pem",
-          "-tls-key", "${NOMAD_SECRETS_DIR}/webhook-key.pem",
+          "-listen", ":${NORCA_PORT_webhook}",
+          "-tls-cert", "${NORCA_SECRETS_DIR}/webhook.pem",
+          "-tls-key", "${NORCA_SECRETS_DIR}/webhook-key.pem",
           "-classes", [[ join "," $v.classes | quote ]],
           "-default-class", [[ $v.default_class | quote ]],
         ]

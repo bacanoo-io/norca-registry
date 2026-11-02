@@ -30,7 +30,7 @@ OpenObserve instance of its own allocation. */ -]]
         entrypoint = ["/bin/sh", "/local/bootstrap.sh"]
       }
 
-      # NOMAD_TOKEN: the workload identity, which writes the ingest secret
+      # NORCA_TOKEN: the workload identity, which writes the ingest secret
       # through the task API (ACL policy of the pack).
       identity {
         env = true
@@ -83,9 +83,9 @@ OpenObserve instance of its own allocation. */ -]]
 
       env {
         ROOT_EMAIL     = [[ $v.root_email | quote ]]
-        OO_IP          = "${NOMAD_IP_http}"
-        OO_PORT        = "${NOMAD_HOST_PORT_http}"
-        OO_NAME        = "[[ $job ]].service.${NOMAD_NAMESPACE}.nomad"
+        OO_IP          = "${NORCA_IP_http}"
+        OO_PORT        = "${NORCA_HOST_PORT_http}"
+        OO_NAME        = "[[ $job ]].service.${NORCA_NAMESPACE}.nomad"
         ORGANIZATIONS  = [[ join " " $v.organizations | quote ]]
         INGEST_ORG     = [[ $v.ingest_organization | quote ]]
         INGEST_ACCOUNT = [[ $v.ingest_service_account | quote ]]
@@ -102,7 +102,7 @@ OpenObserve instance of its own allocation. */ -]]
           # The instance's workload certificate names the service, not the
           # address: connect by name, verified with the trust bundle.
           base="https://$OO_NAME:$OO_PORT"
-          oocurl() { curl -sS --cacert "$NOMAD_SECRETS_DIR/mtls/bundle.pem" --resolve "$OO_NAME:$OO_PORT:$OO_IP" "$@"; }
+          oocurl() { curl -sS --cacert "$NORCA_SECRETS_DIR/mtls/bundle.pem" --resolve "$OO_NAME:$OO_PORT:$OO_IP" "$@"; }
 [[- else if eq $v.tls_mode "secret" ]]
           # The certificate of the secret need not name the node address; the
           # connection stays on the node.
@@ -179,16 +179,16 @@ OpenObserve instance of its own allocation. */ -]]
 
           # Into the secret store, through the task API with the workload
           # identity of this task.
-          code=$(curl -sS -o /tmp/put -w '%%{http_code}' --unix-socket "$NOMAD_SECRETS_DIR/api.sock" -X PUT \
-            -H "X-Nomad-Token: $NOMAD_TOKEN" \
+          code=$(curl -sS -o /tmp/put -w '%%{http_code}' --unix-socket "$NORCA_SECRETS_DIR/api.sock" -X PUT \
+            -H "X-Nomad-Token: $NORCA_TOKEN" \
             --data "{\"Items\":{\"username\":\"$INGEST_ACCOUNT\",\"password\":\"$token\",\"organization\":\"$INGEST_ORG\"}}" \
-            "http://localhost/v1/secret/$INGEST_PATH?namespace=$NOMAD_NAMESPACE")
+            "http://localhost/v1/secret/$INGEST_PATH?namespace=$NORCA_NAMESPACE")
           token=""
           if [ "$code" != 200 ]; then
             log "writing $INGEST_PATH failed: HTTP $code $(cat /tmp/put)"
             log "bind the ACL policy of the pack (acl_policy_enabled), or rotate the token by hand and store it:"
             log "  curl -u <root> -X PUT -H 'Content-Type: application/json' --data '{}' $base/api/$INGEST_ORG/service_accounts/$INGEST_ACCOUNT?rotateToken=true"
-            log "  norca secret put -namespace $NOMAD_NAMESPACE $INGEST_PATH username=$INGEST_ACCOUNT organization=$INGEST_ORG password=-"
+            log "  norca secret put -namespace $NORCA_NAMESPACE $INGEST_PATH username=$INGEST_ACCOUNT organization=$INGEST_ORG password=-"
             exit 1
           fi
           log "ingest credentials of $INGEST_ACCOUNT stored in $INGEST_PATH"

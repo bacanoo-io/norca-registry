@@ -50,7 +50,7 @@ SPDX-License-Identifier: MPL-2.0
 [[- $v := vars . -]]
 [[- if eq $v.driver "docker" -]]consul
 [[- else if ne $v.consul_binary "" -]][[ $v.consul_binary ]]
-[[- else -]]${NOMAD_TASK_DIR}/consul
+[[- else -]]${NORCA_TASK_DIR}/consul
 [[- end -]]
 [[- end -]]
 

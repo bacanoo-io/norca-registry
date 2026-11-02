@@ -7,12 +7,12 @@ toolchain go1.27.3
 // Norca has no released modules yet: the SDK comes from a checkout of the Norca
 // repository next to this one.
 replace (
-	github.com/bacanoo-io/norca/nomad/api => ../../../norca/nomad/api
-	github.com/bacanoo-io/norca/nomad/controller => ../../../norca/nomad/controller
+	github.com/bacanoo-io/norca/norca/api => ../../../norca/norca/api
+	github.com/bacanoo-io/norca/norca/controller => ../../../norca/norca/controller
 )
 
 require (
-	github.com/bacanoo-io/norca/nomad/controller v0.0.0-00010101000000-000000000000
+	github.com/bacanoo-io/norca/norca/controller v0.0.0-00010101000000-000000000000
 	github.com/jackc/pgx/v5 v5.7.6
 )
 

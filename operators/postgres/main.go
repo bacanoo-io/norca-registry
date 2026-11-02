@@ -50,7 +50,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bacanoo-io/norca/nomad/controller/secrets"
+	"github.com/bacanoo-io/norca/norca/controller/secrets"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -110,7 +110,7 @@ func run(ctx context.Context, o *options) error {
 
 func main() {
 	o := &options{}
-	flag.StringVar(&o.addr, "addr", ":"+os.Getenv("NOMAD_PORT_api"), "address to listen on")
+	flag.StringVar(&o.addr, "addr", ":"+os.Getenv("NORCA_PORT_api"), "address to listen on")
 	flag.StringVar(&o.prefix, "role-prefix", "v_", "start of the names of the roles; nothing else is ever changed or dropped")
 	flag.DurationVar(&o.sweepInterval, "sweep-interval", 5*time.Minute, "how often expired roles are looked for; 0 turns the sweep off")
 	flag.DurationVar(&o.sweepGrace, "sweep-grace", time.Hour, "how long a role stays after its VALID UNTIL")

@@ -122,7 +122,7 @@ job [[ $job | quote ]] {
 
       config {
         image = [[ $image | quote ]]
-        args  = ["--configfile=${NOMAD_TASK_DIR}/traefik.yml"]
+        args  = ["--configfile=${NORCA_TASK_DIR}/traefik.yml"]
         [[- if $host ]]
         network_mode = "host"
         [[- else ]]
@@ -130,7 +130,7 @@ job [[ $job | quote ]] {
         [[- end ]]
       }
 
-      # The workload identity (NOMAD_TOKEN) reads the catalog through the
+      # The workload identity (NORCA_TOKEN) reads the catalog through the
       # task API socket.
       identity {
         env = true
@@ -152,10 +152,10 @@ accessLog: {}
 [[- end ]]
 entryPoints:
   traefik:
-    address: "[[ if $host ]]{{ env "NOMAD_IP_admin" }}[[ end ]]:[[ $v.admin_port ]]"
+    address: "[[ if $host ]]{{ env "NORCA_IP_admin" }}[[ end ]]:[[ $v.admin_port ]]"
 [[- range $e := $v.entrypoints ]]
   [[ $e.name ]]:
-    address: "[[ if $host ]]{{ env "[[ printf "NOMAD_IP_ep_%s" (replace "-" "_" $e.name) ]]" }}[[ end ]]:[[ $e.port ]][[ if eq $e.protocol "udp" ]]/udp[[ end ]]"
+    address: "[[ if $host ]]{{ env "[[ printf "NORCA_IP_ep_%s" (replace "-" "_" $e.name) ]]" }}[[ end ]]:[[ $e.port ]][[ if eq $e.protocol "udp" ]]/udp[[ end ]]"
 [[- if ne $e.redirect_to "" ]]
     http:
       redirections:
@@ -182,15 +182,15 @@ metrics:
 [[- end ]]
 providers:
   file:
-    directory: "{{ env "NOMAD_SECRETS_DIR" }}/dynamic"
+    directory: "{{ env "NORCA_SECRETS_DIR" }}/dynamic"
     watch: true
 [[- if $v.catalog_enabled ]]
   nomad:
     exposedByDefault: [[ $v.exposed_by_default ]]
     namespaces: [[ $v.catalog_namespaces | toJson ]]
     endpoint:
-      address: "[[ if ne $v.nomad_address "" ]][[ $v.nomad_address ]][[ else ]]unix://{{ env "NOMAD_SECRETS_DIR" }}/api.sock[[ end ]]"
-      token: "{{ env "NOMAD_TOKEN" }}"
+      address: "[[ if ne $v.nomad_address "" ]][[ $v.nomad_address ]][[ else ]]unix://{{ env "NORCA_SECRETS_DIR" }}/api.sock[[ end ]]"
+      token: "{{ env "NORCA_TOKEN" }}"
 [[- end ]]
 TRAEFIK_STATIC
       }

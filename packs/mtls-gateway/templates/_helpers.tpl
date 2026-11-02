@@ -19,7 +19,7 @@ plus the metrics listener merged into the bootstrap (--config-yaml) with metrics
 [[- define "gateway.envoy_args" -]]
 [[- $v := vars . -]]
 [[- $level := $v.envoy_log_level ]][[ if eq $level "" ]][[ $level = "${meta.norca.mtls.envoy_log_level}" ]][[ end -]]
-["-c", "${NOMAD_SECRETS_DIR}/envoy/bootstrap.json", "-l", [[ $level | quote ]], "--disable-hot-restart"[[ if $v.metrics_enabled ]], "--config-yaml", [[ template "gateway.metrics_config" . ]][[ end ]]]
+["-c", "${NORCA_SECRETS_DIR}/envoy/bootstrap.json", "-l", [[ $level | quote ]], "--disable-hot-restart"[[ if $v.metrics_enabled ]], "--config-yaml", [[ template "gateway.metrics_config" . ]][[ end ]]]
 [[- end -]]
 
 [[- /* The metrics configuration merged into the bootstrap written by the client (YAML in
@@ -28,19 +28,19 @@ interface on 127.0.0.1 only, and a listener that forwards GET /stats/prometheus 
 nothing else) to it. Verified with Envoy 1.39.3 and 1.40.1. */ -]]
 [[- define "gateway.metrics_config" -]]
 [[- $v := vars . -]]
-[[- $listen := "0.0.0.0" ]][[ if ne $v.network_mode "bridge" ]][[ $listen = "${NOMAD_IP_metrics}" ]][[ end -]]
+[[- $listen := "0.0.0.0" ]][[ if ne $v.network_mode "bridge" ]][[ $listen = "${NORCA_IP_metrics}" ]][[ end -]]
 [[- printf `admin:
   address:
     socket_address:
       address: 127.0.0.1
-      port_value: ${NOMAD_PORT_envoy_admin}
+      port_value: ${NORCA_PORT_envoy_admin}
 static_resources:
   listeners:
   - name: norca_metrics
     address:
       socket_address:
         address: %s
-        port_value: ${NOMAD_PORT_metrics}
+        port_value: ${NORCA_PORT_metrics}
     filter_chains:
     - filters:
       - name: envoy.filters.network.http_connection_manager
@@ -72,6 +72,6 @@ static_resources:
             address:
               socket_address:
                 address: 127.0.0.1
-                port_value: ${NOMAD_PORT_envoy_admin}
+                port_value: ${NORCA_PORT_envoy_admin}
 ` $listen | quote -]]
 [[- end -]]

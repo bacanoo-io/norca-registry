@@ -91,7 +91,7 @@ use the packs of this registry.
 For signed packs and air-gapped clusters, push the packs of a tag into an
 internal OCI registry (`norca pack push`, `norca pack sign`) or carry them in
 an offline bundle (`norca pack bundle create`); see
-[supply chain](https://github.com/bacanoo-io/norca/blob/main/nomad/pack/docs/supply-chain.md).
+[supply chain](https://github.com/bacanoo-io/norca/blob/main/norca/pack/docs/supply-chain.md).
 
 ## Layout
 
@@ -116,8 +116,8 @@ that runs on Norca. Every commit needs a DCO sign-off (`git commit -s`), like
 the Norca repository.
 
 - Write packs as described in Norca's
-  [writing packs](https://github.com/bacanoo-io/norca/blob/main/nomad/pack/docs/writing-packs.md)
-  and [extended package format](https://github.com/bacanoo-io/norca/blob/main/nomad/pack/docs/releases.md#extended-package-format):
+  [writing packs](https://github.com/bacanoo-io/norca/blob/main/norca/pack/docs/writing-packs.md)
+  and [extended package format](https://github.com/bacanoo-io/norca/blob/main/norca/pack/docs/releases.md#extended-package-format):
   `[[ ]]` delimiters, `var "name" .` / `vars .` to read variables,
   `validation` blocks and `rule` blocks in `variables.hcl` for anything the
   variable types can't express.

@@ -273,8 +273,8 @@ job [[ $job | quote ]] {
 [[- end ]]
 
       env {
-        PGHOST    = "${NOMAD_IP_db}"
-        PGPORT    = "${NOMAD_HOST_PORT_db}"
+        PGHOST    = "${NORCA_IP_db}"
+        PGPORT    = "${NORCA_HOST_PORT_db}"
         PGUSER    = [[ $v.superuser | quote ]]
         PGDATABASE = "postgres"
 [[- if $v.tls_required ]]

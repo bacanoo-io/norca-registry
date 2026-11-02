@@ -144,7 +144,7 @@ collector of their own node:
 env {
   OTEL_EXPORTER_OTLP_ENDPOINT = "http://${attr.unique.network.ip-address}:4318"
   OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf"
-  OTEL_SERVICE_NAME           = "${NOMAD_JOB_NAME}"
+  OTEL_SERVICE_NAME           = "${NORCA_JOB_NAME}"
 }
 ```
 

@@ -131,8 +131,8 @@ mode = "cluster"
 least one instance). Every group runs **with host networking**: an OpenObserve
 node advertises to the others exactly the address it binds to
 (`ZO_HTTP_ADDR`/`ZO_GRPC_ADDR`, there is no separate advertise address), so the
-pack binds it to the node address of a dynamic port (`${NOMAD_IP_http}`,
-`${NOMAD_PORT_http}`); only the routers have static ports. Every instance has
+pack binds it to the node address of a dynamic port (`${NORCA_IP_http}`,
+`${NORCA_PORT_http}`); only the routers have static ports. Every instance has
 a sticky ephemeral disk (`cluster_disk_mb`) for the WAL and caches; with
 `ingester_host_volume` the ingesters keep the WAL on a host volume (one per
 node). Disruption budgets keep at most one instance of a role down at a time.

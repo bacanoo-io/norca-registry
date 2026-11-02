@@ -6,7 +6,7 @@ SPDX-License-Identifier: MPL-2.0
 # loadbalancer-operator
 
 The LoadBalancer operator of Norca (the sample operator of the controller SDK,
-[`nomad/controller/examples/loadbalancer`](https://github.com/bacanoo-io/norca/tree/main/nomad/controller/examples/loadbalancer)
+[`norca/controller/examples/loadbalancer`](https://github.com/bacanoo-io/norca/tree/main/norca/controller/examples/loadbalancer)
 in the Norca repository) packaged as an **operator pack**: one
 release installs, upgrades, rolls back and uninstalls everything the operator
 needs, in the fixed order of the extended pack format.
@@ -29,7 +29,7 @@ image with it), then install the pack from the registry or from a checkout of
 the registry:
 
 ```shell
-cd nomad/controller && go build -o /usr/local/bin/norca-loadbalancer ./examples/loadbalancer
+cd norca/controller && go build -o /usr/local/bin/norca-loadbalancer ./examples/loadbalancer
 norca pack plan ./packs/loadbalancer-operator
 norca pack run  ./packs/loadbalancer-operator --name=lb
 norca pack status lb

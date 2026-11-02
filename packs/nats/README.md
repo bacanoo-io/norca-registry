@@ -53,7 +53,7 @@ Services (native provider): `<job>` (clients, with the checks),
 
 Server names are `<cluster_name>-<alloc index>` (stable across reschedules,
 unique in the supercluster); the cluster name, which is also the gateway
-name, defaults to the Norca region (`NOMAD_REGION`).
+name, defaults to the Norca region (`NORCA_REGION`).
 
 ## Drivers
 

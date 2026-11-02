@@ -111,7 +111,7 @@ job [[ $v.job_name | quote ]] {
 [[- if $v.envoy_task_enabled ]]
 
     # The Envoy task, defined by the pack instead of injected by the servers.
-    # The client writes its configuration (${NOMAD_SECRETS_DIR}/envoy) and
+    # The client writes its configuration (${NORCA_SECRETS_DIR}/envoy) and
     # replaces the node meta references of the image and the log level.
     task "envoy" {
       kind   = "mtls-gateway:[[ $v.service_name ]]"

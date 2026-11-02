@@ -149,11 +149,11 @@ job [[ $job | quote ]] {
       config {
 [[- if $docker ]]
         image = [[ $v.image | quote ]]
-        args  = ["--config", "${NOMAD_SECRETS_DIR}/nats.conf"]
+        args  = ["--config", "${NORCA_SECRETS_DIR}/nats.conf"]
         ports = ["client", [[ if or $clustered $v.gateway_enabled ]]"cluster", [[ end ]][[ if $v.gateway_enabled ]]"gateway", [[ end ]][[ if $v.leafnodes_enabled ]]"leafnode", [[ end ]]"monitor"]
 [[- else ]]
         command = [[ $v.binary | quote ]]
-        args    = ["--config", "${NOMAD_SECRETS_DIR}/nats.conf"]
+        args    = ["--config", "${NORCA_SECRETS_DIR}/nats.conf"]
 [[- end ]]
       }
 [[- if and (not $docker) (ne $v.artifact_url "") ]]
@@ -188,17 +188,17 @@ job [[ $job | quote ]] {
         change_mode   = "signal"
         change_signal = "SIGHUP"
         data          = <<-EOT
-          {{- $name := [[ if $v.cluster_name ]][[ $v.cluster_name | quote ]][[ else ]]env "NOMAD_REGION"[[ end ]] }}
-          server_name: "{{ $name }}-{{ env "NOMAD_ALLOC_INDEX" }}"
-          listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NOMAD_IP_client" }}[[ end ]]:{{ env "NOMAD_PORT_client" }}"
-          client_advertise: "{{ env "NOMAD_ADDR_client" }}"
-          http: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NOMAD_IP_monitor" }}[[ end ]]:{{ env "NOMAD_PORT_monitor" }}"
+          {{- $name := [[ if $v.cluster_name ]][[ $v.cluster_name | quote ]][[ else ]]env "NORCA_REGION"[[ end ]] }}
+          server_name: "{{ $name }}-{{ env "NORCA_ALLOC_INDEX" }}"
+          listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NORCA_IP_client" }}[[ end ]]:{{ env "NORCA_PORT_client" }}"
+          client_advertise: "{{ env "NORCA_ADDR_client" }}"
+          http: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NORCA_IP_monitor" }}[[ end ]]:{{ env "NORCA_PORT_monitor" }}"
           lame_duck_duration: "[[ $v.lame_duck_duration ]]"
 [[- if $v.jetstream_enabled ]]
           # Placement tags of JetStream: the Norca datacenter of the server
           # (unique_tag "dc" spreads the replicas over the datacenters).
           server_tags: [
-            "dc:{{ env "NOMAD_DC" }}"
+            "dc:{{ env "NORCA_DC" }}"
 [[- range $v.jetstream_server_tags ]]
             [[ . | quote ]]
 [[- end ]]
@@ -211,9 +211,9 @@ job [[ $job | quote ]] {
 [[- if $v.tls_enabled ]]
 
           tls {
-            ca_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/ca.pem"
-            cert_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/cert.pem"
-            key_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/key.pem"
+            ca_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/ca.pem"
+            cert_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/cert.pem"
+            key_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/key.pem"
             verify: [[ $v.tls_verify_clients ]]
             timeout: 5
           }
@@ -247,11 +247,11 @@ configuration parser rejects. */]]
 
           jetstream {
 [[- if eq $v.storage "ephemeral_disk" ]]
-            store_dir: "{{ env "NOMAD_ALLOC_DIR" }}/data"
+            store_dir: "{{ env "NORCA_ALLOC_DIR" }}/data"
 [[- else if eq $v.storage "host_volume" ]]
-            store_dir: "/data/{{ $name }}-{{ env "NOMAD_ALLOC_INDEX" }}"
+            store_dir: "/data/{{ $name }}-{{ env "NORCA_ALLOC_INDEX" }}"
 [[- else ]]
-            store_dir: "[[ $v.store_path ]]/{{ $name }}-{{ env "NOMAD_ALLOC_INDEX" }}"
+            store_dir: "[[ $v.store_path ]]/{{ $name }}-{{ env "NORCA_ALLOC_INDEX" }}"
 [[- end ]]
             max_memory_store: [[ $v.jetstream_max_memory ]]
             max_file_store: [[ $v.jetstream_max_file ]]
@@ -274,8 +274,8 @@ configuration parser rejects. */]]
 
           cluster {
             name: "{{ $name }}"
-            listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NOMAD_IP_cluster" }}[[ end ]]:{{ env "NOMAD_PORT_cluster" }}"
-            advertise: "{{ env "NOMAD_ADDR_cluster" }}"
+            listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NORCA_IP_cluster" }}[[ end ]]:{{ env "NORCA_PORT_cluster" }}"
+            advertise: "{{ env "NORCA_ADDR_cluster" }}"
 [[- if ne $v.cluster_compression "" ]]
             compression: [[ $v.cluster_compression | quote ]]
 [[- end ]]
@@ -285,16 +285,16 @@ configuration parser rejects. */]]
             # The own address is always listed (the server ignores a route
             # to itself): JetStream clustering needs at least one route.
             routes: [
-              "nats-route://{{ env "NOMAD_ADDR_cluster" }}"
-            {{- range nomadService "[[ $job ]]-cluster" }}{{ if ne .AllocID (env "NOMAD_ALLOC_ID") }}
+              "nats-route://{{ env "NORCA_ADDR_cluster" }}"
+            {{- range nomadService "[[ $job ]]-cluster" }}{{ if ne .AllocID (env "NORCA_ALLOC_ID") }}
               "nats-route://{{ .Address }}:{{ .Port }}"
             {{- end }}{{ end }}
             ]
 [[- if $v.tls_enabled ]]
             tls {
-              ca_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/ca.pem"
-              cert_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/cert.pem"
-              key_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/key.pem"
+              ca_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/ca.pem"
+              cert_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/cert.pem"
+              key_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/key.pem"
               verify: true
               timeout: 5
             }
@@ -305,8 +305,8 @@ configuration parser rejects. */]]
 
           gateway {
             name: "{{ $name }}"
-            listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NOMAD_IP_gateway" }}[[ end ]]:{{ env "NOMAD_PORT_gateway" }}"
-            advertise: "{{ env "NOMAD_ADDR_gateway" }}"
+            listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NORCA_IP_gateway" }}[[ end ]]:{{ env "NORCA_PORT_gateway" }}"
+            advertise: "{{ env "NORCA_ADDR_gateway" }}"
             gateways: [
 [[- range $v.remote_gateways ]]
               { name: [[ .name | quote ]], urls: [ [[ range $i, $u := .urls ]][[ if $i ]], [[ end ]][[ $u | quote ]][[ end ]] ] }
@@ -314,9 +314,9 @@ configuration parser rejects. */]]
             ]
 [[- if $v.tls_enabled ]]
             tls {
-              ca_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/ca.pem"
-              cert_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/cert.pem"
-              key_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/key.pem"
+              ca_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/ca.pem"
+              cert_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/cert.pem"
+              key_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/key.pem"
               verify: true
               timeout: 5
             }
@@ -326,13 +326,13 @@ configuration parser rejects. */]]
 [[- if $v.leafnodes_enabled ]]
 
           leafnodes {
-            listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NOMAD_IP_leafnode" }}[[ end ]]:{{ env "NOMAD_PORT_leafnode" }}"
-            advertise: "{{ env "NOMAD_ADDR_leafnode" }}"
+            listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NORCA_IP_leafnode" }}[[ end ]]:{{ env "NORCA_PORT_leafnode" }}"
+            advertise: "{{ env "NORCA_ADDR_leafnode" }}"
 [[- if $v.tls_enabled ]]
             tls {
-              ca_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/ca.pem"
-              cert_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/cert.pem"
-              key_file: "{{ env "NOMAD_SECRETS_DIR" }}/tls/key.pem"
+              ca_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/ca.pem"
+              cert_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/cert.pem"
+              key_file: "{{ env "NORCA_SECRETS_DIR" }}/tls/key.pem"
               verify: [[ $v.tls_verify_clients ]]
               timeout: 5
             }
@@ -456,7 +456,7 @@ configuration parser rejects. */]]
 [[- if $v.leafnodes_enabled ]]
           "-leafz",
 [[- end ]]
-          "http://${NOMAD_ADDR_monitor}",
+          "http://${NORCA_ADDR_monitor}",
         ]
       }
 

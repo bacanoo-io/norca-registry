@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bacanoo-io/norca/nomad/controller/secrets"
+	"github.com/bacanoo-io/norca/norca/controller/secrets"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"

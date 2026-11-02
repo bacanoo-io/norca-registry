@@ -49,7 +49,7 @@ older credentials fail and are logged, until a superuser removes them.
 
 | Flag | Default | |
 | --- | --- | --- |
-| `-addr` | `:$NOMAD_PORT_api` | The address to listen on. |
+| `-addr` | `:$NORCA_PORT_api` | The address to listen on. |
 | `-role-prefix` | `v_` | Starts the names of the roles, followed by the lease ID. Roles without it are never changed or dropped. Two operators of a server need different prefixes. Changing it leaves the existing roles without an owner. |
 | `-sweep-interval` | `5m` | How often expired roles are looked for. `0` turns the sweep off. |
 | `-sweep-grace` | `1h` | How long a role stays after its `VALID UNTIL`. |

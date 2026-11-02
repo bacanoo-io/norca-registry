@@ -71,10 +71,10 @@ job "[[ $job ]]-dump" {
           set -eu
           umask 077
           name="[[ $job ]]-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"
-          pg_dumpall --clean --if-exists | gzip > "$NOMAD_ALLOC_DIR/data/$name.tmp"
-          mv "$NOMAD_ALLOC_DIR/data/$name.tmp" "$NOMAD_ALLOC_DIR/data/$name"
-          echo "$name" > "$NOMAD_ALLOC_DIR/data/dump.name"
-          echo "dumped $name ($(du -h "$NOMAD_ALLOC_DIR/data/$name" | cut -f1))"
+          pg_dumpall --clean --if-exists | gzip > "$NORCA_ALLOC_DIR/data/$name.tmp"
+          mv "$NORCA_ALLOC_DIR/data/$name.tmp" "$NORCA_ALLOC_DIR/data/$name"
+          echo "$name" > "$NORCA_ALLOC_DIR/data/dump.name"
+          echo "dumped $name ($(du -h "$NORCA_ALLOC_DIR/data/$name" | cut -f1))"
         EOF
       }
 
@@ -134,7 +134,7 @@ job "[[ $job ]]-dump" {
         data        = <<-EOF
           #!/bin/sh
           set -eu
-          dir="$NOMAD_ALLOC_DIR/data"
+          dir="$NORCA_ALLOC_DIR/data"
           if [ ! -s "$dir/dump.name" ]; then echo "no dump to upload (the dump task failed)" >&2; exit 1; fi
           name=$(cat "$dir/dump.name")
           curl -fsS -X PUT -T "$dir/$name" \
