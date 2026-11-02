@@ -185,9 +185,9 @@ job [[ $job | quote ]] {
             "$norca" operator gossip keyring generate >gossip_key
             "$norca" tls ca create -days=[[ $v.ca_days ]] >/dev/null
             "$norca" tls cert create -server -region=[[ $v.datacenter | quote ]] -domain=[[ $v.domain | quote ]] \
-              -days=[[ $v.cert_days ]] -ca=nomad-agent-ca.pem -key=nomad-agent-ca-key.pem >/dev/null
-            mv nomad-agent-ca.pem ca_cert
-            mv nomad-agent-ca-key.pem ca_key
+              -days=[[ $v.cert_days ]] -ca=norca-agent-ca.pem -key=norca-agent-ca-key.pem >/dev/null
+            mv norca-agent-ca.pem ca_cert
+            mv norca-agent-ca-key.pem ca_key
             mv "[[ $v.datacenter ]]-server-[[ $v.domain ]].pem" server_cert
             mv "[[ $v.datacenter ]]-server-[[ $v.domain ]]-key.pem" server_key
             for t in management_token agent_token agent_accessor snapshot_token snapshot_accessor; do

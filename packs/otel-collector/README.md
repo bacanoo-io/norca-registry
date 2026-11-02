@@ -82,7 +82,7 @@ digest with `image_digest`; mirror the image for air-gapped clusters.
 
 ```shell
 norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=<tag>
-norca secret put -namespace observability norca/agent-ca ca=@/etc/norca.d/tls/nomad-agent-ca.pem
+norca secret put -namespace observability norca/agent-ca ca=@/etc/norca.d/tls/norca-agent-ca.pem
 norca pack run otel-collector --registry=norca -f examples/otel-collector/observability.hcl
 norca job status -namespace observability otel-collector
 ```

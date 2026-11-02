@@ -5,7 +5,7 @@
 # (the CA of the agent certificates in the secret norca/agent-ca), the
 # metrics services of the namespaces default and observability, PostgreSQL
 # of the postgres pack in this namespace.
-#   norca secret put -namespace observability norca/agent-ca ca=@nomad-agent-ca.pem
+#   norca secret put -namespace observability norca/agent-ca ca=@norca-agent-ca.pem
 #   norca pack run otel-collector --registry=norca -f examples/otel-collector/observability.hcl
 namespace            = "observability"
 nomad_address        = "https://127.0.0.1:4646"

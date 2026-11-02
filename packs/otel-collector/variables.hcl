@@ -253,7 +253,7 @@ variable "nomad_address" {
 }
 
 variable "nomad_ca_secret_path" {
-  description = "Secret with the CA of the agent's HTTPS certificate (item ca; e.g. nomad-agent-ca.pem). Empty uses the system CAs. The certificates of norca tls cert create carry 127.0.0.1 and localhost."
+  description = "Secret with the CA of the agent's HTTPS certificate (item ca; e.g. norca-agent-ca.pem). Empty uses the system CAs. The certificates of norca tls cert create carry 127.0.0.1 and localhost."
   type        = string
   default     = ""
 }

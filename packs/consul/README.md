@@ -217,7 +217,7 @@ bypassed) or the exec chroot. The server certificate grants the authority of
 a server: it is readable only by the server tasks.
 
 The generated certificates also carry the Nomad-style names
-`server.<datacenter>.nomad` and `server.global.nomad` (added by
+`server.<datacenter>.norca` and `server.global.norca` (added by
 `norca tls cert create`); they are harmless because the Consul CA is a
 separate CA that Norca does not trust.
 
