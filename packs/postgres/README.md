@@ -134,7 +134,7 @@ documents PostgreSQL monitoring) using this role and the same secret.
 | `tls_mode` | Certificate |
 | --- | --- |
 | `none` (default) | plain connections |
-| `mtls` | Norca's workload certificate: the service gets `mtls { mode = "app" }`, the client issues a certificate valid for `<job>.service.<namespace>.nomad` (and `<job>.service.<namespace>.<region>.nomad`), signed by the CA of the region, renewed automatically. No sidecar: PostgreSQL terminates TLS itself. |
+| `mtls` | Norca's workload certificate: the service gets `mtls { mode = "app" }`, the client issues a certificate valid for `<job>.service.<namespace>.norca` (and `<job>.service.<namespace>.<region>.norca`), signed by the CA of the region, renewed automatically. No sidecar: PostgreSQL terminates TLS itself. |
 | `secret` | the PEM certificate (`cert`, with the chain) and key (`key`) of `tls_secret_path` |
 
 PostgreSQL refuses a key file that others can read, so a small start script
@@ -154,7 +154,7 @@ Clients verify the server like this:
 
 - the CA: the trust bundle of the region (`GET /v1/mtls/roots`, or the
   `bundle.pem` that tasks with an mtls service get in `secrets/mtls/`);
-- the name: connect by `<job>.service.<namespace>.nomad` (the built-in DNS) and
+- the name: connect by `<job>.service.<namespace>.norca` (the built-in DNS) and
   use `sslmode=verify-full`. A connection to the IP address of the instance
   (as found through `nomadService`) can only use `sslmode=require` or
   `verify-ca`, because the workload certificates carry DNS names, no IP

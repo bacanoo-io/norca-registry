@@ -185,7 +185,7 @@ variable "openobserve_tls" {
 }
 
 variable "openobserve_server_name" {
-  description = "Name the certificate of OpenObserve must carry. Empty: <openobserve_service>.service.<namespace>.nomad, the name of Norca's workload certificate."
+  description = "Name the certificate of OpenObserve must carry. Empty: <openobserve_service>.service.<namespace>.norca, the name of Norca's workload certificate."
   type        = string
   default     = ""
 

@@ -164,7 +164,7 @@ its item `organization` unless `openobserve_organization` is set.
 
 | `openobserve_tls` | Trust |
 | --- | --- |
-| `mtls` (default) | The collector's health service has `mtls { mode = "app" }`: the client issues the collector a workload certificate and the **trust bundle of the region** (`secrets/mtls/bundle.pem`), renewed and rotated automatically. The exporter verifies OpenObserve's workload certificate against it, for the name `openobserve_server_name` (default `<openobserve_service>.service.<namespace>.nomad`, the name the openobserve pack's certificate carries) while connecting to the address of the catalog. The collector itself serves no TLS. |
+| `mtls` (default) | The collector's health service has `mtls { mode = "app" }`: the client issues the collector a workload certificate and the **trust bundle of the region** (`secrets/mtls/bundle.pem`), renewed and rotated automatically. The exporter verifies OpenObserve's workload certificate against it, for the name `openobserve_server_name` (default `<openobserve_service>.service.<namespace>.norca`, the name the openobserve pack's certificate carries) while connecting to the address of the catalog. The collector itself serves no TLS. |
 | `secret` | the CA of `openobserve_ca_secret_path` (item `ca`) |
 | `system` | the system CAs of the image (a public certificate) |
 | `none` | plain HTTP (`tls_mode = "none"` of the openobserve pack) |

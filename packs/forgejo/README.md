@@ -108,7 +108,7 @@ A change of the endpoint restarts Forgejo.
 4. **A DNS name** (`domain`) that the users and the Docker daemons of all
    nodes resolve to the Forgejo node, or to the proxy in front of it: a record
    in your DNS, or the name of Norca's built-in DNS
-   (`forgejo.service.<namespace>.nomad`) when the resolver of the hosts
+   (`forgejo.service.<namespace>.norca`) when the resolver of the hosts
    forwards `.nomad` to it.
 5. **HTTPS for the registry** (Docker refuses plain HTTP to a registry on
    another host): a certificate for `domain` whose CA the Docker daemons trust,

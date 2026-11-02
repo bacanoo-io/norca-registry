@@ -268,9 +268,9 @@ the DNS names of the mtls services of its group, renewed automatically, and the
 trust bundle of the region, in `secrets/mtls/` (`cert.pem`, `key.pem`,
 `bundle.pem`). The certificates carry these names, no IP addresses:
 
-- `<job>.service.<namespace>.nomad` (and `...<region>.nomad`): the instance
+- `<job>.service.<namespace>.norca` (and `...<region>.norca`): the instance
   (single) or the routers (cluster): the UI, the API, OTLP;
-- `<job>-grpc.service.<namespace>.nomad`: the gRPC service, which every role
+- `<job>-grpc.service.<namespace>.norca`: the gRPC service, which every role
   registers, so that every node's certificate carries the name the nodes check
   on internal gRPC calls (`ZO_GRPC_TLS_CERT_DOMAIN`).
 
@@ -312,11 +312,11 @@ What can't use them, and the alternative taken:
 
 **Collectors** (the otel-collector pack) trust the CA through their own
 workload identity (`bundle.pem`) and verify the name
-`<job>.service.<namespace>.nomad` (`server_name_override`), connecting to the
+`<job>.service.<namespace>.norca` (`server_name_override`), connecting to the
 address of the catalog.
 
 **Browsers and other clients**: the certificate is valid for
-`https://<job>.service.<namespace>.nomad:<http_port>/`; the built-in DNS
+`https://<job>.service.<namespace>.norca:<http_port>/`; the built-in DNS
 resolves that name (forward `.nomad` to it on the users' machines, or use a
 DNS record or `/etc/hosts` entry with that name). Import the CA of the region
 into the trust store of the browser or operating system:

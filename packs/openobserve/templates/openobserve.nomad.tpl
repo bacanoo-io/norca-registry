@@ -65,7 +65,7 @@ job [[ $job | quote ]] {
       tags     = ["[[ if eq $v.tls_mode "none" ]]http[[ else ]]https[[ end ]]"]
       [[- if $mtls ]]
 
-      # Norca's workload certificate (valid for [[ $job ]].service.<namespace>.nomad),
+      # Norca's workload certificate (valid for [[ $job ]].service.<namespace>.norca),
       # used by OpenObserve itself (app mode, no sidecar). OpenObserve reads it
       # only at start: the client restarts the task after a renewal or a CA
       # rotation (not counted against the restart policy).
@@ -178,7 +178,7 @@ job [[ $job | quote ]] {
       tags     = ["[[ $role ]]", "[[ if eq $v.tls_mode "none" ]]http[[ else ]]https[[ end ]]"]
       [[- if and $mtls $router ]]
 
-      # Norca's workload certificate (valid for [[ $job ]].service.<namespace>.nomad).
+      # Norca's workload certificate (valid for [[ $job ]].service.<namespace>.norca).
       # OpenObserve reads it only at start: the client restarts the task after
       # a renewal or a CA rotation (not counted against the restart policy).
       mtls {
@@ -190,7 +190,7 @@ job [[ $job | quote ]] {
     }
 
     # gRPC of the node, registered by every role[[ if $mtls ]]: the workload certificates of all
-    # nodes then carry [[ $job ]]-grpc.service.<namespace>.nomad, the name they verify
+    # nodes then carry [[ $job ]]-grpc.service.<namespace>.norca, the name they verify
     # on internal calls (ZO_GRPC_TLS_CERT_DOMAIN)[[ end ]].
     service {
       name     = "[[ $job ]]-grpc"

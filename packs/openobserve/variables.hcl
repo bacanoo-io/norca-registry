@@ -410,7 +410,7 @@ variable "s3_create_bucket" {
 # ---------------------------------------------------------------------------
 
 variable "tls_mode" {
-  description = "TLS of HTTP and gRPC: \"mtls\" (default: Norca's workload certificates, mtls { mode = \"app\" } on the services, valid for <job>.service.<namespace>.nomad and <job>-grpc.service.<namespace>.nomad, trusted through the trust bundle of the region), \"secret\" (the PEM certificate, key and CA of tls_secret_path) or \"none\" (plain HTTP and gRPC)."
+  description = "TLS of HTTP and gRPC: \"mtls\" (default: Norca's workload certificates, mtls { mode = \"app\" } on the services, valid for <job>.service.<namespace>.norca and <job>-grpc.service.<namespace>.norca, trusted through the trust bundle of the region), \"secret\" (the PEM certificate, key and CA of tls_secret_path) or \"none\" (plain HTTP and gRPC)."
   type        = string
   default     = "mtls"
 

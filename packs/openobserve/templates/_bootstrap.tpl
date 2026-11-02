@@ -85,7 +85,7 @@ OpenObserve instance of its own allocation. */ -]]
         ROOT_EMAIL     = [[ $v.root_email | quote ]]
         OO_IP          = "${NORCA_IP_http}"
         OO_PORT        = "${NORCA_HOST_PORT_http}"
-        OO_NAME        = "[[ $job ]].service.${NORCA_NAMESPACE}.nomad"
+        OO_NAME        = "[[ $job ]].service.${NORCA_NAMESPACE}.norca"
         ORGANIZATIONS  = [[ join " " $v.organizations | quote ]]
         INGEST_ORG     = [[ $v.ingest_organization | quote ]]
         INGEST_ACCOUNT = [[ $v.ingest_service_account | quote ]]

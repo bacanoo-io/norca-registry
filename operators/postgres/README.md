@@ -11,7 +11,7 @@ lease is revoked. It is a separate program that runs as a job. Norca only knows 
 service name in the engine, so you can replace it with your own.
 
 No pack and no image are published: build the binary and adapt
-[`postgres-operator.nomad.hcl`](postgres-operator.nomad.hcl) and [`engine.hcl`](engine.hcl).
+[`postgres-operator.norca.hcl`](postgres-operator.norca.hcl) and [`engine.hcl`](engine.hcl).
 
 ## Build
 

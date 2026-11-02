@@ -11,7 +11,7 @@ a group with a service in `gateway` mode (`mtls { mode = "gateway" }`), run in
 the `default` namespace of every region that offers services to other
 regions. The gateway listens on a static port, reads the SNI name of each TLS
 connection and forwards it, without terminating it, to a healthy instance of
-the mtls service `<service>.service.<namespace>.<region>.nomad` of its
+the mtls service `<service>.service.<namespace>.<region>.norca` of its
 region. mTLS stays end to end between the sidecars; the intentions of the
 destination region decide.
 

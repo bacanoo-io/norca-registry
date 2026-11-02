@@ -30,7 +30,7 @@ Checks:
 [[- end ]]
 
 Clients in the namespace find the server with nomadService "[[ $job ]]" in a template
-(or [[ $job ]].service.<namespace>.nomad through the built-in DNS).
+(or [[ $job ]].service.<namespace>.norca through the built-in DNS).
 [[- if $v.dump_enabled ]]
 
 Dumps: periodic job [[ $job ]]-dump ([[ $v.dump_cron ]] UTC) into [[ $v.dump_bucket ]]/[[ $v.dump_prefix ]].

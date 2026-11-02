@@ -84,7 +84,7 @@ job [[ $job | quote ]] {
 [[- if eq $v.tls_mode "mtls" ]]
 
       # The workload certificate of the server (valid for
-      # [[ $job ]].service.<namespace>.nomad) and the trust bundle of the region:
+      # [[ $job ]].service.<namespace>.norca) and the trust bundle of the region:
       # the server terminates TLS itself (app mode, no sidecar).
       mtls {
         mode = "app"

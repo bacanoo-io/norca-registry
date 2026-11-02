@@ -291,7 +291,7 @@ TCP checks. */ -]]
         ZO_GRPC_TLS_ENABLED            = "true"
         ZO_GRPC_TLS_CERT_PATH          = "[[ $tlsDir ]]/cert.pem"
         ZO_GRPC_TLS_KEY_PATH           = "[[ $tlsDir ]]/key.pem"
-        ZO_GRPC_TLS_CERT_DOMAIN        = "[[ if eq $v.tls_mode "mtls" ]][[ $job ]]-grpc.service.${NORCA_NAMESPACE}.nomad[[ else ]][[ $v.tls_cert_domain ]][[ end ]]"
+        ZO_GRPC_TLS_CERT_DOMAIN        = "[[ if eq $v.tls_mode "mtls" ]][[ $job ]]-grpc.service.${NORCA_NAMESPACE}.norca[[ else ]][[ $v.tls_cert_domain ]][[ end ]]"
         ZO_GRPC_TLS_ROOT_CERTIFICATES  = "native"
         SSL_CERT_DIR                   = "[[ $tlsDir ]]"
 [[- if $cluster ]]

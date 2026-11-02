@@ -231,7 +231,7 @@ variable "monitoring_secret_path" {
 # ---------------------------------------------------------------------------
 
 variable "tls_mode" {
-  description = "TLS of the server: \"none\" (default, plain connections), \"mtls\" (Norca's workload certificate of the service, mtls { mode = \"app\" }: valid for <job>.service.<namespace>.nomad, renewed automatically) or \"secret\" (the PEM certificate and key of tls_secret_path). Non-TLS connections stay allowed unless tls_required."
+  description = "TLS of the server: \"none\" (default, plain connections), \"mtls\" (Norca's workload certificate of the service, mtls { mode = \"app\" }: valid for <job>.service.<namespace>.norca, renewed automatically) or \"secret\" (the PEM certificate and key of tls_secret_path). Non-TLS connections stay allowed unless tls_required."
   type        = string
   default     = "none"
 
