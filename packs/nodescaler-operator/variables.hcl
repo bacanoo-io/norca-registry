@@ -1,0 +1,159 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+
+# ---------------------------------------------------------------------------
+# Operator job
+# ---------------------------------------------------------------------------
+
+variable "job_name" {
+  description = "Name of the operator job. The ACL policy of the operator is bound to it."
+  type        = string
+  default     = "nodescaler"
+
+  validation {
+    pattern = "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$"
+  }
+}
+
+variable "namespace" {
+  description = "Namespace of the operator job and of its leader election lease."
+  type        = string
+  default     = "default"
+
+  validation {
+    min_length = 1
+  }
+}
+
+variable "region" {
+  description = "Region of the operator job. Empty leaves it to the region of the release; the operator runs once per region and scales the node groups of its region."
+  type        = string
+  default     = ""
+}
+
+variable "datacenters" {
+  description = "Datacenters of the operator job."
+  type        = list(string)
+  default     = ["*"]
+
+  validation {
+    min_items       = 1
+    item_min_length = 1
+  }
+}
+
+variable "node_pool" {
+  description = "Node pool of the operator job. Run it outside the pools it scales: a scaled node can be removed under it. Whatever the pool, it never runs on a node the operator created (meta norca.instance)."
+  type        = string
+  default     = "default"
+
+  validation {
+    min_length = 1
+  }
+}
+
+variable "count" {
+  description = "Instances of the operator, on different nodes. Leader election makes one of them reconcile while the others keep a warm cache."
+  type        = number
+  default     = 2
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 5
+  }
+}
+
+variable "driver" {
+  description = "Task driver of the operator: raw_exec or exec (the binary installed on the nodes), docker (an image with the binary), or mock_driver (tests on dev agents only)."
+  type        = string
+  default     = "raw_exec"
+
+  ui {
+    options = ["raw_exec", "exec", "docker", "mock_driver"]
+  }
+}
+
+variable "binary" {
+  description = "Path of the norca-nodescaler binary on the nodes (raw_exec, exec). Build it in a norca-platform checkout with: go build -o norca-nodescaler ./cmd/norca-nodescaler"
+  type        = string
+  default     = "/usr/local/bin/norca-nodescaler"
+}
+
+variable "image" {
+  description = "Container image with the norca-nodescaler binary as its entrypoint (docker)."
+  type        = string
+  default     = ""
+}
+
+variable "cpu" {
+  description = "CPU of an operator instance, in MHz."
+  type        = number
+  default     = 100
+
+  validation {
+    integer = true
+    min     = 20
+  }
+}
+
+variable "memory" {
+  description = "Memory of an operator instance, in MB."
+  type        = number
+  default     = 64
+
+  validation {
+    integer = true
+    min     = 16
+  }
+}
+
+variable "log_level" {
+  description = "Log level of the operator."
+  type        = string
+  default     = "info"
+
+  ui {
+    options = ["debug", "info", "warn", "error"]
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Node scaling
+# ---------------------------------------------------------------------------
+
+variable "variables_namespace" {
+  description = "Namespace of the Variables the operator reads: the bootstrap (nodescaler/bootstrap/<region>, with the key of the node CA) and the network ranges (nodescaler/network/<region>) the deployer writes, and the tokens of the providers (keep them under nodescaler/)."
+  type        = string
+  default     = "default"
+
+  validation {
+    min_length = 1
+  }
+}
+
+variable "provider_ttl" {
+  description = "How old the heartbeat of a NodeProvider may be before the provider counts as unavailable."
+  type        = string
+  default     = "3m"
+
+  validation {
+    pattern = "^[0-9]+(s|m|h)$"
+  }
+}
+
+variable "provider_allow_http" {
+  description = "Accept http endpoints of providers. For development and labs only: the token of a provider travels in the clear."
+  type        = bool
+  default     = false
+}
+
+variable "orphan_after" {
+  description = "Age after which an instance of a node group that is gone, and that has no node, is deleted."
+  type        = string
+  default     = "15m"
+
+  validation {
+    pattern = "^[0-9]+(s|m|h)$"
+  }
+}
