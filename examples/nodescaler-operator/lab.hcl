@@ -14,3 +14,4 @@ log_level           = "debug"
 variables_namespace = "ops"
 provider_allow_http = true
 orphan_after        = "5m"
+resync              = "30s"

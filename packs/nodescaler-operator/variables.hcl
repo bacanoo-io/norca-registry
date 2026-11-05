@@ -148,6 +148,16 @@ variable "provider_allow_http" {
   default     = false
 }
 
+variable "resync" {
+  description = "Period of the full resynchronization of the node groups: how soon a change of the nodes or of the provider is seen without a change of the object."
+  type        = string
+  default     = "5m"
+
+  validation {
+    pattern = "^[0-9]+(s|m|h)$"
+  }
+}
+
 variable "orphan_after" {
   description = "Age after which an instance of a node group that is gone, and that has no node, is deleted."
   type        = string

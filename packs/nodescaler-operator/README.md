@@ -45,6 +45,7 @@ providers are applications of their own and register themselves.
 | `variables_namespace` | `default` | Namespace of the Variables under `nodescaler/`. |
 | `provider_ttl` | `3m` | How old the heartbeat of a provider may be. |
 | `provider_allow_http` | `false` | http endpoints of providers (labs only). |
+| `resync` | `5m` | Period of the full resynchronization of the groups. |
 | `orphan_after` | `15m` | Age after which an orphaned instance without a node is deleted. |
 
 ```shell
