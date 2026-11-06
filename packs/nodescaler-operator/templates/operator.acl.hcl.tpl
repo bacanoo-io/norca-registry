@@ -11,6 +11,10 @@ policy [[ printf "%s" $v.job_name | quote ]] {
 namespace "[[ $v.namespace ]]" {
   capabilities = ["list-jobs", "read-job"]
 
+  object "norca.io/LoadBalancer" {
+    capabilities = ["read"]
+  }
+
   variables {
     # The leader election lease of the operator instances.
     path "controller-lease/nodescaler*" {
@@ -21,6 +25,10 @@ namespace "[[ $v.namespace ]]" {
 
 namespace "[[ $v.variables_namespace ]]" {
   capabilities = ["list-jobs", "read-job"]
+
+  object "norca.io/LoadBalancer" {
+    capabilities = ["read"]
+  }
 
   variables {
     # The bootstrap of the region (with the key of the node CA), the
@@ -37,7 +45,9 @@ namespace "[[ $v.variables_namespace ]]" {
 # its finalizer, which keeps a deleted group until its instances are dealt
 # with. It reports orphaned instances in the event log of their provider. A
 # scale down reads the jobs of the allocations on a node: whether one could
-# be placed again elsewhere (distinct_hosts).
+# be placed again elsewhere (distinct_hosts). It reads the load balancers of
+# every namespace: a node behind one leaves it before its drain (the
+# namespaces above repeat this rule, as a namespace of its own replaces "*").
 namespace "*" {
   capabilities = ["list-jobs", "read-job"]
 
@@ -48,10 +58,15 @@ namespace "*" {
   object "norca.io/NodeProvider" {
     capabilities = ["read", "write-events"]
   }
+
+  object "norca.io/LoadBalancer" {
+    capabilities = ["read"]
+  }
 }
 
 # The nodes: matched with the instances, a foreign node made ineligible, and
-# for a scale down drained, made eligible again and purged once down.
+# for a scale down drained, made eligible again and purged once down; the
+# meta norca.lb.leaving of an edge node before its drain.
 node {
   policy = "write"
 }

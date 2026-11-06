@@ -8,7 +8,7 @@ app {
 pack {
   name        = "loadbalancer-operator"
   description = "The LoadBalancer operator of Norca as one release: the norca.io/LoadBalancer object kind (with its optional webhooks and limits), the ACL policy of the controller, an admission policy for service marks and the controller job."
-  version     = "0.1.0"
+  version     = "0.2.0"
 
   requires {
     norca    = ">= 0.1.0"

@@ -30,6 +30,13 @@ namespace "[[ $v.namespace ]]" {
     capabilities = ["read", "write", "write-status", "write-events", "manage-finalizers"]
   }
 }
+
+# The nodes of the instances: an instance on a node marked as leaving
+# (norca.lb.leaving, set by the node scaling operator before a drain) is not
+# a target; node events reconcile the load balancers.
+node {
+  policy = "read"
+}
 EOT
 
   job_acl {

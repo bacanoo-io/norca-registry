@@ -45,6 +45,7 @@ With the webhooks, the defaulting webhook fills in the class of the region inste
         "class":     {"type": "string"},
         "addresses": {"type": "array", "items": {"type": "string"}},
         "targets":   {"type": "array", "items": {"type": "string"}},
+        "leavingNodes": {"type": "array", "items": {"type": "string"}},
         "resource":  {"type": "string"}
       }
     }

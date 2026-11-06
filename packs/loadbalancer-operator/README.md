@@ -13,7 +13,7 @@ needs, in the fixed order of the extended pack format.
 
 | Template | Resource |
 | --- | --- |
-| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, and the `norca.io/LoadBalancer` objects (status, events, finalizers) |
+| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, the `norca.io/LoadBalancer` objects (status, events, finalizers), and node read (an instance on a node marked `norca.lb.leaving` is not a target) |
 | `loadbalancer.kind.hcl.tpl` | Object kind `norca.io/LoadBalancer`: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits |
 | `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
 | `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |

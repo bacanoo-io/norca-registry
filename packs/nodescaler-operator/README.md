@@ -18,8 +18,11 @@ release:
   bootstrap and the network ranges of the region, the tokens of the
   providers), its leader election lease, node write (a foreign node is made
   ineligible; a scale down drains a node, makes it eligible again and purges
-  it once down), and reading the jobs of every namespace (a scale down checks
-  that the allocations of a node could be placed again);
+  it once down; an edge node is marked `norca.lb.leaving` before its drain),
+  reading the jobs of every namespace (a scale down checks that the
+  allocations of a node could be placed again), and reading the
+  `norca.io/LoadBalancer` objects of every namespace (an edge node waits until
+  its load balancers dropped it);
 - the job: two instances on different nodes with leader election, in a node
   pool of its own choice, and **never on a node the operator created**
   (`${meta.norca.instance}` must not be set), so it cannot delete the machine
