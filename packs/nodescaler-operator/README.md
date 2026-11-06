@@ -26,7 +26,12 @@ release:
 - the job: two instances on different nodes with leader election, in a node
   pool of its own choice, and **never on a node the operator created**
   (`${meta.norca.instance}` must not be set), so it cannot delete the machine
-  it runs on.
+  it runs on;
+- with `join_enabled`, the **join endpoint** on a static port and the service
+  `<job_name>-join`: the bootstrap of a new node carries a one-time token
+  instead of its key and certificate, and `norca-join` on the machine makes
+  the key, fetches the certificate and renews it (the policy then also
+  writes and deletes the records under `nodescaler/join/`).
 
 The kinds `NodeGroup` and `NodeProvider` are registered by the core; the
 providers are applications of their own and register themselves.
@@ -56,6 +61,10 @@ providers are applications of their own and register themselves.
 | `resync` | `5m` | Period of the full resynchronization of the groups. |
 | `orphan_after` | `15m` | Age after which an orphaned instance without a node is deleted. |
 | `delete_orphans` | `false` | Delete orphaned instances that run a node too; otherwise they are only reported. |
+| `join_enabled` | `false` | Serve the join endpoint: the nodes make their own keys (`norca-join` on the machines, the bootstrap item `join_binary`). |
+| `join_port` | `8490` | Static port of the join endpoint; the new nodes must reach it. |
+| `join_validity` | `168h` | Validity of the certificate of a node that renews itself (at two thirds). |
+| `join_urls` | `[]` | Stable https URLs of the endpoint (a DNS name, a load balancer); empty: the instances of the service `<job_name>-join`. |
 
 ```shell
 norca pack plan nodescaler-operator --registry=norca

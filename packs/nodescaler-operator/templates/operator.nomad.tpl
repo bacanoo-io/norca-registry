@@ -33,7 +33,28 @@ job [[ $v.job_name | quote ]] {
 
     network {
       port "metrics" {}
+[[- if $v.join_enabled ]]
+      # The join endpoint: the new nodes fetch and renew their certificates
+      # here. A static port, so the firewall of the nodes can let it in.
+      port "join" {
+        static = [[ $v.join_port ]]
+      }
+[[- end ]]
     }
+[[- if $v.join_enabled ]]
+
+    # Without join_urls the nodes are told the instances of this service.
+    service {
+      name = "[[ $v.job_name ]]-join"
+      port = "join"
+
+      check {
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+      }
+    }
+[[- end ]]
 
     task "operator" {
       driver = [[ $v.driver | quote ]]
@@ -43,7 +64,11 @@ job [[ $v.job_name | quote ]] {
         run_for = "87600h"
 [[- else if eq $v.driver "docker" ]]
         image = [[ $v.image | quote ]]
+[[- if $v.join_enabled ]]
+        ports = ["metrics", "join"]
+[[- else ]]
         ports = ["metrics"]
+[[- end ]]
         args  = [
 [[- else ]]
         command = [[ $v.binary | quote ]]
@@ -59,6 +84,15 @@ job [[ $v.job_name | quote ]] {
           "-orphan-after", [[ $v.orphan_after | quote ]],
           "-delete-orphans=[[ $v.delete_orphans ]]",
           "-resync", [[ $v.resync | quote ]],
+[[- if $v.join_enabled ]]
+          "-join-listen", ":[[ $v.join_port ]]",
+          "-join-validity", [[ $v.join_validity | quote ]],
+          "-join-service", "[[ $v.job_name ]]-join",
+          "-join-service-namespace", [[ $v.namespace | quote ]],
+[[- range $u := $v.join_urls ]]
+          "-join-url", [[ $u | quote ]],
+[[- end ]]
+[[- end ]]
 [[- if eq $v.driver "docker" ]]
           # In the container the address of the host cannot be bound; the
           # port is mapped to the same port of the container.

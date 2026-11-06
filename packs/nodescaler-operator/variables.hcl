@@ -173,3 +173,45 @@ variable "delete_orphans" {
   type        = bool
   default     = false
 }
+
+# ---------------------------------------------------------------------------
+# Join: the nodes make their own keys
+# ---------------------------------------------------------------------------
+
+variable "join_enabled" {
+  description = "Serve the join endpoint: the bootstrap of a new node carries a one-time token instead of its key and certificate, and norca-join on the machine makes the key, fetches the certificate and renews it (the node then has no age limit). The machines need norca-join (the item join_binary of the bootstrap)."
+  type        = bool
+  default     = false
+}
+
+variable "join_port" {
+  description = "Static port of the join endpoint on the nodes of the operator. The nodes the operator creates must reach it (the firewall of the cluster nodes)."
+  type        = number
+  default     = 8490
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 65535
+  }
+}
+
+variable "join_validity" {
+  description = "Validity of the certificate of a node that renews itself; it renews at two thirds."
+  type        = string
+  default     = "168h"
+
+  validation {
+    pattern = "^[0-9]+(m|h)$"
+  }
+}
+
+variable "join_urls" {
+  description = "Stable https URLs of the join endpoint (a DNS name or a load balancer in front of the operator instances). Empty: the instances of the service <job_name>-join of the native catalog, which move with the operator."
+  type        = list(string)
+  default     = []
+
+  validation {
+    item_pattern = "^https://[^ ]+$"
+  }
+}

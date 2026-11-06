@@ -36,6 +36,12 @@ namespace "[[ $v.variables_namespace ]]" {
     path "nodescaler/*" {
       capabilities = ["list", "read"]
     }
+
+    # The records of the nodes that join with a key of their own: the
+    # one-time tokens and the serials of the latest certificates.
+    path "nodescaler/join/*" {
+      capabilities = ["list", "read", "write", "destroy"]
+    }
   }
 }
 
