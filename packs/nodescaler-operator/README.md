@@ -60,6 +60,7 @@ providers are applications of their own and register themselves.
 | `provider_allow_http` | `false` | http endpoints of providers (labs only). |
 | `resync` | `5m` | Period of the full resynchronization of the groups. |
 | `orphan_after` | `15m` | Age after which an orphaned instance without a node is deleted. |
+| `orphan_sweep` | `5m` | How often the leader looks for orphaned instances at the providers. |
 | `delete_orphans` | `false` | Delete orphaned instances that run a node too; otherwise they are only reported. |
 | `join_enabled` | `false` | Serve the join endpoint: the nodes make their own keys (`norca-join` on the machines, the bootstrap item `join_binary`). |
 | `join_port` | `8490` | Static port of the join endpoint; the new nodes must reach it. |

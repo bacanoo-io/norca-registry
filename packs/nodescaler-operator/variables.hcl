@@ -168,6 +168,16 @@ variable "orphan_after" {
   }
 }
 
+variable "orphan_sweep" {
+  description = "How often the leader looks for orphaned instances at the providers."
+  type        = string
+  default     = "5m"
+
+  validation {
+    pattern = "^[0-9]+(s|m|h)$"
+  }
+}
+
 variable "delete_orphans" {
   description = "Delete the instances of a node group that is gone that run a node too. Without it they are only reported (an OrphanedInstance event of their NodeProvider): they run work."
   type        = bool

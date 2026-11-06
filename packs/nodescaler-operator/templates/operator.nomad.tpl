@@ -82,6 +82,7 @@ job [[ $v.job_name | quote ]] {
           "-provider-ttl", [[ $v.provider_ttl | quote ]],
           "-provider-allow-http=[[ $v.provider_allow_http ]]",
           "-orphan-after", [[ $v.orphan_after | quote ]],
+          "-orphan-sweep", [[ $v.orphan_sweep | quote ]],
           "-delete-orphans=[[ $v.delete_orphans ]]",
           "-resync", [[ $v.resync | quote ]],
 [[- if $v.join_enabled ]]
