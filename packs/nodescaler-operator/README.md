@@ -13,8 +13,10 @@ release:
   log of the `norca.io/NodeGroup` objects (not their spec), reading the
   `norca.io/NodeProvider` objects, the Variables under `nodescaler/` (the
   bootstrap and the network ranges of the region, the tokens of the
-  providers), its leader election lease, and node write (a foreign node is
-  made ineligible);
+  providers), its leader election lease, node write (a foreign node is made
+  ineligible; a scale down drains a node, makes it eligible again and purges
+  it once down), and reading the jobs of every namespace (a scale down checks
+  that the allocations of a node could be placed again);
 - the job: two instances on different nodes with leader election, in a node
   pool of its own choice, and **never on a node the operator created**
   (`${meta.norca.instance}` must not be set), so it cannot delete the machine

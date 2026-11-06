@@ -6,7 +6,11 @@ SPDX-License-Identifier: MPL-2.0
 policy [[ printf "%s" $v.job_name | quote ]] {
   description = "Permissions of the node scaling operator (bound to its job)"
   rules       = <<EOT
+# A namespace of its own replaces the rules of "*" for it, so every block
+# repeats the capabilities on the jobs (see the namespace "*").
 namespace "[[ $v.namespace ]]" {
+  capabilities = ["list-jobs", "read-job"]
+
   variables {
     # The leader election lease of the operator instances.
     path "controller-lease/nodescaler*" {
@@ -16,6 +20,8 @@ namespace "[[ $v.namespace ]]" {
 }
 
 namespace "[[ $v.variables_namespace ]]" {
+  capabilities = ["list-jobs", "read-job"]
+
   variables {
     # The bootstrap of the region (with the key of the node CA), the
     # network ranges, and the tokens of the providers.
@@ -27,8 +33,12 @@ namespace "[[ $v.variables_namespace ]]" {
 
 # The node groups and the providers are cluster-scoped: their rules are in
 # the namespace "*". The operator writes the status and the event log of a
-# group, never its spec (the scale is the autoscaler's or a person's).
+# group, never its spec (the scale is the autoscaler's or a person's). A scale
+# down reads the jobs of the allocations on a node: whether one could be
+# placed again elsewhere (distinct_hosts).
 namespace "*" {
+  capabilities = ["list-jobs", "read-job"]
+
   object "norca.io/NodeGroup" {
     capabilities = ["read", "write-status", "write-events"]
   }
@@ -38,7 +48,8 @@ namespace "*" {
   }
 }
 
-# The nodes: matched with the instances, and a foreign node made ineligible.
+# The nodes: matched with the instances, a foreign node made ineligible, and
+# for a scale down drained, made eligible again and purged once down.
 node {
   policy = "write"
 }
