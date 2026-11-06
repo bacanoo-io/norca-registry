@@ -57,6 +57,7 @@ job [[ $v.job_name | quote ]] {
           "-provider-ttl", [[ $v.provider_ttl | quote ]],
           "-provider-allow-http=[[ $v.provider_allow_http ]]",
           "-orphan-after", [[ $v.orphan_after | quote ]],
+          "-delete-orphans=[[ $v.delete_orphans ]]",
           "-resync", [[ $v.resync | quote ]],
 [[- if eq $v.driver "docker" ]]
           # In the container the address of the host cannot be bound; the

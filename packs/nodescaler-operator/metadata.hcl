@@ -8,7 +8,7 @@ app {
 pack {
   name        = "nodescaler-operator"
   description = "The node scaling operator of Norca (norca-nodescaler of norca-platform) as one release: the ACL policy bound to its job and the job, two instances on different nodes, never on a node the operator created. The kinds NodeGroup and NodeProvider are registered by the core."
-  version     = "0.2.0"
+  version     = "0.3.0"
 
   requires {
     norca    = ">= 0.3.0"

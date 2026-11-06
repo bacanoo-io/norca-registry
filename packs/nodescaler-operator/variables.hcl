@@ -167,3 +167,9 @@ variable "orphan_after" {
     pattern = "^[0-9]+(s|m|h)$"
   }
 }
+
+variable "delete_orphans" {
+  description = "Delete the instances of a node group that is gone that run a node too. Without it they are only reported (an OrphanedInstance event of their NodeProvider): they run work."
+  type        = bool
+  default     = false
+}

@@ -33,18 +33,20 @@ namespace "[[ $v.variables_namespace ]]" {
 
 # The node groups and the providers are cluster-scoped: their rules are in
 # the namespace "*". The operator writes the status and the event log of a
-# group, never its spec (the scale is the autoscaler's or a person's). A scale
-# down reads the jobs of the allocations on a node: whether one could be
-# placed again elsewhere (distinct_hosts).
+# group, never its spec (the scale is the autoscaler's or a person's), and
+# its finalizer, which keeps a deleted group until its instances are dealt
+# with. It reports orphaned instances in the event log of their provider. A
+# scale down reads the jobs of the allocations on a node: whether one could
+# be placed again elsewhere (distinct_hosts).
 namespace "*" {
   capabilities = ["list-jobs", "read-job"]
 
   object "norca.io/NodeGroup" {
-    capabilities = ["read", "write-status", "write-events"]
+    capabilities = ["read", "write-status", "write-events", "manage-finalizers"]
   }
 
   object "norca.io/NodeProvider" {
-    capabilities = ["read"]
+    capabilities = ["read", "write-events"]
   }
 }
 

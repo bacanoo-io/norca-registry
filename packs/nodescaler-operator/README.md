@@ -9,9 +9,12 @@ The node scaling operator of Norca, `norca-nodescaler` of
 [norca-platform](https://github.com/bacanoo-io/norca-platform), as one
 release:
 
-- the ACL policy of the operator, bound to its job: the status and the event
-  log of the `norca.io/NodeGroup` objects (not their spec), reading the
-  `norca.io/NodeProvider` objects, the Variables under `nodescaler/` (the
+- the ACL policy of the operator, bound to its job: the status, the event
+  log and the finalizer of the `norca.io/NodeGroup` objects (not their spec;
+  the finalizer keeps a deleted group until its instances are dealt with by
+  its `spec.deletion`), reading the `norca.io/NodeProvider` objects and
+  writing their event log (orphaned instances are reported there), the
+  Variables under `nodescaler/` (the
   bootstrap and the network ranges of the region, the tokens of the
   providers), its leader election lease, node write (a foreign node is made
   ineligible; a scale down drains a node, makes it eligible again and purges
@@ -49,6 +52,7 @@ providers are applications of their own and register themselves.
 | `provider_allow_http` | `false` | http endpoints of providers (labs only). |
 | `resync` | `5m` | Period of the full resynchronization of the groups. |
 | `orphan_after` | `15m` | Age after which an orphaned instance without a node is deleted. |
+| `delete_orphans` | `false` | Delete orphaned instances that run a node too; otherwise they are only reported. |
 
 ```shell
 norca pack plan nodescaler-operator --registry=norca
