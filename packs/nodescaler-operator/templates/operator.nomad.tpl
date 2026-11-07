@@ -48,10 +48,16 @@ job [[ $v.job_name | quote ]] {
       name = "[[ $v.job_name ]]-join"
       port = "join"
 
+      # GET /v1/health answers 200 while the endpoint can issue certificates.
+      # Its certificate comes from the node CA, which the client does not
+      # know: the check does not verify it.
       check {
-        type     = "tcp"
-        interval = "10s"
-        timeout  = "2s"
+        type            = "http"
+        protocol        = "https"
+        path            = "/v1/health"
+        tls_skip_verify = true
+        interval        = "10s"
+        timeout         = "2s"
       }
     }
 [[- end ]]

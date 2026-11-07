@@ -63,7 +63,7 @@ providers are applications of their own and register themselves.
 | `orphan_sweep` | `5m` | How often the leader looks for orphaned instances at the providers. |
 | `delete_orphans` | `false` | Delete orphaned instances that run a node too; otherwise they are only reported. |
 | `join_enabled` | `false` | Serve the join endpoint: the nodes make their own keys (`norca-join` on the machines, the bootstrap item `join_binary`). |
-| `join_port` | `8490` | Static port of the join endpoint; the new nodes must reach it. |
+| `join_port` | `8490` | Static port of the join endpoint; the new nodes must reach it. The service `<job_name>-join` is checked on it over https (`GET /v1/health`, `tls_skip_verify`: the node CA issued its certificate), which needs a Norca with `tls_skip_verify` on the checks of Norca services. |
 | `join_validity` | `168h` | Validity of the certificate of a node that renews itself (at two thirds). |
 | `join_urls` | `[]` | Stable https URLs of the endpoint (a DNS name, a load balancer); empty: the instances of the service `<job_name>-join`. |
 
