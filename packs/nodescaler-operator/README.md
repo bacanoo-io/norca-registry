@@ -31,7 +31,10 @@ release:
   `<job_name>-join`: the bootstrap of a new node carries a one-time token
   instead of its key and certificate, and `norca-join` on the machine makes
   the key, fetches the certificate and renews it (the policy then also
-  writes and deletes the records under `nodescaler/join/`).
+  writes and deletes the records under `nodescaler/join/`). The endpoint
+  accepts a join or a renewal only from an address the provider reports
+  for the instance (`join_check_address`), and a renewal only with a new
+  key.
 
 The kinds `NodeGroup` and `NodeProvider` are registered by the core; the
 providers are applications of their own and register themselves.
@@ -66,6 +69,7 @@ providers are applications of their own and register themselves.
 | `join_port` | `8490` | Static port of the join endpoint; the new nodes must reach it. The service `<job_name>-join` is checked on it over https (`GET /v1/health`, `tls_skip_verify`: the node CA issued its certificate), which needs a Norca with `tls_skip_verify` on the checks of Norca services. |
 | `join_validity` | `168h` | Validity of the certificate of a node that renews itself (at two thirds). |
 | `join_urls` | `[]` | Stable https URLs of the endpoint (a DNS name, a load balancer); empty: the instances of the service `<job_name>-join`. |
+| `join_check_address` | `true` | Accept a join or a renewal only from an address the provider reports for the instance; a request from another one is refused and is a `JoinAddressRefused` warning in the log of the group. Set `false` where a proxy, a load balancer or NAT in front of the endpoint changes the source address (`join_urls` behind such a load balancer). A provider that reports no addresses has no binding. |
 
 ```shell
 norca pack plan nodescaler-operator --registry=norca

@@ -12,3 +12,6 @@ join_enabled  = true
 join_port     = 8490
 join_validity = "168h"
 join_urls     = ["https://nodescaler-join.example.com:8490"]
+# Only a node's own addresses (as its provider reports them) may join and
+# renew; false where a load balancer behind join_urls hides them.
+join_check_address = true

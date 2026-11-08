@@ -216,6 +216,12 @@ variable "join_validity" {
   }
 }
 
+variable "join_check_address" {
+  description = "The join endpoint accepts a join or a renewal only from an address the provider reports for the instance (a stolen token or key used elsewhere is refused). Turn it off where a proxy, a load balancer or NAT in front of the endpoint changes the source address, such as join_urls behind a load balancer that does not keep it."
+  type        = bool
+  default     = true
+}
+
 variable "join_urls" {
   description = "Stable https URLs of the join endpoint (a DNS name or a load balancer in front of the operator instances). Empty: the instances of the service <job_name>-join of the native catalog, which move with the operator."
   type        = list(string)

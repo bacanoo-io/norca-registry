@@ -94,6 +94,7 @@ job [[ $v.job_name | quote ]] {
 [[- if $v.join_enabled ]]
           "-join-listen", ":[[ $v.join_port ]]",
           "-join-validity", [[ $v.join_validity | quote ]],
+          "-join-check-address=[[ $v.join_check_address ]]",
           "-join-service", "[[ $v.job_name ]]-join",
           "-join-service-namespace", [[ $v.namespace | quote ]],
 [[- range $u := $v.join_urls ]]
