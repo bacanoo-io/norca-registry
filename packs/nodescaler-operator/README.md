@@ -37,7 +37,8 @@ release:
   key.
 
 The kinds `NodeGroup` and `NodeProvider` are registered by the core; the
-providers are applications of their own and register themselves.
+providers are applications of their own and register themselves, for example
+`norca-provider` (the [norca-provider](../norca-provider) pack).
 
 ## Before
 
