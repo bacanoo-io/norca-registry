@@ -34,7 +34,8 @@ release:
   writes and deletes the records under `nodescaler/join/`). The endpoint
   accepts a join or a renewal only from an address the provider reports
   for the instance (`join_check_address`), and a renewal only with a new
-  key.
+  key. With `join_key_store` (or `spec.join.key_store` of a group) the key
+  of a node is made in the TPM 2.0 of its machine and never leaves it.
 
 The kinds `NodeGroup` and `NodeProvider` are registered by the core; the
 providers are applications of their own and register themselves, for example
@@ -71,6 +72,7 @@ providers are applications of their own and register themselves, for example
 | `join_validity` | `168h` | Validity of the certificate of a node that renews itself (at two thirds). |
 | `join_urls` | `[]` | Stable https URLs of the endpoint (a DNS name, a load balancer); empty: the instances of the service `<job_name>-join`. |
 | `join_check_address` | `true` | Accept a join or a renewal only from an address the provider reports for the instance; a request from another one is refused and is a `JoinAddressRefused` warning in the log of the group. Set `false` where a proxy, a load balancer or NAT in front of the endpoint changes the source address (`join_urls` behind such a load balancer). A provider that reports no addresses has no binding. |
+| `join_key_store` | `file` | Where the nodes keep their keys, unless their group sets `spec.join.key_store`: `file` (a key file), `tpm` (made in the TPM 2.0 of the machine, which must have `/dev/tpmrm0`; the key never leaves it and the key file is useless elsewhere; Linux) or `auto` (the TPM where the machine has one, else a file). On clouds: a vTPM (Shielded VM, Trusted Launch, NitroTPM). |
 
 ```shell
 norca pack plan nodescaler-operator --registry=norca

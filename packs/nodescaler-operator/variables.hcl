@@ -222,6 +222,16 @@ variable "join_check_address" {
   default     = true
 }
 
+variable "join_key_store" {
+  description = "Where the nodes that join keep their keys, unless their NodeGroup sets spec.join.key_store: file (a key file), tpm (made in the TPM 2.0 of the machine and never leaving it; a machine without /dev/tpmrm0 does not join; Linux) or auto (the TPM where the machine has one, else a file)."
+  type        = string
+  default     = "file"
+
+  validation {
+    pattern = "^(file|tpm|auto)$"
+  }
+}
+
 variable "join_urls" {
   description = "Stable https URLs of the join endpoint (a DNS name or a load balancer in front of the operator instances). Empty: the instances of the service <job_name>-join of the native catalog, which move with the operator."
   type        = list(string)

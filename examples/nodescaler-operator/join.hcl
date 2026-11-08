@@ -15,3 +15,6 @@ join_urls     = ["https://nodescaler-join.example.com:8490"]
 # Only a node's own addresses (as its provider reports them) may join and
 # renew; false where a load balancer behind join_urls hides them.
 join_check_address = true
+# The key of a node in the TPM of its machine where it has one (a vTPM on
+# clouds), else in a file; tpm refuses machines without a TPM.
+join_key_store = "auto"
