@@ -3,7 +3,7 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 
-[[- /* The JSON Schema of the LoadBalancer kind (norca/controller/examples/loadbalancer/loadbalancer.schema.json).
+[[- /* The JSON Schema of the LoadBalancer kind (loadbalancer/operator/loadbalancer.schema.json of norca-platform).
 With the webhooks, the defaulting webhook fills in the class of the region instead of the static default. */ -]]
 [[- define "lb.schema" -]]
 [[- $v := vars . -]]

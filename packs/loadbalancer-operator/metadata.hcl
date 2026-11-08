@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: MPL-2.0
 
 app {
-  url = "https://github.com/bacanoo-io/norca/tree/main/norca/controller/examples/loadbalancer"
+  url = "https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator"
 }
 
 pack {
   name        = "loadbalancer-operator"
-  description = "The LoadBalancer operator of Norca as one release: the norca.io/LoadBalancer object kind (with its optional webhooks and limits), the ACL policy of the controller, an admission policy for service marks and the controller job."
-  version     = "0.2.0"
+  description = "The LoadBalancer operator of Norca as one release: the norca.io/LoadBalancer object kind (with its optional webhooks and limits), the norca.io/LoadBalancerClass kind of the providers, the ACL policy of the controller, an admission policy for service marks and the controller job."
+  version     = "0.3.0"
 
   requires {
     norca    = ">= 0.1.0"

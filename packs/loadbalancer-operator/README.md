@@ -5,16 +5,17 @@ SPDX-License-Identifier: MPL-2.0
 
 # loadbalancer-operator
 
-The LoadBalancer operator of Norca (the sample operator of the controller SDK,
-[`norca/controller/examples/loadbalancer`](https://github.com/bacanoo-io/norca/tree/main/norca/controller/examples/loadbalancer)
-in the Norca repository) packaged as an **operator pack**: one
+The LoadBalancer operator of Norca (`norca-loadbalancer`,
+[`loadbalancer/operator`](https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator)
+in the norca-platform repository) packaged as an **operator pack**: one
 release installs, upgrades, rolls back and uninstalls everything the operator
 needs, in the fixed order of the extended pack format.
 
 | Template | Resource |
 | --- | --- |
-| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, the `norca.io/LoadBalancer` objects (status, events, finalizers), and node read (an instance on a node marked `norca.lb.leaving` is not a target) |
+| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, the `norca.io/LoadBalancer` objects (status, events, finalizers), read of the `norca.io/LoadBalancerClass` objects and of the tokens of the classes (`class_token_path`), and node read (an instance on a node marked `norca.lb.leaving` is not a target) |
 | `loadbalancer.kind.hcl.tpl` | Object kind `norca.io/LoadBalancer`: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits |
+| `loadbalancerclass.kind.hcl.tpl` | Object kind `norca.io/LoadBalancerClass`: the classes the providers register, with their heartbeat (`status.heartbeat`); optional (`class_kind_enabled`) |
 | `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
 | `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |
 
@@ -24,12 +25,12 @@ The values are checked against the `validation` blocks and rules of
 
 ## Install
 
-Build the binary in a Norca checkout and install it on the nodes (or build an
-image with it), then install the pack from the registry or from a checkout of
-the registry:
+Build the binary in a norca-platform checkout and install it on the nodes (or
+build an image with it), then install the pack from the registry or from a
+checkout of the registry:
 
 ```shell
-cd norca/controller && go build -o /usr/local/bin/norca-loadbalancer ./examples/loadbalancer
+cd norca-platform && go build -o /usr/local/bin/norca-loadbalancer ./cmd/norca-loadbalancer
 norca pack plan ./packs/loadbalancer-operator
 norca pack run  ./packs/loadbalancer-operator --name=lb
 norca pack status lb
@@ -42,6 +43,19 @@ With a management token, the release can register the kind and bind the ACL
 policy at once. A token with less rights needs `operator` write (the kind),
 `acl` write (the policy) and `admission` write (the admission policy):
 applying a release grants no extra permissions.
+
+## Providers
+
+Load balancers of other classes than the built-in `nomad` one come from
+providers: applications that register a `norca.io/LoadBalancerClass` object
+per class and keep a heartbeat in it. `norca-provider` (the
+[`norca-provider`](../norca-provider) pack) is one. The controller calls a
+class at its registered endpoint with the token of the Variable the class
+names (item `token`, in `class_token_namespace`; the policy lets it read
+`class_token_path`). A class whose heartbeat is older than `class_ttl` is
+reported as `ProviderUnavailable`. Providers serve https; for a certificate
+of a private CA give the CA in `class_ca_cert`, and `class_allow_http`
+accepts http endpoints in a lab.
 
 ## Webhooks
 
@@ -82,7 +96,7 @@ limit get `429 Too Many Requests`; the controller SDK backs off.
 norca pack uninstall lb
 ```
 
-deletes the job, the admission policy, the kind and the policy in reverse
+deletes the job, the admission policy, the kinds and the policy in reverse
 order. The kind can only be deleted when no LoadBalancer objects are left:
 delete them first (the controller removes their load balancers through the
 finalizer).

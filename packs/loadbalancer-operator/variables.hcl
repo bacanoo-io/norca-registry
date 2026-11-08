@@ -65,7 +65,7 @@ variable "driver" {
 }
 
 variable "binary" {
-  description = "Path of the norca-loadbalancer binary on the nodes (raw_exec, exec). Build it in a Norca checkout with: cd norca/controller && go build -o norca-loadbalancer ./examples/loadbalancer"
+  description = "Path of the norca-loadbalancer binary on the nodes (raw_exec, exec). Build it in a norca-platform checkout with: go build -o norca-loadbalancer ./cmd/norca-loadbalancer"
   type        = string
   default     = "/usr/local/bin/norca-loadbalancer"
 }
@@ -132,6 +132,58 @@ variable "discover_services" {
   description = "Create LoadBalancer objects from services marked with the norca_lb_* meta keys."
   type        = bool
   default     = true
+}
+
+# ---------------------------------------------------------------------------
+# Providers: load balancer classes registered by norca-provider
+# ---------------------------------------------------------------------------
+
+variable "class_kind_enabled" {
+  description = "Install the norca.io/LoadBalancerClass kind, with which providers (norca-provider) register their classes. Disable it when another release installs the kind."
+  type        = bool
+  default     = true
+}
+
+variable "class_ttl" {
+  description = "How old the heartbeat of a registered class may be before its load balancers are reported as ProviderUnavailable."
+  type        = string
+  default     = "3m"
+
+  validation {
+    pattern = "^[0-9]+(ms|s|m|h)$"
+  }
+}
+
+variable "class_token_namespace" {
+  description = "Namespace of the Variables that hold the tokens of the registered classes (the token_variable of norca-provider)."
+  type        = string
+  default     = "default"
+
+  validation {
+    min_length = 1
+  }
+}
+
+variable "class_token_path" {
+  description = "Variable paths the controller may read the tokens of the registered classes from (a path with a trailing *, in class_token_namespace)."
+  type        = string
+  default     = "providers/*"
+
+  validation {
+    min_length = 1
+  }
+}
+
+variable "class_allow_http" {
+  description = "Accept http endpoints of registered classes (labs only; https otherwise)."
+  type        = bool
+  default     = false
+}
+
+variable "class_ca_cert" {
+  description = "PEM bundle of a CA that signed the https certificates of the providers, in addition to the system roots (written to the controller task and passed as -class-ca-file)."
+  type        = string
+  default     = ""
 }
 
 # ---------------------------------------------------------------------------
