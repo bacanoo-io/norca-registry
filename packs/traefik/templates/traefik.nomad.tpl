@@ -98,6 +98,14 @@ job [[ $job | quote ]] {
       port     = "admin"
       provider = "nomad"
       tags     = ["admin"]
+      [[- if $v.mtls ]]
+
+      # Native mTLS: the workload certificate of Traefik for its backends;
+      # the intentions name this service as the source.
+      mtls {
+        mode = "app"
+      }
+      [[- end ]]
 
       check {
         type     = "http"
@@ -221,6 +229,35 @@ tls:
 [[- end ]]
 TRAEFIK_TLS
       }
+      [[- if gt (len $v.mtls_backends) 0 ]]
+
+      # mTLS to the backends: a servers transport per backend with the
+      # workload certificate and the trust bundle as PEM content. The client
+      # renders it again when it renews the certificate (the variables name
+      # the files on the client), and Traefik applies it without a restart.
+      template {
+        destination = "secrets/dynamic/mtls.yml"
+        change_mode = "noop"
+        perms       = "0600"
+        data        = <<TRAEFIK_MTLS
+http:
+  serversTransports:
+[[- range $b := $v.mtls_backends ]]
+[[- $ns := $b.namespace ]][[ if eq $ns "" ]][[ $ns = $v.namespace ]][[ end ]][[ if eq $ns "" ]][[ $ns = "default" ]][[ end ]]
+    [[ printf "mtls-%s" $b.name ]]:
+      serverName: [[ printf "%s.service.%s.norca" $b.service $ns | quote ]]
+      rootCAs:
+        - |
+{{ file (env "NORCA_MTLS_CA_FILE") | trimSpace | indent 10 }}
+      certificates:
+        - certFile: |
+{{ file (env "NORCA_MTLS_CERT_FILE") | trimSpace | indent 12 }}
+          keyFile: |
+{{ file (env "NORCA_MTLS_KEY_FILE") | trimSpace | indent 12 }}
+[[- end ]]
+TRAEFIK_MTLS
+      }
+      [[- end ]]
       [[- if ne $v.dynamic_config "" ]]
 
       # The static routes of the pack (dynamic_config) unchanged: the

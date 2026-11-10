@@ -339,6 +339,33 @@ variable "tls_min_version" {
 # Routing: the native catalog and static file configuration
 # ---------------------------------------------------------------------------
 
+variable "mtls" {
+  description = "Give Traefik a workload certificate of native mTLS: the admin service gets an mtls block (app mode), and Traefik presents the certificate to the backends of mtls_backends. The source of the service intentions that allow it is the service named after the job (job_name). Turning it on or off replaces the allocations."
+  type        = bool
+  default     = false
+
+  ui {
+    tab   = "tls"
+    group = "mTLS to the backends"
+  }
+}
+
+variable "mtls_backends" {
+  description = "Backends Traefik reaches over native mTLS (needs mtls): one servers transport mtls-<name> each, with Traefik's workload certificate, the trust bundle and the DNS name <service>.service.<namespace>.norca that the backend's certificate carries. A route uses it with the tags traefik.http.services.<svc>.loadbalancer.server.scheme=https and traefik.http.services.<svc>.loadbalancer.serversTransport=mtls-<name>@file. namespace: the backend's, the job's namespace (or default) when empty. Names: letters, digits, - and _."
+  type = list(object({
+    name      = string
+    service   = string
+    namespace = optional(string, "")
+  }))
+  default = []
+
+  ui {
+    tab    = "tls"
+    group  = "mTLS to the backends"
+    widget = "object-list"
+  }
+}
+
 variable "catalog_enabled" {
   description = "Route to the services of Norca's native catalog by their tags (the Nomad provider of Traefik), e.g. tags = [\"traefik.enable=true\", \"traefik.http.routers.app.rule=Host(`app.example.com`)\"]."
   type        = bool

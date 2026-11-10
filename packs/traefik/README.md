@@ -117,6 +117,48 @@ services and middlewares in Traefik's dynamic configuration (YAML of the file
 provider), for backends outside the catalog. It is applied without a restart
 and is not interpolated by the job's templates.
 
+## mTLS to the backends
+
+With `mtls`, Traefik gets a workload certificate of Norca's native mTLS (the
+admin service has an `mtls` block in app mode). For every backend of
+`mtls_backends` the pack writes a servers transport `mtls-<name>` that presents
+the certificate, trusts the trust bundle of the region (and of the federated
+regions), and checks that the backend's certificate carries the DNS name
+`<service>.service.<namespace>.norca`. The client renews the certificate and
+Traefik applies it without a restart.
+
+```hcl
+mtls = true
+
+mtls_backends = [
+  { name = "api", service = "api" },                       # namespace of the job
+  { name = "billing", service = "billing", namespace = "finance" },
+]
+```
+
+A backend in app mode serves TLS with its own workload certificate and
+requires a client certificate; its route uses the transport by its tags:
+
+```hcl
+tags = [
+  "traefik.enable=true",
+  "traefik.http.routers.api.rule=Host(`api.example.com`)",
+  "traefik.http.services.api.loadbalancer.server.scheme=https",
+  "traefik.http.services.api.loadbalancer.serversTransport=mtls-api@file",
+]
+```
+
+The backend decides with the service intentions of its namespace; Traefik's
+source service is the service named after the job:
+
+```shell
+norca service intention create -allow traefik api
+norca service intention create -namespace finance -allow default/traefik billing
+```
+
+HTTP backends only (also gRPC and WebSocket over HTTPS); TCP routes keep their
+own TLS settings. Turning `mtls` on or off replaces the allocations.
+
 ## Examples
 
 `examples/traefik/` of the registry, each with the static configuration of a
@@ -128,6 +170,7 @@ common case:
 | `websocket.hcl` | WebSocket (`wss://`): the Upgrade passes through by itself; a sticky cookie keeps a client on its backend |
 | `grpc.hcl` | gRPC: TLS (HTTP/2 by ALPN) at Traefik, plaintext HTTP/2 (`h2c://`) to the backends, gRPC health checks |
 | `tcp.hcl` | raw TCP: PostgreSQL on its own entrypoint, TLS passthrough by SNI on 443, a UDP entrypoint (DNS) |
+| `mtls.hcl` | native mTLS to a backend: Traefik's workload certificate, a servers transport, the backend's tags and intention |
 
 ```shell
 norca secret put traefik/certs/example-com cert=@fullchain.pem key=@privkey.pem
@@ -146,6 +189,7 @@ norca pack run traefik --registry=norca --name=traefik -f examples/traefik/web.h
 | `admin_port`, `dashboard`, `metrics` | `8080`, `false`, `false` | the admin entrypoint |
 | `tls_certificates`, `tls_default_certificate` | `[]`, `""` | secrets with the items cert and key |
 | `tls_min_version` | `VersionTLS12` | |
+| `mtls`, `mtls_backends` | `false`, `[]` | native mTLS to the backends |
 | `catalog_enabled`, `catalog_namespaces`, `exposed_by_default` | `true`, `["default"]`, `false` | routing by service tags |
 | `dynamic_config` | `""` | static routes (YAML) |
 | `log_level`, `access_log` | `INFO`, `false` | |
