@@ -23,7 +23,7 @@ discovery namespace, read with the workload identity of the task. */ -]]
                         namespace: [[ $ns | quote ]]
                         refresh_interval: 60s
                         authorization:
-                          credentials_file: /secrets/nomad_token
+                          credentials_file: /secrets/norca_token
 [[- if ne $v.nomad_ca_secret_path "" ]]
                         tls_config:
                           ca_file: /secrets/nomad-ca.pem

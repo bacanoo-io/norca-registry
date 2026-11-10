@@ -115,7 +115,7 @@ fails with an authentication error instead of holding up the collector.
 local agent (`nomad_address`), one per namespace of `discovery_namespaces`
 (`["default"]`; add the namespaces of your NATS, Forgejo, gateway and Consul
 jobs), authenticated with the collector's workload identity (`identity { file
-= true }`, sent as `Authorization: Bearer`; a workload identity may read the
+= true }`, the file `secrets/norca_token`, sent as `Authorization: Bearer`; a workload identity may read the
 service registrations of any namespace). PostgreSQL is found with
 `nomadService` in the template of the configuration, which sees only the
 namespace of the job: run the postgres pack in the same namespace (it is in

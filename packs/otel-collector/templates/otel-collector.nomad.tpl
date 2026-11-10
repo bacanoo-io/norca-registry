@@ -182,7 +182,7 @@ job [[ $job | quote ]] {
         args         = ["--config", "/local/config.yaml"]
       }
 
-      # secrets/nomad_token: the workload identity, with which the
+      # secrets/norca_token: the workload identity, with which the
       # Prometheus receiver reads the catalog (nomad_sd_configs).
       identity {
         file = true
