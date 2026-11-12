@@ -29,6 +29,15 @@ job [[ $v.job_name | quote ]] {
       operator = "distinct_hosts"
       value    = "true"
     }
+
+    # And in different datacenters where there are several: when a
+    # datacenter is lost, nodes are needed in the others, and an operator
+    # that went with it would add none until it is placed again. A score,
+    # not a rule: one datacenter is enough to run.
+    spread {
+      attribute = "${node.datacenter}"
+      weight    = 100
+    }
 [[- end ]]
 
     network {

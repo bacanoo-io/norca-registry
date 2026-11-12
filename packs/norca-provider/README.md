@@ -77,6 +77,14 @@ norca object list norca.io/LoadBalancerClass
   platform that keeps its load balancers in the process (`tcpproxy`) must
   not run twice. Split the providers over several releases (`job_name`) to
   run them on different nodes.
+- A second instance would not be a standby: a registration has one endpoint
+  (the instance that registered last), and the heartbeat of the other would
+  hide that the endpoint is dead. What makes the provider survive the loss
+  of its node or its datacenter is being placed again: give `datacenters`
+  at least two names or a pattern (the default is `["*"]`). With a single
+  named datacenter the pack refuses to render unless
+  `allow_single_datacenter = true`: until that datacenter is back, no node
+  and no load balancer is made.
 - The configuration is a JSON string: it is checked by `norca-provider` when
   the task starts (a wrong type, a missing parameter, a section the type does
   not implement), not by the pack.

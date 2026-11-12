@@ -3,6 +3,9 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- if and (eq (len $v.datacenters) 1) (not (contains "*" (index $v.datacenters 0))) (not $v.allow_single_datacenter) ]]
+[[- fail (printf "datacenters names only %q: a provider bound to one datacenter is lost with it, and nothing is made until it is back. Name at least two datacenters or a pattern, or set allow_single_datacenter = true" (index $v.datacenters 0)) -]]
+[[- end ]]
 [[- $scheme := "http" ]][[ if $v.tls_enabled ]][[ $scheme = "https" ]][[ end ]]
 [[- $advertise := printf "%s://${NORCA_IP_api}:%d" $scheme (int $v.port) ]][[ if ne $v.advertise_url "" ]][[ $advertise = $v.advertise_url ]][[ end ]]
 job [[ $v.job_name | quote ]] {
@@ -24,7 +27,10 @@ job [[ $v.job_name | quote ]] {
   group "provider" {
     # One instance: the providers of the configuration are registered once,
     # and a platform that keeps its load balancers in the process (tcpproxy)
-    # must not run twice.
+    # must not run twice. A second instance would not be a standby either:
+    # the registration has one endpoint, the heartbeat of the other instance
+    # would hide that the endpoint is dead. When its node or its datacenter
+    # is lost the job is placed again, in another of its datacenters.
     count = 1
 
     network {

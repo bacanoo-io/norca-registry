@@ -32,7 +32,7 @@ variable "region" {
 }
 
 variable "datacenters" {
-  description = "Datacenters of the provider job."
+  description = "Datacenters of the provider job. The provider is one instance: what makes it survive the loss of a datacenter is being placed again in another, so name at least two, or a pattern."
   type        = list(string)
   default     = ["*"]
 
@@ -40,6 +40,12 @@ variable "datacenters" {
     min_items       = 1
     item_min_length = 1
   }
+}
+
+variable "allow_single_datacenter" {
+  description = "Accept a single named datacenter for the provider job. Without it the pack refuses to render: a provider bound to one datacenter is lost with it, and no node or load balancer is made until the datacenter is back."
+  type        = bool
+  default     = false
 }
 
 variable "node_pool" {

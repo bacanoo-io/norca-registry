@@ -23,7 +23,8 @@ release:
   allocations of a node could be placed again), and reading the
   `norca.io/LoadBalancer` objects of every namespace (an edge node waits until
   its load balancers dropped it);
-- the job: two instances on different nodes with leader election, in a node
+- the job: two instances on different nodes, and in different datacenters
+  where there are several (a spread), with leader election, in a node
   pool of its own choice, and **never on a node the operator created**
   (`${meta.norca.instance}` must not be set), so it cannot delete the machine
   it runs on;
@@ -57,7 +58,7 @@ providers are applications of their own and register themselves, for example
 | `namespace` | `default` | Namespace of the job and of the lease. |
 | `region`, `datacenters` | the release's, `["*"]` | Where the job runs; one operator per region. |
 | `node_pool` | `default` | Run it outside the pools it scales. |
-| `count` | `2` | Instances, on different nodes. |
+| `count` | `2` | Instances, on different nodes and, where there are several, in different datacenters: when a datacenter is lost the operator must still be there to add nodes in the others. |
 | `driver`, `binary`, `image` | `raw_exec`, `/usr/local/bin/norca-nodescaler` | How the binary runs. |
 | `cpu`, `memory`, `log_level` | `100`, `64`, `info` | |
 | `variables_namespace` | `default` | Namespace of the Variables under `nodescaler/`. |
