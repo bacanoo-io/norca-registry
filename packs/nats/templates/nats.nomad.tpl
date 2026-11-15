@@ -352,12 +352,13 @@ configuration parser rejects. */]]
 [[- if and (eq $account "") (eq $v.auth_mode "userpass") ]][[ $account = $v.users_default_account ]][[ end ]]
             # The system bus of the Norca servers (change data capture): the
             # changes of the region, one way, with the ACL token of the item
-            # token of the secret [[ $v.norca_bus_secret ]].
+            # token of the secret [[ $v.norca_bus_secret ]] (without the line
+            # break a token file often ends with).
             remotes: [
               {
                 urls: [
 [[- range $v.norca_bus_servers ]]
-                  "nats-leaf://{{ with (nomadSecret "[[ $v.norca_bus_secret ]]").token }}{{ . }}{{ else }}{{ sprig_fail "the secret [[ $v.norca_bus_secret ]] has no item token" }}{{ end }}@[[ . ]]"
+                  "nats-leaf://{{ with (nomadSecret "[[ $v.norca_bus_secret ]]").token }}{{ . | trimSpace }}{{ else }}{{ sprig_fail "the secret [[ $v.norca_bus_secret ]] has no item token" }}{{ end }}@[[ . ]]"
 [[- end ]]
                 ]
 [[- if ne $account "" ]]
