@@ -112,6 +112,14 @@ job [[ $job | quote ]] {
     }
 [[- end ]]
     }
+[[- if $v.norca_bus_leaf ]]
+
+    # The token (and the CA) of the leaf node on the system bus of the Norca
+    # servers.
+    secret_access {
+      path = [[ $v.norca_bus_secret | quote ]]
+    }
+[[- end ]]
 [[- if and (eq $v.auth_mode "userpass") $v.users ]]
 
     # The passwords of the users (auth_mode = "userpass"), item password of
@@ -323,9 +331,10 @@ configuration parser rejects. */]]
 [[- end ]]
           }
 [[- end ]]
-[[- if $v.leafnodes_enabled ]]
+[[- if or $v.leafnodes_enabled $v.norca_bus_leaf ]]
 
           leafnodes {
+[[- if $v.leafnodes_enabled ]]
             listen: "[[ if $docker ]]0.0.0.0[[ else ]]{{ env "NORCA_IP_leafnode" }}[[ end ]]:{{ env "NORCA_PORT_leafnode" }}"
             advertise: "{{ env "NORCA_ADDR_leafnode" }}"
 [[- if $v.tls_enabled ]]
@@ -337,6 +346,32 @@ configuration parser rejects. */]]
               timeout: 5
             }
 [[- end ]]
+[[- end ]]
+[[- if $v.norca_bus_leaf ]]
+[[- $account := $v.norca_bus_account ]]
+[[- if and (eq $account "") (eq $v.auth_mode "userpass") ]][[ $account = $v.users_default_account ]][[ end ]]
+            # The system bus of the Norca servers (change data capture): the
+            # changes of the region, one way, with the ACL token of the item
+            # token of the secret [[ $v.norca_bus_secret ]].
+            remotes: [
+              {
+                urls: [
+[[- range $v.norca_bus_servers ]]
+                  "nats-leaf://{{ with (nomadSecret "[[ $v.norca_bus_secret ]]").token }}{{ . }}{{ else }}{{ sprig_fail "the secret [[ $v.norca_bus_secret ]] has no item token" }}{{ end }}@[[ . ]]"
+[[- end ]]
+                ]
+[[- if ne $account "" ]]
+                account: [[ $account | quote ]]
+[[- end ]]
+[[- if $v.norca_bus_tls ]]
+                tls {
+                  ca_file: "{{ env "NORCA_SECRETS_DIR" }}/norca_bus/ca.pem"
+                  timeout: 5
+                }
+[[- end ]]
+              }
+            ]
+[[- end ]]
           }
 [[- end ]]
 [[- if ne $v.extra_config "" ]]
@@ -345,6 +380,18 @@ configuration parser rejects. */]]
 [[- end ]]
         EOT
       }
+[[- if and $v.norca_bus_leaf $v.norca_bus_tls ]]
+
+      # The CA of the Norca servers, item ca of the secret
+      # [[ $v.norca_bus_secret ]]: the leaf node verifies the bus with it.
+      template {
+        destination   = "secrets/norca_bus/ca.pem"
+        perms         = "0600"
+        change_mode   = "signal"
+        change_signal = "SIGHUP"
+        data          = "{{ with (nomadSecret \"[[ $v.norca_bus_secret ]]\").ca }}{{ . }}{{ else }}{{ sprig_fail \"the secret [[ $v.norca_bus_secret ]] has no item ca\" }}{{ end }}"
+      }
+[[- end ]]
 [[- if $v.tls_enabled ]]
 
       # TLS material from the secrets Variable (items tls_ca, tls_cert,

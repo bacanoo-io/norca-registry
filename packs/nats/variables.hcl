@@ -199,6 +199,40 @@ variable "leafnodes_enabled" {
 }
 
 # ---------------------------------------------------------------------------
+# The changes of the Norca region (change data capture)
+# ---------------------------------------------------------------------------
+
+variable "norca_bus_leaf" {
+  description = "Attach the servers to the system bus of the Norca servers as leaf nodes and receive the changes of the region (change data capture), one way: the subjects of the cdc rule of the token arrive live, and the consumers the Norca servers keep for the leaf (leaf-<accessor ID of the token>) are read through the JetStream domain norca-<region>. Needs the leaf node listener of the Norca servers (server { bus { leafnodes { enabled = true } } }) and the secret norca_bus_secret."
+  type        = bool
+  default     = false
+}
+
+variable "norca_bus_servers" {
+  description = "With norca_bus_leaf: the leaf node listeners (host:port) of the Norca servers of the region, port bus_leafnode (4652), e.g. [\"10.0.0.11:4652\", \"10.0.0.12:4652\"]. The certificates of the Norca servers name their addresses."
+  type        = list(string)
+  default     = []
+}
+
+variable "norca_bus_secret" {
+  description = "With norca_bus_leaf: path of the secret in the built-in secret store (in the namespace of the job) with the item token, the secret ID of an ACL token whose cdc rule has leaf = true, and with norca_bus_tls the item ca, the PEM of the CA of the Norca servers."
+  type        = string
+  default     = "norca/bus/leaf"
+}
+
+variable "norca_bus_tls" {
+  description = "With norca_bus_leaf: TLS to the leaf node listener, verified with the item ca of norca_bus_secret. Turn it off only when the Norca servers run without TLS."
+  type        = bool
+  default     = true
+}
+
+variable "norca_bus_account" {
+  description = "With norca_bus_leaf: the NATS account the changes arrive in. Empty: users_default_account with auth_mode = \"userpass\", the global account otherwise."
+  type        = string
+  default     = ""
+}
+
+# ---------------------------------------------------------------------------
 # JetStream
 # ---------------------------------------------------------------------------
 

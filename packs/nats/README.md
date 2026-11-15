@@ -301,6 +301,57 @@ client {
 - Keep `jetstream_domain` empty in the supercluster. Edge sites can attach as
   leaf nodes (`leafnodes_enabled`, port 7422) with their own domain.
 
+## The changes of the Norca region (change data capture)
+
+With `norca_bus_leaf = true` the servers attach to the system bus of the
+Norca servers as leaf nodes and receive the
+[changes of the region](https://bacanoo-io.github.io/norca-doc/docs/features/change-data-capture),
+one way: the bus accepts nothing from them but the fetches and
+acknowledgements of their own consumers. Applications read the changes from
+this NATS with its own users and accounts; only the pack holds a Norca token.
+
+1. The Norca servers run the leaf node listener:
+   `server { bus { leafnodes { enabled = true } } }` (port `bus_leafnode`,
+   4652; with norca-deployer `bus.leafnodes: true`).
+2. An ACL policy with a `cdc` rule that allows a leaf, and a token of it:
+
+   ```hcl
+   cdc {
+     receive = ["norca.eu.shop.>"]
+     leaf    = true
+   }
+   ```
+
+3. The secret `norca/bus/leaf` (`norca_bus_secret`) in the namespace of the
+   job, with the items `token` (the secret ID of the token) and `ca` (the CA
+   of the Norca servers):
+
+   ```shell
+   norca secret put norca/bus/leaf token=<secret ID> ca=@/etc/norca.d/ca.pem
+   ```
+
+4. The values:
+
+   ```hcl
+   norca_bus_leaf    = true
+   norca_bus_servers = ["10.0.0.11:4652", "10.0.0.12:4652", "10.0.0.13:4652"]
+   ```
+
+The subjects of the rule arrive live in the account `norca_bus_account`
+(empty: `users_default_account` with `auth_mode = "userpass"`, otherwise the
+global account), e.g. `norca.eu.shop.Allocation`. After a disconnect a client
+catches up from the consumer the Norca servers keep for the leaf,
+`leaf-<accessor ID of the token>`, in the JetStream domain `norca-<region>`
+(the NATS of the pack answers the plain JetStream API itself):
+
+```go
+js, _ := jetstream.NewWithDomain(nc, "norca-eu")
+cons, _ := js.Consumer(ctx, "NORCA_EVENTS_eu", "leaf-<accessor ID>")
+```
+
+A user of the account needs to subscribe to the subjects and publish to
+`$JS.norca-<region>.API.CONSUMER.>` and `$JS.ACK.>`.
+
 ## Variables
 
 See `variables.hcl` for all of them; the most important:
@@ -321,6 +372,7 @@ See `variables.hcl` for all of them; the most important:
 | `users`, `users_secret_prefix`, `users_default_account`, `system_account` | `[]`, `nats/users`, `APP`, `SYS` | `auth_mode = "userpass"`: users, accounts, permissions; passwords from the secret store |
 | `disruption_max_unavailable` | `"1"` | empty removes the block |
 | `metrics_enabled`, `metrics_image`, `metrics_port` | `false`, `natsio/prometheus-nats-exporter:0.20.2`, `0` | the Prometheus exporter (0 = dynamic port) |
+| `norca_bus_leaf`, `norca_bus_servers`, `norca_bus_secret`, `norca_bus_tls`, `norca_bus_account` | `false`, `[]`, `norca/bus/leaf`, `true`, `""` | the changes of the Norca region, as a leaf node of the system bus |
 
 ## Metrics
 
