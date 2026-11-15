@@ -59,6 +59,15 @@ entrypoints = [
 ]
 ```
 
+**The ACME HTTP-01 challenge.** A certificate authority asks for
+`/.well-known/acme-challenge/<token>` over http, on port 80. With
+`acme_challenge = true` the redirect of an http entrypoint leaves that path
+out: it becomes a router of the dynamic configuration
+(`!PathPrefix(...)`, with a priority above every other router of the
+entrypoint) instead of the redirection of the entrypoint, and the service
+that answers the challenge, the [norca-acme](../norca-acme) pack, routes
+the path by its catalog tags. Everything else is redirected as before.
+
 ## Certificates from the secret store
 
 Every secret of `tls_certificates` holds one certificate: the item `cert`
@@ -185,6 +194,7 @@ norca pack run traefik --registry=norca --name=traefik -f examples/traefik/web.h
 | `datacenters`, `node_pool`, `constraints` | `["*"]`, `""`, `[]` | placement (the edge nodes) |
 | `image`, `image_digest` | `docker.io/library/traefik:v3.7.16`, `""` | the official image |
 | `entrypoints` | `web` (80 → 443), `websecure` (443) | name, port, protocol, redirect_to |
+| `acme_challenge` | `false` | leave `/.well-known/acme-challenge/` out of the redirect, for the norca-acme pack |
 | `network_mode`, `host_network` | `host`, `""` | where the ports are bound |
 | `admin_port`, `dashboard`, `metrics` | `8080`, `false`, `false` | the admin entrypoint |
 | `tls_certificates`, `tls_default_certificate` | `[]`, `""` | secrets with the items cert and key |

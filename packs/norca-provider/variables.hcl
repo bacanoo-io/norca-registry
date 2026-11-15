@@ -149,7 +149,7 @@ variable "heartbeat_interval" {
 }
 
 variable "providers" {
-  description = "The providers to serve: the JSON array of the providers of the configuration of norca-provider (name, type, params, token or token_file or no_auth, token_variable, node, loadbalancer). Secrets are written as env:NAME, with NAME an item of the job's Variable (secrets = true). $${NAME} refers to the environment of the task. The default serves a mock class without a token, for trials only."
+  description = "The providers to serve: the JSON array of the providers of the configuration of norca-provider (name, type, params, token or token_file or no_auth, token_variable, node, loadbalancer, dns). Secrets are written as env:NAME, with NAME an item of the job's Variable (secrets = true). $${NAME} refers to the environment of the task. The default serves a mock class without a token, for trials only."
   type        = string
   default     = "[{\"name\": \"mock\", \"type\": \"mock\", \"no_auth\": true, \"loadbalancer\": {\"classes\": [{\"class\": \"mock\"}]}}]"
 
@@ -172,6 +172,12 @@ variable "tls_enabled" {
 
 variable "deregister_on_exit" {
   description = "Remove the registrations when the provider stops, so the operators report an unknown provider at once instead of waiting for the heartbeat to expire."
+  type        = bool
+  default     = true
+}
+
+variable "zone_kind_enabled" {
+  description = "Register the norca.io/DNSZone object kind: the registry of the DNS zones a provider with a dns section writes challenge records in, for the norca-acme pack. Disable it if another release of this pack registers the kind."
   type        = bool
   default     = true
 }

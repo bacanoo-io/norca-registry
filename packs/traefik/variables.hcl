@@ -418,6 +418,17 @@ variable "nomad_address" {
   }
 }
 
+variable "acme_challenge" {
+  description = "Leave the path of the ACME HTTP-01 challenge (/.well-known/acme-challenge/) out of the redirect of the http entrypoints with redirect_to, so that the service that answers it (the norca-acme pack) can route it by its catalog tags. The redirect is then a router of the dynamic configuration with a priority above every other router, instead of the redirection of the entrypoint. Needs the catalog (catalog_enabled) with the namespace of that service."
+  type        = bool
+  default     = false
+
+  ui {
+    tab   = "entrypoints"
+    group = "Entrypoints"
+  }
+}
+
 variable "dynamic_config" {
   description = "Static routes in Traefik's dynamic configuration (YAML of the file provider): routers, services and middlewares to fixed backends, for HTTP, WebSocket, gRPC (h2c://), TCP and UDP. Applied without a restart. See the examples of the pack registry."
   type        = string
@@ -448,4 +459,9 @@ variable "resources" {
   ui {
     tab = "resources"
   }
+}
+
+rule "acme_challenge" {
+  condition     = !var.acme_challenge || var.catalog_enabled
+  error_message = "acme_challenge needs catalog_enabled: the service that answers the challenge is routed by its catalog tags."
 }

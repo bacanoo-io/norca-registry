@@ -9,8 +9,8 @@ policy [[ printf "%s" $v.job_name | quote ]] {
   rules       = <<EOT
 # The registrations of the providers are cluster-scoped objects: their rules
 # are in the namespace "*". The provider writes the spec and the status
-# (the heartbeat) of its NodeProvider and LoadBalancerClass objects, and
-# deletes them when it stops. The secrets of the job's own Variable need no
+# (the heartbeat) of its NodeProvider, LoadBalancerClass and DNSZone objects,
+# and deletes them when it stops. The secrets of the job's own Variable need no
 # rule.
 namespace "*" {
   object "norca.io/NodeProvider" {
@@ -18,6 +18,10 @@ namespace "*" {
   }
 
   object "norca.io/LoadBalancerClass" {
+    capabilities = ["read", "write", "write-status"]
+  }
+
+  object "norca.io/DNSZone" {
     capabilities = ["read", "write", "write-status"]
   }
 }

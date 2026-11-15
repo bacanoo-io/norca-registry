@@ -9,8 +9,8 @@ The provider application of Norca, `norca-provider` of
 [norca-platform](https://github.com/bacanoo-io/norca-platform), as one
 release. One process serves the platforms its configuration names, each a
 type of `norca-provider` (`hcloud`, `aws`, `gcp`, `digitalocean`, `vultr`,
-`scaleway`, `nginx`, `tcpproxy`, `docker`, `mock`; `norca-provider types`
-lists them with their parameters):
+`scaleway`, `nginx`, `tcpproxy`, `docker`, `rfc2136`, `mock`;
+`norca-provider types` lists them with their parameters):
 
 - the **node providers** of the node scaling operator
   ([nodescaler-operator](../nodescaler-operator)): a `norca.io/NodeProvider`
@@ -19,14 +19,19 @@ lists them with their parameters):
 - the **load balancer classes** of the LoadBalancer operator
   ([loadbalancer-operator](../loadbalancer-operator)): a
   `norca.io/LoadBalancerClass` object per class, served at
-  `<advertise_url>/classes/<class>`.
+  `<advertise_url>/classes/<class>`;
+- the **DNS zones** of the ACME operator ([norca-acme](../norca-acme)): a
+  `norca.io/DNSZone` object per zone of a `dns` section, served at
+  `<advertise_url>/zones/<zone>`. Only the challenge records of a zone
+  (`_acme-challenge.<name>`) can be written through it.
 
-Both kinds of objects carry the same heartbeat (`status.heartbeat`) and are
+All of these objects carry the same heartbeat (`status.heartbeat`) and are
 removed when the provider stops (`deregister_on_exit`).
 
 | Template | Resource |
 | --- | --- |
-| `provider.acl.hcl.tpl` | ACL policy bound to the job (`job_acl`): `read`, `write` and `write-status` on the `norca.io/NodeProvider` and `norca.io/LoadBalancerClass` objects (cluster-scoped, so in the namespace `"*"`), nothing else |
+| `provider.acl.hcl.tpl` | ACL policy bound to the job (`job_acl`): `read`, `write` and `write-status` on the `norca.io/NodeProvider`, `norca.io/LoadBalancerClass` and `norca.io/DNSZone` objects (cluster-scoped, so in the namespace `"*"`), nothing else |
+| `dnszone.kind.hcl.tpl` | The `norca.io/DNSZone` object kind (`zone_kind_enabled`) |
 | `provider.nomad.tpl` | The job: one instance on a static port, never on a node the node scaling operator created, the configuration file rendered from the variables, the secrets of the job's Variable as environment variables, a service with an http check on `/healthz` |
 
 ## Before
@@ -36,7 +41,8 @@ removed when the provider stops (`deregister_on_exit`).
   or an image (`driver = "docker"`, the `Dockerfile` of norca-platform). The
   `docker` platform runs the docker CLI of its host: use `raw_exec` for it.
 - The kinds: `NodeProvider` is registered by the core, `LoadBalancerClass`
-  by the loadbalancer-operator pack (`class_kind_enabled`).
+  by the loadbalancer-operator pack (`class_kind_enabled`), `DNSZone` by
+  this pack (`zone_kind_enabled`).
 - The secrets in the job's Variable `nomad/jobs/<job_name>` (with
   `secrets = true`): every item becomes an environment variable of the task,
   for the `env:NAME` references of the configuration. The job reads its own
@@ -57,6 +63,7 @@ removed when the provider stops (`deregister_on_exit`).
 | `tls_enabled` | `false` | https with the items `tls_cert` and `tls_key` of the job's Variable. The LoadBalancer operator calls http only with `class_allow_http`. |
 | `deregister_on_exit` | `true` | Remove the registrations when the provider stops. |
 | `driver`, `binary`, `image` | `raw_exec`, `/usr/local/bin/norca-provider` | How the task runs. |
+| `zone_kind_enabled` | `true` | Register the `norca.io/DNSZone` kind. |
 | `acl_policy_enabled` | `true` | Disable it on agents without ACLs. |
 
 `examples/norca-provider/` has a Hetzner Cloud setup on https and a lab with

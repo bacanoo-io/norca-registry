@@ -8,6 +8,8 @@
 [[- $certs := $v.tls_certificates ]]
 [[- $default := $v.tls_default_certificate ]][[ if and (eq $default "") (gt (len $certs) 0) ]][[ $default = index $certs 0 ]][[ end ]]
 [[- $labels := list "admin" ]][[ range $e := $v.entrypoints ]][[ $labels = append $labels (printf "ep_%s" (replace "-" "_" $e.name)) ]][[ end ]]
+[[- $ports := dict ]][[ $redirects := list ]]
+[[- range $e := $v.entrypoints ]][[ $_ := set $ports $e.name (printf "%v" $e.port) ]][[ if ne $e.redirect_to "" ]][[ $redirects = append $redirects $e ]][[ end ]][[ end ]]
 
 # Traefik Proxy (MIT), rendered by the traefik pack: the edge router of the
 # region. The entrypoints are the ports open to the outside; the routes come
@@ -164,7 +166,7 @@ entryPoints:
 [[- range $e := $v.entrypoints ]]
   [[ $e.name ]]:
     address: "[[ if $host ]]{{ env "[[ printf "NORCA_IP_ep_%s" (replace "-" "_" $e.name) ]]" }}[[ end ]]:[[ $e.port ]][[ if eq $e.protocol "udp" ]]/udp[[ end ]]"
-[[- if ne $e.redirect_to "" ]]
+[[- if and (ne $e.redirect_to "") (not $v.acme_challenge) ]]
     http:
       redirections:
         entryPoint:
@@ -229,6 +231,39 @@ tls:
 [[- end ]]
 TRAEFIK_TLS
       }
+      [[- if and $v.acme_challenge (gt (len $redirects) 0) ]]
+
+      # The redirect to https as a router, so that it can leave out the
+      # path of the ACME HTTP-01 challenge: a certificate authority asks for
+      # /.well-known/acme-challenge/<token> over http, and the service that
+      # answers it (norca-acme) routes that path by its catalog tags. The
+      # priority keeps the redirect ahead of every other router of the
+      # entrypoint, as the redirection of the entrypoint itself is.
+      template {
+        destination = "secrets/dynamic/redirect.yml"
+        change_mode = "noop"
+        data        = <<TRAEFIK_REDIRECT
+http:
+  routers:
+[[- range $e := $redirects ]]
+    [[ printf "redirect-%s" $e.name ]]:
+      entryPoints: [[ list $e.name | toJson ]]
+      rule: "!PathPrefix(`/.well-known/acme-challenge/`)"
+      priority: 2147483000
+      middlewares: [[ list (printf "redirect-%s" $e.name) | toJson ]]
+      service: noop@internal
+[[- end ]]
+  middlewares:
+[[- range $e := $redirects ]]
+    [[ printf "redirect-%s" $e.name ]]:
+      redirectScheme:
+        scheme: https
+        port: [[ index $ports $e.redirect_to | quote ]]
+        permanent: true
+[[- end ]]
+TRAEFIK_REDIRECT
+      }
+      [[- end ]]
       [[- if gt (len $v.mtls_backends) 0 ]]
 
       # mTLS to the backends: a servers transport per backend with the
