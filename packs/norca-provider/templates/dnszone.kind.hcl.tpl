@@ -7,7 +7,8 @@ SPDX-License-Identifier: MPL-2.0
 # The registry of the DNS zones (provider/dns/dnszone.kind.hcl of
 # norca-platform). norca-provider registers each zone of a dns section and
 # reports a heartbeat in status.heartbeat while it runs; norca-acme proves
-# the names of a zone with the DNS-01 challenge through its provider.
+# the names of a zone with the DNS-01 challenge through its provider, and
+# norca-dns writes the record sets of a zone whose spec.records is true.
 kind "DNSZone" {
   group       = "norca.io"
   description = "A DNS zone a provider writes challenge records in, and where the operator calls it"
@@ -26,6 +27,7 @@ kind "DNSZone" {
         "provider":      {"type": "string", "description": "Name of the provider of the norca-provider configuration that serves the zone"},
         "endpoint":      {"type": "string", "pattern": "^https?://", "description": "Base URL of the DNS contract of the zone"},
         "tokenVariable": {"type": "string", "description": "Path of the Variable whose item token is the bearer token of the calls"},
+        "records":       {"type": "boolean", "description": "Whether norca-dns may write the records of the zone (the records contract)"},
         "parameters":    {"type": "object", "description": "Published settings of the provider; never a secret"}
       }
     },

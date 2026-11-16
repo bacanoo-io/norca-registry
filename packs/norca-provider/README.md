@@ -23,7 +23,12 @@ type of `norca-provider` (`hcloud`, `aws`, `gcp`, `digitalocean`, `vultr`,
 - the **DNS zones** of the ACME operator ([norca-acme](../norca-acme)): a
   `norca.io/DNSZone` object per zone of a `dns` section, served at
   `<advertise_url>/zones/<zone>`. Only the challenge records of a zone
-  (`_acme-challenge.<name>`) can be written through it.
+  (`_acme-challenge.<name>`) can be written through it, unless the zone
+  says `"records": true` (0.4.0): then the DNS records operator
+  ([norca-dns](../norca-dns)) writes its A, AAAA, CNAME and TXT record
+  sets too, and the `DNSZone` object says so (`spec.records`). A type that
+  can't write records refuses the configuration (the types `rfc2136` and
+  `mock` can).
 
 All of these objects carry the same heartbeat (`status.heartbeat`) and are
 removed when the provider stops (`deregister_on_exit`).

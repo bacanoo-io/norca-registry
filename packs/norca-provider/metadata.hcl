@@ -8,7 +8,7 @@ app {
 pack {
   name        = "norca-provider"
   description = "The provider application of Norca (norca-provider of norca-platform) as one release: the ACL policy bound to its job and the job, which serves the node providers of the node scaling operator, the load balancer classes of the LoadBalancer operator and the DNS zones of norca-acme its configuration names, and registers them as NodeProvider, LoadBalancerClass and DNSZone objects; and the norca.io/DNSZone object kind."
-  version     = "0.3.0"
+  version     = "0.4.0"
 
   requires {
     norca    = ">= 0.3.0"
