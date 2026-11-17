@@ -18,7 +18,7 @@ the names a namespace may write, and only in zones that allow it.
 | Template | Resource |
 | --- | --- |
 | `dnsrecord.kind.hcl.tpl` | The `norca.io/DNSRecord` object kind (`record_kind_enabled`) |
-| `dns.acl.hcl.tpl` | ACL policy bound to the job (`job_acl`): `read`, `write-status`, `write-events` and `manage-finalizers` on `norca.io/DNSRecord`, `read` on `norca.io/LoadBalancer` and `norca.io/DNSZone`, `read-job` for the metadata of the namespaces, the token Variables of the DNS zones |
+| `dns.acl.hcl.tpl` | ACL policy bound to the job (`job_acl`): `read`, `write-status`, `write-events` and `manage-finalizers` on `norca.io/DNSRecord`, `read` on `norca.io/LoadBalancer` and `norca.io/DNSZone`, `read-job` for the metadata of the namespaces (`list-jobs` in the namespace of the tokens, whose block stands in for the `*` block there), the token Variables of the DNS zones |
 | `dns.nomad.tpl` | The job: one instance, never on a node the node scaling operator created |
 
 ## Before
@@ -71,9 +71,9 @@ spec {
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `requeue` | `5m` | Time after which a record is compared with its zone again; a change made by hand is set back then. |
+| `requeue` | `5m` | Time after which a record is compared with its zone again; a change made by hand is set back then. More than zero. |
 | `zone_token_namespace`, `zone_token_path` | `default`, `providers/*` | Where the tokens of the DNS zones are. |
-| `zone_ttl` | `3m` | How old the heartbeat of a zone may be. |
+| `zone_ttl` | `3m` | How old the heartbeat of a zone may be. More than zero. |
 | `zone_allow_http` | `false` | Accept http endpoints of zones (labs only). |
 | `zone_ca_cert` | | The CA of the https certificates of the DNS providers. |
 

@@ -28,8 +28,14 @@ namespace "*" {
   }
 }
 
-# The tokens of the DNS zones.
+# The tokens of the DNS zones. A block of a namespace by name takes the place
+# of the "*" block for that namespace, so it names a capability of its own:
+# without one the operator could not read the metadata of this namespace
+# (its allow list), and no record of it would be written. Any capability
+# lets the namespace be read; list-jobs is the narrowest.
 namespace "[[ $v.zone_token_namespace ]]" {
+  capabilities = ["list-jobs"]
+
   variables {
     path [[ $v.zone_token_path | quote ]] {
       capabilities = ["read"]

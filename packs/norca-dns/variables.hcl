@@ -111,12 +111,12 @@ variable "log_level" {
 # ---------------------------------------------------------------------------
 
 variable "requeue" {
-  description = "Time after which a record is compared with its zone again: a change made in the zone by hand is set back then at the latest."
+  description = "Time after which a record is compared with its zone again: a change made in the zone by hand is set back then at the latest. More than zero."
   type        = string
   default     = "5m"
 
   validation {
-    pattern = "^[0-9]+(s|m|h)$"
+    pattern = "^0*[1-9][0-9]*(s|m|h)$"
   }
 }
 
@@ -133,12 +133,12 @@ variable "zone_token_path" {
 }
 
 variable "zone_ttl" {
-  description = "How old the heartbeat of a DNS zone may be."
+  description = "How old the heartbeat of a DNS zone may be. More than zero."
   type        = string
   default     = "3m"
 
   validation {
-    pattern = "^[0-9]+(s|m|h)$"
+    pattern = "^0*[1-9][0-9]*(s|m|h)$"
   }
 }
 
