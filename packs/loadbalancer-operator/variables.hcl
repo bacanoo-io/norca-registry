@@ -16,12 +16,23 @@ variable "job_name" {
 }
 
 variable "namespace" {
-  description = "Namespace of the controller job and of the LoadBalancer objects it reconciles."
+  description = "Namespace of the controller job, and of the LoadBalancer objects it reconciles unless watch_namespace names another one."
   type        = string
   default     = "default"
 
   validation {
     min_length = 1
+    pattern    = "^[a-zA-Z0-9-]{1,128}$"
+  }
+}
+
+variable "watch_namespace" {
+  description = "Namespace of the LoadBalancer objects the controller reconciles, when it is not the namespace of the controller job: a namespace, or * for every namespace. Empty: the namespace of the controller job. The controller job then runs in its own namespace (an operations namespace), outside the quota and the reach of the teams whose load balancers it serves; the ACL policy gives the controller its job, Variable and object rights in the watched namespaces."
+  type        = string
+  default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9-]{1,128}|\\*)?$"
   }
 }
 
@@ -137,6 +148,12 @@ variable "discover_services" {
 # ---------------------------------------------------------------------------
 # Providers: load balancer classes registered by norca-provider
 # ---------------------------------------------------------------------------
+
+variable "loadbalancer_kind_enabled" {
+  description = "Install the norca.io/LoadBalancer kind. Disable it when another release of this pack installs the kind (a second controller for another namespace or region)."
+  type        = bool
+  default     = true
+}
 
 variable "class_kind_enabled" {
   description = "Install the norca.io/LoadBalancerClass kind, with which providers (norca-provider) register their classes. Disable it when another release installs the kind."

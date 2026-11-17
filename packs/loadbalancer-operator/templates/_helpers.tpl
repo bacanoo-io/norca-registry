@@ -57,3 +57,26 @@ With the webhooks, the defaulting webhook fills in the class of the region inste
 [[- define "lb.port_mark_ok" -]]
 (!has(s.Meta) || s.Meta == null || !('norca_lb_port' in s.Meta) || (s.Meta.norca_lb_port.matches('^[0-9]{1,5}$') && int(s.Meta.norca_lb_port) >= 1 && int(s.Meta.norca_lb_port) <= 65535))
 [[- end -]]
+
+[[- /* What the controller needs in a namespace whose load balancers it
+reconciles: the capabilities, the Variables of the proxy jobs and the
+LoadBalancer objects. */ -]]
+[[- define "lb.acl.capabilities" ]]
+  # Read services, allocations and jobs; register and purge the proxy jobs
+  # (lb-*) the operator owns.
+  capabilities = ["list-jobs", "read-job", "submit-job"]
+[[- end ]]
+[[- define "lb.acl.proxy_variables" ]]
+    # The target lists of the proxy jobs (the jobs' own Variables).
+    path "nomad/jobs/lb-*" {
+      capabilities = ["list", "read", "write", "destroy"]
+    }
+[[- end ]]
+[[- define "lb.acl.objects" ]]
+
+  # The LoadBalancer objects: status, event log and the cleanup finalizer;
+  # "write" for the objects of marked services.
+  object "norca.io/LoadBalancer" {
+    capabilities = ["read", "write", "write-status", "write-events", "manage-finalizers"]
+  }
+[[- end ]]

@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- if $v.loadbalancer_kind_enabled ]]
 kind "LoadBalancer" {
   group       = "norca.io"
   description = "Load balancer forwarding to the healthy instances of a Nomad service"
@@ -56,3 +57,4 @@ EOT
     max_watches_per_identity  = [[ $v.max_watches_per_identity ]]
   }
 }
+[[- end ]]

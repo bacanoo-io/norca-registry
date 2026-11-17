@@ -13,8 +13,8 @@ needs, in the fixed order of the extended pack format.
 
 | Template | Resource |
 | --- | --- |
-| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, the `norca.io/LoadBalancer` objects (status, events, finalizers), read of the `norca.io/LoadBalancerClass` objects and of the tokens of the classes (`class_token_path`), and node read (an instance on a node marked `norca.lb.leaving` is not a target) |
-| `loadbalancer.kind.hcl.tpl` | Object kind `norca.io/LoadBalancer`: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits |
+| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): in the watched namespace (`watch_namespace`) jobs, the proxy jobs' Variables and the `norca.io/LoadBalancer` objects (status, events, finalizers); the leases in the namespace of the job; read of the `norca.io/LoadBalancerClass` objects and of the tokens of the classes (`class_token_path`), and node read (an instance on a node marked `norca.lb.leaving` is not a target) |
+| `loadbalancer.kind.hcl.tpl` | Object kind `norca.io/LoadBalancer`: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits; optional (`loadbalancer_kind_enabled`) |
 | `loadbalancerclass.kind.hcl.tpl` | Object kind `norca.io/LoadBalancerClass`: the classes the providers register, with their heartbeat (`status.heartbeat`); optional (`class_kind_enabled`) |
 | `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
 | `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |
@@ -43,6 +43,37 @@ With a management token, the release can register the kind and bind the ACL
 policy at once. A token with less rights needs `operator` write (the kind),
 `acl` write (the policy) and `admission` write (the admission policy):
 applying a release grants no extra permissions.
+
+## Namespaces
+
+By default the controller reconciles the LoadBalancer objects of the
+namespace its job runs in (`namespace`). **`watch_namespace` names the
+namespace of the objects apart from the namespace of the job**: a namespace,
+or `*` for every namespace.
+
+```shell
+norca pack run ./packs/loadbalancer-operator --name=lb \
+  --var=namespace=ops --var='watch_namespace=*'
+```
+
+Use it to serve the namespaces of teams (tenants) from an operations
+namespace. A controller job inside the namespace of a team counts against
+the quota of the team, keeps the namespace from being deleted, and is a job
+that any token of the team with `submit-job` can register again, to run
+under the policy bound to it. With `watch_namespace` the job stays where
+only operators write.
+
+- The ACL policy gives the controller, in every watched namespace, what it
+  needs there: `list-jobs`, `read-job` and `submit-job` (it registers the
+  proxy jobs `lb-*` in the namespace of their load balancer), the Variables
+  `nomad/jobs/lb-*` and the `norca.io/LoadBalancer` objects. With `*` that
+  is every namespace of the cluster.
+- The leader election leases stay in the namespace of the job
+  (`-lease-namespace`).
+- The admission policy for service marks follows the watched namespace.
+- A second release for another namespace or region sets
+  `loadbalancer_kind_enabled=false` and `class_kind_enabled=false`: the
+  kinds belong to the release that installed them first.
 
 ## Providers
 

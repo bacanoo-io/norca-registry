@@ -3,6 +3,8 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- $watch := $v.namespace ]]
+[[- if ne $v.watch_namespace "" ]][[ $watch = $v.watch_namespace ]][[ end ]]
 job [[ $v.job_name | quote ]] {
   type        = "service"
   namespace   = [[ $v.namespace | quote ]]
@@ -40,7 +42,8 @@ job [[ $v.job_name | quote ]] {
 [[- if ne $v.driver "mock_driver" ]]
           "controller",
           "-objects", "native",
-          "-namespace", [[ $v.namespace | quote ]],
+          "-namespace", [[ $watch | quote ]],
+          "-lease-namespace", [[ $v.namespace | quote ]],
           "-log-level", [[ $v.log_level | quote ]],
           "-discover-services=[[ $v.discover_services ]]",
           "-proxy-driver", [[ $v.proxy_driver | quote ]],

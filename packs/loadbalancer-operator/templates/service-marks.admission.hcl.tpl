@@ -3,6 +3,8 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- $watch := $v.namespace ]]
+[[- if ne $v.watch_namespace "" ]][[ $watch = $v.watch_namespace ]][[ end ]]
 [[- if $v.admission_policy_enabled ]]
 name        = "[[ $v.job_name ]]-service-marks"
 description = "Services marked for the LoadBalancer operator must name a valid frontend port (norca_lb_port)"
@@ -10,8 +12,8 @@ action      = [[ $v.admission_policy_action | quote ]]
 
 match {
   resources = ["job"]
-  [[- if ne $v.namespace "*" ]]
-  namespaces = [[ list $v.namespace | toStringList ]]
+  [[- if ne $watch "*" ]]
+  namespaces = [[ list $watch | toStringList ]]
   [[- end ]]
 }
 

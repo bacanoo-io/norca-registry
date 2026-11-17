@@ -3,21 +3,25 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
-LoadBalancer operator "[[ $v.job_name ]]" in namespace [[ $v.namespace ]]: [[ $v.count ]] controller instance(s), driver [[ $v.driver ]], proxies with [[ $v.proxy_driver ]].
+[[- $watch := $v.namespace ]]
+[[- if ne $v.watch_namespace "" ]][[ $watch = $v.watch_namespace ]][[ end ]]
+[[- $example := $watch ]]
+[[- if eq $watch "*" ]][[ $example = $v.namespace ]][[ end ]]
+LoadBalancer operator "[[ $v.job_name ]]" in namespace [[ $v.namespace ]]: [[ $v.count ]] controller instance(s), driver [[ $v.driver ]], proxies with [[ $v.proxy_driver ]]. It reconciles the LoadBalancer objects of [[ if eq $watch "*" ]]every namespace[[ else ]]the namespace [[ $watch ]][[ end ]].
 
 Create a load balancer:
   cat > web-lb.hcl <<EOF
   kind      = "norca.io/LoadBalancer"
   name      = "web"
-  namespace = "[[ $v.namespace ]]"
+  namespace = "[[ $example ]]"
   spec {
     service = "web"
     port    = 8080
   }
   EOF
   norca object apply web-lb.hcl
-  norca object list norca.io/LoadBalancer -namespace [[ $v.namespace ]]
-  norca object events norca.io/LoadBalancer web -namespace [[ $v.namespace ]]
+  norca object list norca.io/LoadBalancer -namespace [[ $example ]]
+  norca object events norca.io/LoadBalancer web -namespace [[ $example ]]
 
 or mark a service with the norca_lb_class / norca_lb_port meta keys.
 [[- if $v.webhook_enabled ]]
