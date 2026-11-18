@@ -7,6 +7,7 @@
 # native catalog; the seaweedfs-csi module finds the filer there.
 job "seaweedfs" {
   id          = local.job
+  name        = local.job
   region      = rig.region
   datacenters = module.placement.datacenters
   node_pool   = module.placement.node_pool

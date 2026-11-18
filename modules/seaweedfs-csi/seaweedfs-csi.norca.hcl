@@ -9,6 +9,7 @@
 # publish, so neither task needs a privileged container.
 job "seaweedfs-csi" {
   id          = local.job
+  name        = local.job
   region      = rig.region
   datacenters = module.placement.datacenters
   node_pool   = module.placement.node_pool
