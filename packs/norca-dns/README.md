@@ -66,6 +66,7 @@ spec {
 | `values` | The values: addresses, one name for a CNAME, texts. |
 | `source.load_balancer` | A `LoadBalancer` object of the namespace: its frontend addresses (A: IPv4, AAAA: IPv6, CNAME: its first host name). |
 | `adopt` | Take over a record set of the name and type that norca-dns did not write. |
+| `deletion_policy` | `delete` (default): deleting the record removes its record set, and the record stays until that succeeds. `retain`: the set stays in the zone; setting it on a record whose deletion is stuck lets the deletion finish. |
 
 ## Variables
 
