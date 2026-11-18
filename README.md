@@ -39,8 +39,14 @@ module "bus" {
 ```
 
 Each module has its own version and is released by a tag
-`<module>/v<version>` (`nats/v2.0.0`), never moved. The scripts of the
-registry, with the `rig` program on the PATH:
+`<module>/v<version>` (`nats/v2.0.0`), never moved. A version is published
+with the signing key of the namespace `norca` of the global registry
+(`norca-global-registry`): `rig module publish modules/<module> -key
+norca.key` signs the module, commits the signature and tags it; once the tag
+is pushed, the global registry lists it as `norca/<module>`. The tags made
+before the key are not signed: a module enters the global registry with its
+next version. The scripts of the registry, with the `rig` program on the
+PATH:
 
 - `scripts/check-modules.sh`: `rig fmt -check`, `rig module validate` (the
   defaults and the example values rendered through Norca's job decoder) and
