@@ -14,33 +14,56 @@ kind "dns-zone" {
   description = "A DNS zone a provider writes challenge records in, and where the operator calls it"
   namespaced  = false
   version     = 1
-  schema      = <<EOT
-{
-  "type": "object",
-  "properties": {
-    "spec": {
-      "type": "object",
-      "required": ["zone", "endpoint"],
-      "additionalProperties": false,
-      "properties": {
-        "zone":          {"type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$", "description": "Name of the zone, lower case, without the dot at the end"},
-        "provider":      {"type": "string", "description": "Name of the provider of the norca-provider configuration that serves the zone"},
-        "endpoint":      {"type": "string", "pattern": "^https?://", "description": "Base URL of the DNS contract of the zone"},
-        "tokenVariable": {"type": "string", "description": "Path of the Variable whose item token is the bearer token of the calls"},
-        "records":       {"type": "boolean", "description": "Whether norca-dns may write the records of the zone (the records contract)"},
-        "parameters":    {"type": "object", "description": "Published settings of the provider; never a secret"}
+  schema = jsonencode({
+    type = "object"
+    properties = {
+      spec = {
+        type                 = "object"
+        required             = ["zone", "endpoint"]
+        additionalProperties = false
+        properties = {
+          zone = {
+            type        = "string"
+            pattern     = "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$"
+            description = "Name of the zone, lower case, without the dot at the end"
+          }
+          provider = {
+            type        = "string"
+            description = "Name of the provider of the norca-provider configuration that serves the zone"
+          }
+          endpoint = {
+            type        = "string"
+            pattern     = "^https?://"
+            description = "Base URL of the DNS contract of the zone"
+          }
+          tokenVariable = {
+            type        = "string"
+            description = "Path of the Variable whose item token is the bearer token of the calls"
+          }
+          records = {
+            type        = "boolean"
+            description = "Whether norca-dns may write the records of the zone (the records contract)"
+          }
+          parameters = {
+            type        = "object"
+            description = "Published settings of the provider; never a secret"
+          }
+        }
       }
-    },
-    "status": {
-      "type": "object",
-      "properties": {
-        "heartbeat": {"type": "string", "description": "RFC 3339 time of the last heartbeat"},
-        "version":   {"type": "string"}
+      status = {
+        type = "object"
+        properties = {
+          heartbeat = {
+            type        = "string"
+            description = "RFC 3339 time of the last heartbeat"
+          }
+          version = {
+            type = "string"
+          }
+        }
       }
     }
-  }
-}
-EOT
+  })
 
   columns {
     column "Provider" { path = "spec.provider" }

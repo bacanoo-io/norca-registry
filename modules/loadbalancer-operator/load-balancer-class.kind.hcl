@@ -13,38 +13,58 @@ kind "load-balancer-class" {
   description = "A load balancer provider: the class it handles and where the operator calls it"
   namespaced  = false
   version     = 1
-  schema      = <<EOT
-{
-  "type": "object",
-  "properties": {
-    "spec": {
-      "type": "object",
-      "required": ["endpoint"],
-      "additionalProperties": false,
-      "properties": {
-        "endpoint":      {"type": "string", "pattern": "^https?://", "description": "Base URL of the provider API (https; http only with -class-allow-http)"},
-        "tokenVariable": {"type": "string", "description": "Path of the Variable whose item token is the bearer token of the calls"},
-        "capabilities": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "internal": {"type": "boolean", "default": false},
-            "ports":    {"type": "string", "pattern": "^[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*$", "description": "Frontend ports the provider supports, e.g. 80,443,8000-8100; empty means any"}
+  schema = jsonencode({
+    type = "object"
+    properties = {
+      spec = {
+        type                 = "object"
+        required             = ["endpoint"]
+        additionalProperties = false
+        properties = {
+          endpoint = {
+            type        = "string"
+            pattern     = "^https?://"
+            description = "Base URL of the provider API (https; http only with -class-allow-http)"
           }
-        },
-        "parameters": {"type": "object", "description": "Provider specific settings, sent with every call"}
+          tokenVariable = {
+            type        = "string"
+            description = "Path of the Variable whose item token is the bearer token of the calls"
+          }
+          capabilities = {
+            type                 = "object"
+            additionalProperties = false
+            properties = {
+              internal = {
+                type    = "boolean"
+                default = false
+              }
+              ports = {
+                type        = "string"
+                pattern     = "^[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*$"
+                description = "Frontend ports the provider supports, e.g. 80,443,8000-8100; empty means any"
+              }
+            }
+          }
+          parameters = {
+            type        = "object"
+            description = "Provider specific settings, sent with every call"
+          }
+        }
       }
-    },
-    "status": {
-      "type": "object",
-      "properties": {
-        "heartbeat": {"type": "string", "description": "RFC 3339 time of the last heartbeat"},
-        "version":   {"type": "string"}
+      status = {
+        type = "object"
+        properties = {
+          heartbeat = {
+            type        = "string"
+            description = "RFC 3339 time of the last heartbeat"
+          }
+          version = {
+            type = "string"
+          }
+        }
       }
     }
-  }
-}
-EOT
+  })
 
   columns {
     column "Endpoint" { path = "spec.endpoint" }

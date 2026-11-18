@@ -7,12 +7,13 @@ policy "dns" {
 
   name        = var.job_name
   description = "Permissions of norca-dns (bound to its job)"
-  rules       = <<-EOT
-    # The records are namespaced: the operator reads them in every namespace,
-    # writes their status and events, and keeps its finalizer on them. It reads
-    # the metadata of the namespaces (their allow lists), the load balancers a
-    # record takes its addresses from, and the DNS zones norca-provider
-    # registers (cluster scoped).
+
+  rules {
+    # The records are namespaced: the operator reads them in every
+    # namespace, writes their status and events, and keeps its finalizer on
+    # them. It reads the metadata of the namespaces (their allow lists), the
+    # load balancers a record takes its addresses from, and the DNS zones
+    # norca-provider registers (cluster scoped).
     namespace "*" {
       capabilities = ["read-job"]
 
@@ -29,21 +30,31 @@ policy "dns" {
       }
     }
 
-    # The tokens of the DNS zones. A block of a namespace by name takes the place
-    # of the "*" block for that namespace, so it names a capability of its own:
-    # without one the operator could not read the metadata of this namespace
-    # (its allow list), and no record of it would be written. Any capability
-    # lets the namespace be read; list-jobs is the narrowest.
-    namespace "${var.zone_token_namespace}" {
-      capabilities = ["list-jobs"]
+    # The tokens of the DNS zones. A block of a namespace by name takes the
+    # place of the "*" block for that namespace, so it names a capability of
+    # its own: without one the operator could not read the metadata of this
+    # namespace (its allow list), and no record of it would be written. Any
+    # capability lets the namespace be read; list-jobs is the narrowest.
+    dynamic "namespace" {
+      for_each = [var.zone_token_namespace]
+      labels   = [namespace.value]
 
-      variables {
-        path ${jsonencode(var.zone_token_path)} {
-          capabilities = ["read"]
+      content {
+        capabilities = ["list-jobs"]
+
+        variables {
+          dynamic "path" {
+            for_each = [var.zone_token_path]
+            labels   = [path.value]
+
+            content {
+              capabilities = ["read"]
+            }
+          }
         }
       }
     }
-  EOT
+  }
 
   job_acl {
     namespace = rig.namespace

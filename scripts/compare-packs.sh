@@ -125,6 +125,14 @@ def key(r):
     spec = r["spec"] if isinstance(r["spec"], dict) else {}
     return r["kind"] + " " + str(spec.get("Name") or spec.get("name") or spec.get("Kind") or spec.get("ID") or spec.get("Path") or r["name"])
 
+def rules_tokens(text):
+    """The rules of an ACL policy as tokens: a module writes them as a block,
+    which rig writes as HCL of its own layout, its comments staying in the
+    module; the pack wrote them as text. Comments, blank lines and the
+    amount of white space don't count."""
+    lines = [l for l in text.splitlines() if l.strip() and not l.strip().startswith(("#", "//"))]
+    return " ".join(" ".join(lines).split())
+
 def named(r):
     """A resource that names itself by its label only has that name."""
     if isinstance(r["spec"], dict) and not any(k in r["spec"] for k in ("name", "Name", "ID", "Path", "Kind")):
@@ -181,6 +189,13 @@ for k in sorted(compared):
         print(f"  {k}: only in the pack"); ok = False
     else:
         a, b = others_pack[k], others_module[k]
+        for r in (a, b):
+            if r["kind"] == "acl-policy" and isinstance(r["spec"].get("rules"), str):
+                r["spec"]["rules"] = rules_tokens(r["spec"]["rules"])
+            # The JSON Schema of a kind: written with jsonencode by a module,
+            # as text by the pack; compared as JSON.
+            if r["kind"] == "object-kind" and isinstance(r["spec"].get("Schema"), str):
+                r["spec"]["Schema"] = json.loads(r["spec"]["Schema"])
         diff(norm({"spec": a["spec"], "secret_items": a.get("secret_items")}), norm({"spec": b["spec"], "secret_items": b.get("secret_items")}), k)
 
 for id in sorted(set(pack) & set(module)):

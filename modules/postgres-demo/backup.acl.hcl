@@ -9,9 +9,15 @@ policy "backup" {
     job_id = "${local.job}-backup"
   }
 
-  rules = <<-EOT
-    namespace "${rig.namespace}" {
-      capabilities = ["read-job"]
+  rules {
+    dynamic "namespace" {
+      for_each = [rig.namespace]
+      labels   = [namespace.value]
+
+      content {
+        capabilities = ["read-job"]
+      }
     }
-  EOT
+
+  }
 }

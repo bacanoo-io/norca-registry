@@ -7,14 +7,24 @@ policy "openobserve" {
 
   name        = local.job
   description = "Tasks of the OpenObserve job ${local.job} (openobserve pack): ingest credentials"
-  rules       = <<-EOT
-    namespace "${rig.namespace}" {
-      # The bootstrap task stores the token of the ingest service account.
-      secret "${var.ingest_secret_path}" {
-        capabilities = ["read-secret", "write-secret"]
+  rules {
+    dynamic "namespace" {
+      for_each = [rig.namespace]
+      labels   = [namespace.value]
+
+      content {
+        # The bootstrap task stores the token of the ingest service account.
+        dynamic "secret" {
+          for_each = [var.ingest_secret_path]
+          labels   = [secret.value]
+
+          content {
+            capabilities = ["read-secret", "write-secret"]
+          }
+        }
       }
     }
-  EOT
+  }
 
   job_acl {
     namespace = rig.namespace

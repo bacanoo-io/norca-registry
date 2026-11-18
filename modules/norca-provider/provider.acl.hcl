@@ -7,7 +7,7 @@ policy "provider" {
 
   name        = var.job_name
   description = "Permissions of norca-provider (bound to its job)"
-  rules       = <<-EOT
+  rules {
     # The registrations of the providers are cluster-scoped objects: their rules
     # are in the namespace "*". The provider writes the spec and the status
     # (the heartbeat) of its NodeProvider, LoadBalancerClass and DNSZone objects,
@@ -26,7 +26,7 @@ policy "provider" {
         capabilities = ["read", "write", "write-status"]
       }
     }
-  EOT
+  }
 
   job_acl {
     namespace = rig.namespace
