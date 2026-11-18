@@ -1,27 +1,13 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+
 module {
   name        = "postgres"
-  version     = "0.3.0"
-  description = "A single PostgreSQL server: data on a host volume, application databases created by a hook, credentials from the secret store, optional periodic dumps to an S3 store."
+  version     = "0.4.0"
+  description = "A single PostgreSQL server (PostgreSQL License, official image, referenced, never shipped): data on a host volume, superuser, application databases and a pg_monitor user from the built-in secret store, health checks with roles, optional TLS with Norca's workload certificates, optional periodic pg_dumpall to S3 (RustFS)."
   url         = "https://www.postgresql.org"
-  license     = "PostgreSQL" # the official image is referenced, not shipped
-  category    = "database"
-  keywords    = ["postgres", "postgresql", "sql", "database"]
 
   requires {
-    norca    = ">= 0.3.0"
-    features = ["releases", "secret-store"]
-
-    # Only when dumps are on: a release of this module must be in the stack.
-    module "s3" {
-      source  = "example/rustfs"
-      version = ">= 0.2.0"
-      when    = "backup.enabled"
-    }
+    norca = ">= 0.1.0"
   }
-}
-
-ui {
-  tab "general" { label = "General" }
-  tab "databases" { label = "Databases" }
-  tab "backup" { label = "Backups" }
 }

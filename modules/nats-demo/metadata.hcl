@@ -1,5 +1,5 @@
 module {
-  name        = "nats"
+  name        = "nats-demo"
   version     = "1.0.0"
   description = "A NATS cluster per region for the applications: JetStream, users in accounts, TLS, and optionally the changes of the Norca region as a leaf node of the system bus."
   url         = "https://nats.io"
