@@ -130,12 +130,12 @@ variable "log_level" {
 # ---------------------------------------------------------------------------
 
 variable "proxy_driver" {
-  description = "Task driver of the proxy jobs of the \"nomad\" class: raw_exec, exec, docker or mock_driver (tests)."
+  description = "Task driver of the proxy jobs of the \"nomad\" class: exec (the binary of the controller, in the chroot of exec below /usr), raw_exec, docker (proxy_image) or mock_driver (tests). exec by default, like the controller (review finding JOG-19): a cluster whose nodes run without raw_exec needs no change; raw_exec works only on nodes that have it."
   type        = string
-  default     = "raw_exec"
+  default     = "exec"
 
   ui {
-    options = ["raw_exec", "exec", "docker", "mock_driver"]
+    options = ["exec", "raw_exec", "docker", "mock_driver"]
   }
 }
 
