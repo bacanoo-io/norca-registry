@@ -4,7 +4,7 @@
 
 module {
   name        = "placement"
-  version     = "1.0.0"
-  description = "Shared values of the modules of this registry: placement of a job and the reference of an image."
+  version     = "1.1.0"
+  description = "Shared values of the modules of this registry: placement of a job (datacenters, node pool, spread, the node it is pinned to, constraints) and the reference of an image."
   library     = true # can't be installed on its own
 }

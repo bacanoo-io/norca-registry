@@ -19,7 +19,24 @@ variable "spread_over" {
 }
 
 variable "image" {
-  type = string
+  type    = string
+  default = ""
+}
+
+variable "node" {
+  type        = string
+  default     = ""
+  description = "The node (node.unique.name) a job is pinned to; empty for any."
+}
+
+variable "constraints" {
+  type = list(object({
+    attribute = string
+    operator  = string
+    value     = string
+  }))
+  default     = []
+  description = "Extra constraints of a job; an empty value is left out."
 }
 
 variable "image_digest" {

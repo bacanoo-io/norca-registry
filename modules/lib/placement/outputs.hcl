@@ -15,6 +15,15 @@ output "spread" {
   }]
 }
 
+# The constraints of a job: the node it is pinned to, then the extra ones.
+# Fits the for_each of a dynamic "constraint" block.
+output "constraints" {
+  value = concat(
+    var.node == "" ? [] : [{ attribute = runtime("node.unique.name"), operator = null, value = var.node }],
+    [for c in var.constraints : { attribute = c.attribute, operator = c.operator, value = c.value == "" ? null : c.value }],
+  )
+}
+
 output "image" {
   value = var.image_digest == "" ? var.image : "${var.image}@${var.image_digest}"
 }
