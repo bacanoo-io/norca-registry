@@ -53,7 +53,11 @@ removed when the provider stops (`deregister_on_exit`).
 - The binary on the nodes (`/usr/local/bin/norca-provider`, built in a
   norca-platform checkout with `go build -o norca-provider ./cmd/norca-provider`),
   or an image (`driver = "docker"`, the `Dockerfile` of norca-platform). The
-  `docker` platform runs the docker CLI of its host: use `raw_exec` for it.
+  `docker` platform runs the docker CLI of its host: use `raw_exec` for it,
+  with `allow_raw_exec_nodes = true`.
+- Nodes without the raw_exec driver: the job keeps off nodes with it unless
+  `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
+  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
 - The kinds: `NodeProvider` is registered by the core, `LoadBalancerClass`
   by the loadbalancer-operator pack (`class_kind_enabled`), `DNSZone` by
   this pack (`zone_kind_enabled`).
@@ -81,7 +85,8 @@ removed when the provider stops (`deregister_on_exit`).
 | `secrets` | `false` | The items of `nomad/jobs/<job_name>` as environment variables of the task; the Variable must exist. |
 | `tls_enabled` | `false` | https with the items `tls_cert` and `tls_key` of the job's Variable. The LoadBalancer operator calls http only with `class_allow_http`. |
 | `deregister_on_exit` | `true` | Remove the registrations when the provider stops. |
-| `driver`, `binary`, `image` | `raw_exec`, `/usr/local/bin/norca-provider` | How the task runs. |
+| `driver`, `binary`, `image` | `exec`, `/usr/local/bin/norca-provider` | How the task runs; `raw_exec` only with `allow_raw_exec_nodes`. |
+| `allow_raw_exec_nodes` | `false` | Allow nodes with the raw_exec driver and `driver = "raw_exec"` (JOG-19). |
 | `zone_kind_enabled` | `true` | Register the `norca.io/DNSZone` kind. |
 | `acl_policy_enabled` | `true` | Disable it on agents without ACLs. |
 

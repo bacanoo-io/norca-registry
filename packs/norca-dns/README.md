@@ -35,6 +35,9 @@ the names a namespace may write, and only in zones that allow it.
 - The binary on the nodes (`/usr/local/bin/norca-dns`, built in a
   norca-platform checkout with `go build -o norca-dns ./cmd/norca-dns`), or
   an image (`driver = "docker"`).
+- Nodes without the raw_exec driver: the job keeps off nodes with it unless
+  `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
+  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
 - A provider of the [norca-provider](../norca-provider) pack (0.4.0 or
   later) with a `dns` section for the zone and **`"records": true`** on the
   zone, of a type that can write records (`rfc2136`, `mock`), and the token

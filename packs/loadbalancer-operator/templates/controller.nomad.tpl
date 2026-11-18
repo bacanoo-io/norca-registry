@@ -6,6 +6,9 @@ SPDX-License-Identifier: MPL-2.0
 [[- $watch := $v.namespace ]]
 [[- if ne $v.watch_namespace "" ]][[ $watch = $v.watch_namespace ]][[ end ]]
 [[- $tokens := $v.class_token_namespace ]][[ if eq $tokens "" ]][[ $tokens = $v.namespace ]][[ end ]]
+[[- if and (eq $v.driver "raw_exec") (not $v.allow_raw_exec_nodes) ]]
+[[- fail `driver = "raw_exec" needs allow_raw_exec_nodes = true, as the job would then run on a node with the raw_exec driver, where a raw_exec task or alloc-node-exec reads its identity token (review finding JOG-19). Use driver = "exec" or "docker", or set allow_raw_exec_nodes = true knowingly` -]]
+[[- end ]]
 job [[ $v.job_name | quote ]] {
   type        = "service"
   namespace   = [[ $v.namespace | quote ]]
@@ -13,6 +16,17 @@ job [[ $v.job_name | quote ]] {
   region      = [[ $v.region | quote ]]
 [[- end ]]
   datacenters = [[ $v.datacenters | toStringList ]]
+[[- if not $v.allow_raw_exec_nodes ]]
+
+  # Never on a node with the raw_exec driver (review finding JOG-19): a
+  # raw_exec task or alloc-node-exec there runs as the user of the agent and
+  # reads the secrets of every allocation of the node, the identity token of
+  # this job and its bound ACL policies among them (allow_raw_exec_nodes).
+  constraint {
+    attribute = "${attr.driver.raw_exec}"
+    operator  = "is_not_set"
+  }
+[[- end ]]
 
   group "controller" {
     count = [[ $v.count ]]

@@ -41,6 +41,12 @@ norca pack status lb
 On an agent without ACLs (a dev agent), policies can't be written: add
 `--var=acl_policy_enabled=false`.
 
+The controller keeps off nodes with the raw_exec driver unless
+`allow_raw_exec_nodes = true`, and its default driver is `exec`: see
+[operator packs](../../README.md#operator-packs) (review finding JOG-19).
+A dev agent usually enables raw_exec: add `--var=allow_raw_exec_nodes=true`
+there.
+
 With a management token, the release can register the kind and bind the ACL
 policy at once. A token with less rights needs `operator` write (the kind),
 `acl` write (the policy) and `admission` write (the admission policy):

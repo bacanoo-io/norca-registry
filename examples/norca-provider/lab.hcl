@@ -4,14 +4,18 @@
 # A lab: the docker platform (each node a container on the host of the
 # provider) and a mock class, on http (the token travels in the clear, never
 # in production). raw_exec, as the docker platform needs the docker CLI of
-# its host. The address of the task is the address of the host the
-# containers' traffic leaves from: the default of host_addresses.
+# its host: the lab gives up the isolation of the operators from raw_exec
+# nodes (allow_raw_exec_nodes, review finding JOG-19). The address of the
+# task is the address of the host the containers' traffic leaves from: the
+# default of host_addresses.
 #   norca var put -namespace norca-system nomad/jobs/norca-provider LAB_TOKEN=...
 #   norca var put -namespace norca-system nodescaler/providers/lab token=...
 #   norca pack run norca-provider --registry=norca -f examples/norca-provider/lab.hcl
-port      = 8480
-log_level = "debug"
-secrets   = true
+driver               = "raw_exec"
+allow_raw_exec_nodes = true
+port                 = 8480
+log_level            = "debug"
+secrets              = true
 providers = <<EOT
 [
   {

@@ -65,13 +65,19 @@ variable "count" {
 }
 
 variable "driver" {
-  description = "Task driver of the operator: raw_exec or exec (the binary installed on the nodes), docker (an image with the binary), or mock_driver (tests on dev agents only)."
+  description = "Task driver of the operator: exec or raw_exec (the binary installed on the nodes, in the chroot of exec below /usr; raw_exec only with allow_raw_exec_nodes), docker (an image with the binary), or mock_driver (tests on dev agents only)."
   type        = string
-  default     = "raw_exec"
+  default     = "exec"
 
   ui {
     options = ["raw_exec", "exec", "docker", "mock_driver"]
   }
+}
+
+variable "allow_raw_exec_nodes" {
+  description = "Let the job run on nodes where the raw_exec driver is enabled, and with driver = raw_exec. Off by default (review finding JOG-19): a raw_exec task, or alloc-node-exec, on such a node runs as the user of the agent and reads the secrets directory of every allocation of the node, so the workload identity token of this job and the ACL policies bound to it. Without it the job keeps off nodes whose attribute driver.raw_exec is set, and the pack refuses to render with driver = raw_exec. Turn it on only where every token that may place raw_exec work or use alloc-node-exec on those nodes may hold the policies of the operator anyway (a lab, a single-tenant cluster)."
+  type        = bool
+  default     = false
 }
 
 variable "binary" {

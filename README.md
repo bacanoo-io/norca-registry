@@ -36,6 +36,8 @@ admission policies next to jobs, a JSON Schema for the variables).
 The packs need Norca 0.1.0 or newer; packs with `requires` in their
 `metadata.hcl` state the server features they use.
 
+## Operator packs
+
 The operator packs (loadbalancer-operator, nodescaler-operator, norca-acme,
 norca-dns, norca-provider) run their jobs with ACL policies bound to them, in
 the namespace `norca-system` by default, where their token Variables and
@@ -44,6 +46,22 @@ namespace a release installs belongs to that release, and the packs share
 it): create it once with `norca namespace apply -description "Norca
 operators" norca-system`, and give rights in it to the operators of the
 cluster only.
+
+**They keep off nodes with the raw_exec driver** (review finding JOG-19): a
+raw_exec task, or `alloc-node-exec`, on a node runs as the user of the agent
+and reads the `secrets/` directory of every allocation of the node, so the
+workload identity token of an operator and the ACL policies bound to its job.
+Their jobs carry a constraint that `${attr.driver.raw_exec}` is not set (the
+attribute a client with raw_exec enabled has), their default driver is
+`exec` (the binary below `/usr`, in the chroot of `exec`), and they refuse
+to render with `driver = "raw_exec"`. Run them on nodes without raw_exec
+(a node pool of their own, `node_pool`), or set `allow_raw_exec_nodes =
+true` where every token that may place raw_exec work or use
+`alloc-node-exec` on those nodes may hold the operators' policies anyway (a
+lab, a single-tenant cluster); the docker platform of norca-provider, which
+calls the docker CLI of its host, needs it. The constraint is checked when
+an allocation is placed: enabling raw_exec on a node later does not move an
+operator that runs there.
 
 ## Using it
 

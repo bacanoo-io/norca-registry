@@ -38,6 +38,9 @@ namespace.**
 - The binary on the nodes (`/usr/local/bin/norca-acme`, built in a
   norca-platform checkout with `go build -o norca-acme ./cmd/norca-acme`),
   or an image (`driver = "docker"`).
+- Nodes without the raw_exec driver: the job keeps off nodes with it unless
+  `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
+  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
 - **HTTP-01:** port 80 of the names must reach the edge router, and the
   [traefik](../traefik) pack needs `acme_challenge = true` and the namespace
   of this job in `catalog_namespaces` (`["default", "norca-system"]`), with
@@ -110,7 +113,8 @@ spec {
 | `acme_ca_cert` | `""` | The CA of the https certificate of the ACME directory (a private certificate authority). |
 | `retry_base`, `retry_max`, `max_attempts` | `1m`, `2h`, `8` | Attempts of an order after a failure that passes. |
 | `interval` | `5s` | Time between two passes. |
-| `driver`, `binary`, `image` | `raw_exec`, `/usr/local/bin/norca-acme` | How the task runs. |
+| `driver`, `binary`, `image` | `exec`, `/usr/local/bin/norca-acme` | How the task runs; `raw_exec` only with `allow_raw_exec_nodes`. |
+| `allow_raw_exec_nodes` | `false` | Allow nodes with the raw_exec driver and `driver = "raw_exec"` (JOG-19). |
 | `acl_policy_enabled` | `true` | Disable it on agents without ACLs. |
 
 `examples/norca-acme/` has Let's Encrypt staging with a DNS zone, and a lab
