@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- $vars := $v.variables_namespace ]][[ if eq $vars "" ]][[ $vars = $v.namespace ]][[ end ]]
 policy [[ printf "%s" $v.job_name | quote ]] {
   description = "Permissions of the node scaling operator (bound to its job)"
   rules       = <<EOT
@@ -20,10 +21,11 @@ namespace "[[ $v.namespace ]]" {
     path "controller-lease/nodescaler*" {
       capabilities = ["list", "read", "write"]
     }
+[[- if ne $vars $v.namespace ]]
   }
 }
 
-namespace "[[ $v.variables_namespace ]]" {
+namespace "[[ $vars ]]" {
   capabilities = ["list-jobs", "read-job"]
 
   object "norca.io/LoadBalancer" {
@@ -31,6 +33,8 @@ namespace "[[ $v.variables_namespace ]]" {
   }
 
   variables {
+[[- end ]]
+
     # The bootstrap of the region (with the key of the node CA), the
     # network ranges, and the tokens of the providers.
     path "nodescaler/*" {

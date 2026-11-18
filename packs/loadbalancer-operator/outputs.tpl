@@ -6,7 +6,7 @@ SPDX-License-Identifier: MPL-2.0
 [[- $watch := $v.namespace ]]
 [[- if ne $v.watch_namespace "" ]][[ $watch = $v.watch_namespace ]][[ end ]]
 [[- $example := $watch ]]
-[[- if eq $watch "*" ]][[ $example = $v.namespace ]][[ end ]]
+[[- if eq $watch "*" ]][[ $example = "default" ]][[ end ]]
 LoadBalancer operator "[[ $v.job_name ]]" in namespace [[ $v.namespace ]]: [[ $v.count ]] controller instance(s), driver [[ $v.driver ]], proxies with [[ $v.proxy_driver ]]. It reconciles the LoadBalancer objects of [[ if eq $watch "*" ]]every namespace[[ else ]]the namespace [[ $watch ]][[ end ]].
 
 Create a load balancer:
@@ -31,5 +31,5 @@ approved when the pack is installed with a management token; otherwise run
   norca object-kind webhook approve norca.io/LoadBalancer default
   norca object-kind webhook approve norca.io/LoadBalancer validate
 The webhook task reads its certificate from the Variable nomad/jobs/[[ $v.job_name ]]
-(items webhook_cert, webhook_key).
+of the namespace [[ $v.namespace ]] (items webhook_cert, webhook_key).
 [[- end ]]

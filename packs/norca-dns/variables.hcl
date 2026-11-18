@@ -16,9 +16,9 @@ variable "job_name" {
 }
 
 variable "namespace" {
-  description = "Namespace of the operator job."
+  description = "Namespace of the operator job and, by default, of the token Variables of the DNS zones. It must exist (norca namespace apply norca-system); the pack does not create it. Give rights in it to the operators of the cluster only."
   type        = string
-  default     = "default"
+  default     = "norca-system"
 
   validation {
     min_length = 1
@@ -121,9 +121,13 @@ variable "requeue" {
 }
 
 variable "zone_token_namespace" {
-  description = "Namespace of the Variables holding the tokens of the DNS zones (the token_variable of a provider of norca-provider)."
+  description = "Namespace of the Variables holding the tokens of the DNS zones (the token_variable of a provider of norca-provider). Empty: the namespace of the operator job."
   type        = string
-  default     = "default"
+  default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9-]{1,128})?$"
+  }
 }
 
 variable "zone_token_path" {

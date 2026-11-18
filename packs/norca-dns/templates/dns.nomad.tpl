@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- $tokens := $v.zone_token_namespace ]][[ if eq $tokens "" ]][[ $tokens = $v.namespace ]][[ end ]]
 job [[ $v.job_name | quote ]] {
   type        = "service"
   namespace   = [[ $v.namespace | quote ]]
@@ -39,7 +40,7 @@ job [[ $v.job_name | quote ]] {
 [[- end ]]
 [[- if ne $v.driver "mock_driver" ]]
           "-requeue", [[ $v.requeue | quote ]],
-          "-zone-token-namespace", [[ $v.zone_token_namespace | quote ]],
+          "-zone-token-namespace", [[ $tokens | quote ]],
           "-zone-ttl", [[ $v.zone_ttl | quote ]],
           "-zone-allow-http=[[ $v.zone_allow_http ]]",
 [[- if ne $v.zone_ca_cert "" ]]

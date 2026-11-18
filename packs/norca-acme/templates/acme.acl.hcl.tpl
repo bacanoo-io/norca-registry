@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- $tokens := $v.zone_token_namespace ]][[ if eq $tokens "" ]][[ $tokens = $v.namespace ]][[ end ]]
 [[- if $v.acl_policy_enabled ]]
 policy [[ printf "%s" $v.job_name | quote ]] {
   description = "Permissions of norca-acme (bound to its job)"
@@ -32,7 +33,7 @@ namespace "[[ $v.namespace ]]" {
   secret "[[ $v.secret_prefix ]]*" {
     capabilities = ["read-secret", "write-secret"]
   }
-[[- if eq $v.zone_token_namespace $v.namespace ]]
+[[- if eq $tokens $v.namespace ]]
 
   # The tokens of the DNS zones.
   variables {
@@ -42,10 +43,10 @@ namespace "[[ $v.namespace ]]" {
   }
 [[- end ]]
 }
-[[- if ne $v.zone_token_namespace $v.namespace ]]
+[[- if ne $tokens $v.namespace ]]
 
 # The tokens of the DNS zones.
-namespace "[[ $v.zone_token_namespace ]]" {
+namespace "[[ $tokens ]]" {
   variables {
     path [[ $v.zone_token_path | quote ]] {
       capabilities = ["read"]

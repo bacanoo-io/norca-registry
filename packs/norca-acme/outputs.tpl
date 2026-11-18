@@ -24,10 +24,13 @@ It is the controller of the issuers that name it:
 
 HTTP-01: the service "[[ $v.job_name ]]" answers /.well-known/acme-challenge/[[ if gt (len $v.http01_entrypoints) 0 ]]
 and routes it on the Traefik entrypoints [[ join ", " $v.http01_entrypoints ]] (the Traefik pack needs
-acme_challenge = true and the namespace [[ $v.namespace ]] in catalog_namespaces).[[ else ]]
+acme_challenge = true and the namespace [[ $v.namespace ]] in catalog_namespaces, with the ACL
+policy the output of the Traefik pack prints for a namespace other than its own).[[ else ]]
 Route that path of every host on port 80 to the service.[[ end ]]
 [[- end ]]
 
 DNS-01: for the names of the norca.io/DNSZone objects norca-provider
-registers (always for a wildcard):
+registers (always for a wildcard), with the token of a zone in the Variable
+its provider names (token_variable, item token) in the namespace
+[[ if eq $v.zone_token_namespace "" ]][[ $v.namespace ]][[ else ]][[ $v.zone_token_namespace ]][[ end ]]:
   norca object list norca.io/DNSZone

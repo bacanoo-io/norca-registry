@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- $vars := $v.variables_namespace ]][[ if eq $vars "" ]][[ $vars = $v.namespace ]][[ end ]]
 job [[ $v.job_name | quote ]] {
   type        = "service"
   namespace   = [[ $v.namespace | quote ]]
@@ -92,8 +93,8 @@ job [[ $v.job_name | quote ]] {
 [[- if ne $v.driver "mock_driver" ]]
           "-log-level", [[ $v.log_level | quote ]],
           "-lease-namespace", [[ $v.namespace | quote ]],
-          "-token-namespace", [[ $v.variables_namespace | quote ]],
-          "-bootstrap-namespace", [[ $v.variables_namespace | quote ]],
+          "-token-namespace", [[ $vars | quote ]],
+          "-bootstrap-namespace", [[ $vars | quote ]],
           "-provider-ttl", [[ $v.provider_ttl | quote ]],
           "-provider-allow-http=[[ $v.provider_allow_http ]]",
           "-orphan-after", [[ $v.orphan_after | quote ]],

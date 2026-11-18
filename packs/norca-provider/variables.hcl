@@ -16,9 +16,9 @@ variable "job_name" {
 }
 
 variable "namespace" {
-  description = "Namespace of the provider job."
+  description = "Namespace of the provider job and of its Variable (the secrets of the providers). It must exist (norca namespace apply norca-system); the pack does not create it. Give rights in it to the operators of the cluster only."
   type        = string
-  default     = "default"
+  default     = "norca-system"
 
   validation {
     min_length = 1

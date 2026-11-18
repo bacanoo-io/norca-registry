@@ -17,5 +17,6 @@ The secrets of the providers come from the Variable nomad/jobs/[[ $v.job_name ]]
 [[- end ]]
 
 The operators read the token of a provider from its token_variable (item
-token), with the same value as the provider's own token:
-  norca var put providers/<name> token=...
+token), with the same value as the provider's own token, in their token
+namespace (the namespace of their job by default, norca-system):
+  norca var put -namespace norca-system providers/<name> token=...

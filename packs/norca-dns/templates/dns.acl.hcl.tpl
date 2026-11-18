@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2026 Norca contributors
 SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
+[[- $tokens := $v.zone_token_namespace ]][[ if eq $tokens "" ]][[ $tokens = $v.namespace ]][[ end ]]
 [[- if $v.acl_policy_enabled ]]
 policy [[ printf "%s" $v.job_name | quote ]] {
   description = "Permissions of norca-dns (bound to its job)"
@@ -33,7 +34,7 @@ namespace "*" {
 # without one the operator could not read the metadata of this namespace
 # (its allow list), and no record of it would be written. Any capability
 # lets the namespace be read; list-jobs is the narrowest.
-namespace "[[ $v.zone_token_namespace ]]" {
+namespace "[[ $tokens ]]" {
   capabilities = ["list-jobs"]
 
   variables {

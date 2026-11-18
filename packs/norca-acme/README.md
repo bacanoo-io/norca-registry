@@ -25,16 +25,30 @@ namespace.**
 
 ## Before
 
+- The namespace of the operator, `norca-system` by default, an operations
+  namespace shared by the operator packs of this registry. The pack expects
+  it and does not create it (a namespace a release installs belongs to that
+  release, which would delete it on uninstall and conflict with the other
+  operator packs); create it once:
+  `norca namespace apply -description "Norca operators" norca-system`.
+  Give rights in it to the operators of the cluster only: the job runs there
+  with the ACL policy bound to it, the keys of its accounts are secrets of
+  that namespace, and the tokens of the DNS zones are Variables of it by
+  default.
 - The binary on the nodes (`/usr/local/bin/norca-acme`, built in a
   norca-platform checkout with `go build -o norca-acme ./cmd/norca-acme`),
   or an image (`driver = "docker"`).
 - **HTTP-01:** port 80 of the names must reach the edge router, and the
   [traefik](../traefik) pack needs `acme_challenge = true` and the namespace
-  of this job in `catalog_namespaces`: its redirect to https then leaves
+  of this job in `catalog_namespaces` (`["default", "norca-system"]`), with
+  the policy its output prints that lets Traefik read the services of a
+  namespace other than its own: its redirect to https then leaves
   `/.well-known/acme-challenge/` to this service.
 - **DNS-01** (the only way for a wildcard): a provider of the
   [norca-provider](../norca-provider) pack with a `dns` section for the
-  zone, and its token in the Variable its `token_variable` names.
+  zone, and its token in the Variable its `token_variable` names, in
+  `zone_token_namespace` (the namespace of the job when empty):
+  `norca var put -namespace norca-system providers/dns-eu token=...`.
 
 ## An issuer
 
@@ -86,10 +100,11 @@ spec {
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
+| `namespace` | `norca-system` | Namespace of the job and of its secrets; it must exist. |
 | `controller` | `norca-acme` | The name issuers name the operator by. |
 | `secret_prefix` | `norca-acme/` | Where the operator keeps its secrets in its namespace: `accounts/<issuer>`, `issued/<issuer>/<serial>`. |
 | `http01_enabled`, `http01_entrypoints` | `true`, `["web"]` | The HTTP-01 service and the Traefik entrypoints its router is on. |
-| `zone_token_namespace`, `zone_token_path` | `default`, `providers/*` | The Variables with the tokens of the DNS zones. |
+| `zone_token_namespace`, `zone_token_path` | `""`, `providers/*` | The Variables with the tokens of the DNS zones; an empty namespace is the namespace of the job. |
 | `zone_ttl`, `zone_allow_http`, `zone_ca_cert` | `3m`, `false`, `""` | When a zone counts as away; http endpoints (trials only); the CA of the providers. |
 | `dns_resolver`, `dns_propagation_check`, `dns_propagation_timeout` | `""`, `true`, `5m` | The wait for the name servers of a zone before the certificate authority is told to look. |
 | `acme_ca_cert` | `""` | The CA of the https certificate of the ACME directory (a private certificate authority). |
@@ -104,6 +119,7 @@ with a test certificate authority.
 ## Install
 
 ```shell
+norca namespace apply -description "Norca operators" norca-system   # once
 norca pack run ./packs/norca-acme --name=acme
 norca object apply letsencrypt.hcl
 norca object list norca.io/CertificateIssuer

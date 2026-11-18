@@ -5,6 +5,7 @@ SPDX-License-Identifier: MPL-2.0
 [[- $v := vars . ]]
 [[- $watch := $v.namespace ]]
 [[- if ne $v.watch_namespace "" ]][[ $watch = $v.watch_namespace ]][[ end ]]
+[[- $tokens := $v.class_token_namespace ]][[ if eq $tokens "" ]][[ $tokens = $v.namespace ]][[ end ]]
 job [[ $v.job_name | quote ]] {
   type        = "service"
   namespace   = [[ $v.namespace | quote ]]
@@ -54,7 +55,7 @@ job [[ $v.job_name | quote ]] {
 [[- end ]]
           "-metrics-addr", "${NORCA_ADDR_metrics}",
           "-class-ttl", [[ $v.class_ttl | quote ]],
-          "-class-token-namespace", [[ $v.class_token_namespace | quote ]],
+          "-class-token-namespace", [[ $tokens | quote ]],
           "-class-allow-http=[[ $v.class_allow_http ]]",
 [[- if ne $v.class_ca_cert "" ]]
           "-class-ca-file", "${NORCA_TASK_DIR}/class-ca.pem",

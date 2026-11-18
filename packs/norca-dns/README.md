@@ -23,12 +23,24 @@ the names a namespace may write, and only in zones that allow it.
 
 ## Before
 
+- The namespace of the operator, `norca-system` by default, an operations
+  namespace shared by the operator packs of this registry. The pack expects
+  it and does not create it (a namespace a release installs belongs to that
+  release, which would delete it on uninstall and conflict with the other
+  operator packs); create it once:
+  `norca namespace apply -description "Norca operators" norca-system`.
+  Give rights in it to the operators of the cluster only: the job runs there
+  with the ACL policy bound to it, and the tokens of the DNS zones are
+  Variables of it by default.
 - The binary on the nodes (`/usr/local/bin/norca-dns`, built in a
   norca-platform checkout with `go build -o norca-dns ./cmd/norca-dns`), or
   an image (`driver = "docker"`).
 - A provider of the [norca-provider](../norca-provider) pack (0.4.0 or
   later) with a `dns` section for the zone and **`"records": true`** on the
-  zone, of a type that can write records (`rfc2136`, `mock`).
+  zone, of a type that can write records (`rfc2136`, `mock`), and the token
+  of the zone in the Variable its `token_variable` names, in
+  `zone_token_namespace`:
+  `norca var put -namespace norca-system providers/dns-eu token=...`.
 - The allow list of each namespace that writes names: the namespace
   metadata `norca.io/dns-suffixes` (comma separated), or `dns_suffixes` of
   its `Tenant`.
@@ -72,8 +84,9 @@ spec {
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
+| `namespace` | `norca-system` | Namespace of the job; it must exist. |
 | `requeue` | `5m` | Time after which a record is compared with its zone again; a change made by hand is set back then. More than zero. |
-| `zone_token_namespace`, `zone_token_path` | `default`, `providers/*` | Where the tokens of the DNS zones are. |
+| `zone_token_namespace`, `zone_token_path` | `""`, `providers/*` | Where the tokens of the DNS zones are; an empty namespace is the namespace of the job. |
 | `zone_ttl` | `3m` | How old the heartbeat of a zone may be. More than zero. |
 | `zone_allow_http` | `false` | Accept http endpoints of zones (labs only). |
 | `zone_ca_cert` | | The CA of the https certificates of the DNS providers. |

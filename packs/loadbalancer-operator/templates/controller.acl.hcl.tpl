@@ -4,7 +4,7 @@ SPDX-License-Identifier: MPL-2.0
 */ -]]
 [[- $v := vars . ]]
 [[- $job := $v.namespace ]]
-[[- $tokens := $v.class_token_namespace ]]
+[[- $tokens := $v.class_token_namespace ]][[ if eq $tokens "" ]][[ $tokens = $v.namespace ]][[ end ]]
 [[- $watch := $v.namespace ]]
 [[- if ne $v.watch_namespace "" ]][[ $watch = $v.watch_namespace ]][[ end ]]
 [[- $all := eq $watch "*" ]]

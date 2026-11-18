@@ -41,6 +41,15 @@ removed when the provider stops (`deregister_on_exit`).
 
 ## Before
 
+- The namespace of the provider, `norca-system` by default, an operations
+  namespace shared by the operator packs of this registry. The pack expects
+  it and does not create it (a namespace a release installs belongs to that
+  release, which would delete it on uninstall and conflict with the other
+  operator packs); create it once:
+  `norca namespace apply -description "Norca operators" norca-system`.
+  Give rights in it to the operators of the cluster only: the job runs there
+  with the ACL policy bound to it, and its Variable holds the credentials of
+  the platforms.
 - The binary on the nodes (`/usr/local/bin/norca-provider`, built in a
   norca-platform checkout with `go build -o norca-provider ./cmd/norca-provider`),
   or an image (`driver = "docker"`, the `Dockerfile` of norca-platform). The
@@ -54,12 +63,17 @@ removed when the provider stops (`deregister_on_exit`).
   Variable without a rule of the policy.
 - The token of each provider twice: in the job's Variable for the provider
   (`"token": "env:PROVIDER_TOKEN"`), and in the Variable its `token_variable`
-  names (item `token`) for the operators.
+  names (item `token`) for the operators, in their token namespace: the
+  namespace of their job by default, `norca-system`
+  (`class_token_namespace` of the loadbalancer-operator pack,
+  `zone_token_namespace` of norca-acme and norca-dns, `variables_namespace`
+  of the nodescaler-operator pack).
 
 ## Variables
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
+| `namespace` | `norca-system` | Namespace of the job and of its Variable; it must exist. |
 | `providers` | a mock class without a token | The `providers` array of the configuration of norca-provider, as JSON (see the README of norca-platform and its `providers.example.json`). |
 | `port` | `8443` | Static port of the server; the operators call it, so open it in the firewall. |
 | `advertise_url` | `http(s)://<task address>:<port>` | Base URL the operators reach the provider on. `${NAME}` refers to the environment of the task. |
@@ -77,8 +91,9 @@ the docker platform and a mock class.
 ## Install
 
 ```shell
-norca var put nomad/jobs/norca-provider PROVIDER_TOKEN=... HCLOUD_TOKEN=...
-norca var put providers/hetzner-eu token=...
+norca namespace apply -description "Norca operators" norca-system   # once
+norca var put -namespace norca-system nomad/jobs/norca-provider PROVIDER_TOKEN=... HCLOUD_TOKEN=...
+norca var put -namespace norca-system providers/hetzner-eu token=...
 norca pack run ./packs/norca-provider --name=provider -f examples/norca-provider/hetzner.hcl
 norca object list norca.io/LoadBalancerClass
 ```

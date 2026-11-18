@@ -16,9 +16,9 @@ variable "job_name" {
 }
 
 variable "namespace" {
-  description = "Namespace of the controller job, and of the LoadBalancer objects it reconciles unless watch_namespace names another one."
+  description = "Namespace of the controller job, of its leases and, by default, of the token Variables of the classes. It must exist (norca namespace apply norca-system); the pack does not create it. Give rights in it to the operators of the cluster only."
   type        = string
-  default     = "default"
+  default     = "norca-system"
 
   validation {
     min_length = 1
@@ -27,9 +27,9 @@ variable "namespace" {
 }
 
 variable "watch_namespace" {
-  description = "Namespace of the LoadBalancer objects the controller reconciles, when it is not the namespace of the controller job: a namespace, or * for every namespace. Empty: the namespace of the controller job. The controller job then runs in its own namespace (an operations namespace), outside the quota and the reach of the teams whose load balancers it serves; the ACL policy gives the controller its job, Variable and object rights in the watched namespaces."
+  description = "Namespace of the LoadBalancer objects the controller reconciles: a namespace, or * for every namespace. Empty: the namespace of the controller job. The controller job runs in its own namespace (an operations namespace), outside the quota and the reach of the teams whose load balancers it serves; the ACL policy gives the controller its job, Variable and object rights in the watched namespaces."
   type        = string
-  default     = ""
+  default     = "default"
 
   validation {
     pattern = "^([a-zA-Z0-9-]{1,128}|\\*)?$"
@@ -172,12 +172,12 @@ variable "class_ttl" {
 }
 
 variable "class_token_namespace" {
-  description = "Namespace of the Variables that hold the tokens of the registered classes (the token_variable of norca-provider)."
+  description = "Namespace of the Variables that hold the tokens of the registered classes (the token_variable of norca-provider). Empty: the namespace of the controller job. Keep the tokens where only operators read: a token with read on Variables there can read them."
   type        = string
-  default     = "default"
+  default     = ""
 
   validation {
-    min_length = 1
+    pattern = "^([a-zA-Z0-9-]{1,128})?$"
   }
 }
 

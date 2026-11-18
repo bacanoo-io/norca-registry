@@ -16,9 +16,9 @@ variable "job_name" {
 }
 
 variable "namespace" {
-  description = "Namespace of the operator job and of its secrets (the keys of its accounts, the certificates it issued)."
+  description = "Namespace of the operator job, of its secrets (the keys of its accounts, the certificates it issued) and, by default, of the token Variables of the DNS zones. It must exist (norca namespace apply norca-system); the pack does not create it. Give rights in it to the operators of the cluster only."
   type        = string
-  default     = "default"
+  default     = "norca-system"
 
   validation {
     min_length = 1
@@ -188,7 +188,7 @@ variable "http01_enabled" {
 }
 
 variable "http01_entrypoints" {
-  description = "The http entrypoints of the Traefik pack the challenge is routed on (the entrypoints of port 80). The service of the job carries the router as catalog tags; the Traefik pack must have acme_challenge = true and the namespace of this job in its catalog. Empty: no tags, route the path by other means."
+  description = "The http entrypoints of the Traefik pack the challenge is routed on (the entrypoints of port 80). The service of the job carries the router as catalog tags; the Traefik pack must have acme_challenge = true and the namespace of this job in its catalog_namespaces (with the ACL policy for that namespace its output prints). Empty: no tags, route the path by other means."
   type        = list(string)
   default     = ["web"]
 }
@@ -198,12 +198,12 @@ variable "http01_entrypoints" {
 # ---------------------------------------------------------------------------
 
 variable "zone_token_namespace" {
-  description = "Namespace of the Variables holding the tokens of the DNS zones (the token_variable of the providers of norca-provider, item token)."
+  description = "Namespace of the Variables holding the tokens of the DNS zones (the token_variable of the providers of norca-provider, item token). Empty: the namespace of the operator job."
   type        = string
-  default     = "default"
+  default     = ""
 
   validation {
-    min_length = 1
+    pattern = "^([a-zA-Z0-9-]{1,128})?$"
   }
 }
 

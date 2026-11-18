@@ -44,8 +44,18 @@ providers are applications of their own and register themselves, for example
 
 ## Before
 
-- `node_scaling` in the plan of norca-deployer and a node CA
-  (`norca-deployer pki issue-node-ca`): `apply` writes
+- The namespace of the operator, `norca-system` by default, an operations
+  namespace shared by the operator packs of this registry. The pack expects
+  it and does not create it (a namespace a release installs belongs to that
+  release, which would delete it on uninstall and conflict with the other
+  operator packs); create it once:
+  `norca namespace apply -description "Norca operators" norca-system`.
+  Give rights in it to the operators of the cluster only: the job runs there
+  with the ACL policy bound to it (node write among others), and the
+  bootstrap Variable holds the key of the node CA.
+- `node_scaling` in the plan of norca-deployer, with `namespace:
+  norca-system` (the namespace of the Variables the operator reads), and a
+  node CA (`norca-deployer pki issue-node-ca`): `apply` writes
   `nodescaler/bootstrap/<region>` and `nodescaler/network/<region>`.
 - The binary on the nodes of the pool (`/usr/local/bin/norca-nodescaler`), or
   an image (`driver = "docker"`).
@@ -55,13 +65,13 @@ providers are applications of their own and register themselves, for example
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `job_name` | `nodescaler` | The job; the policy is bound to it. |
-| `namespace` | `default` | Namespace of the job and of the lease. |
+| `namespace` | `norca-system` | Namespace of the job and of the lease; it must exist. |
 | `region`, `datacenters` | the release's, `["*"]` | Where the job runs; one operator per region. |
 | `node_pool` | `default` | Run it outside the pools it scales. |
 | `count` | `2` | Instances, on different nodes and, where there are several, in different datacenters: when a datacenter is lost the operator must still be there to add nodes in the others. |
 | `driver`, `binary`, `image` | `raw_exec`, `/usr/local/bin/norca-nodescaler` | How the binary runs. |
 | `cpu`, `memory`, `log_level` | `100`, `64`, `info` | |
-| `variables_namespace` | `default` | Namespace of the Variables under `nodescaler/`. |
+| `variables_namespace` | `""` | Namespace of the Variables under `nodescaler/`; empty: `namespace`. `node_scaling.namespace` of norca-deployer must name the same one. |
 | `provider_ttl` | `3m` | How old the heartbeat of a provider may be. |
 | `provider_allow_http` | `false` | http endpoints of providers (labs only). |
 | `resync` | `5m` | Period of the full resynchronization of the groups. |
