@@ -14,6 +14,45 @@ reference operator pack. `norca pack` uses it like any git pack registry
 (Nomad Pack format, with Norca's extended package format: object kinds, ACL and
 admission policies next to jobs, a JSON Schema for the variables).
 
+## Modules of Rig (branch `rig`)
+
+On the branch `rig` of this clone (`norca-rig-registry`), the packs are
+converted to modules of [Rig](https://github.com/bacanoo-io/norca-rig), the
+package manager that replaces `norca pack` (design of Rig, sections 7.4 and
+13). The modules live in `modules/` next to `packs/`, so both are checked in
+one tree until the packs go; the branch is merged into norca-registry then.
+A stack names this repository as a registry and installs a module by name:
+
+```hcl
+rig {
+  name = "platform"
+
+  registry "norca" {
+    source = "github.com/bacanoo-io/norca-registry"
+  }
+}
+
+module "bus" {
+  source  = "norca/nats"
+  version = "~> 1.0"
+}
+```
+
+Each module has its own version and is released by a tag
+`<module>/v<version>` (`nats/v1.0.0`), never moved. `scripts/check-modules.sh`
+runs the checks of the modules with the `rig` program: `rig fmt -check`,
+`rig module validate` (the example values rendered through Norca's job
+decoder) and `rig module test`.
+
+| Module | Version | From |
+| --- | --- | --- |
+| [redis](modules/redis/README.md) | 0.3.0 | the built-in pack redis 0.2.1 of norca, its faults kept |
+| [nats](modules/nats/README.md) | 1.0.0 | the pack nats 0.7.0, in a smaller shape |
+| [postgres](modules/postgres/README.md) | 0.3.0 | the pack postgres |
+| lib/placement | 1.0.0 | a library the others call; not installed on its own |
+
+## Packs
+
 | Pack | Version | |
 | --- | --- | --- |
 | [consul](packs/consul/README.md) | 0.2.0 | Installs and manages the official HashiCorp Consul release (BSL 1.1, referenced, never shipped; accepted by the user at install): servers on host volumes over datacenters, client agents, gossip/TLS/ACL bootstrap from Variables, optional snapshots to S3, optional agent metrics |
