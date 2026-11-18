@@ -1,6 +1,6 @@
 module {
   name        = "postgres-demo"
-  version     = "0.3.0"
+  version     = "0.3.1"
   description = "A single PostgreSQL server: data on a host volume, application databases created by a hook, credentials from the secret store, optional periodic dumps to an S3 store."
   url         = "https://www.postgresql.org"
   license     = "PostgreSQL" # the official image is referenced, not shipped

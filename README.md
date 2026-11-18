@@ -63,18 +63,18 @@ templates written as HCL); all 85 cases of `compare-packs.sh` match and all
 | --- | --- | --- |
 | [consul](modules/consul/README.md) | 0.2.0 | the pack consul 0.2.0, in full |
 | [forgejo](modules/forgejo/README.md) | 0.2.0 | the pack forgejo 0.2.0, in full |
-| [loadbalancer-operator](modules/loadbalancer-operator/README.md) | 0.4.0 | the pack loadbalancer-operator 0.4.0, in full |
+| [loadbalancer-operator](modules/loadbalancer-operator/README.md) | 0.4.1 | the pack loadbalancer-operator 0.4.0, in full |
 | [mtls-gateway](modules/mtls-gateway/README.md) | 0.2.1 | the pack mtls-gateway 0.2.1, in full |
 | [nats](modules/nats/README.md) | 2.0.0 | the pack nats 0.7.0, in full |
 | [nats-demo](modules/nats-demo/README.md) | 1.0.0 | a demonstration of the language: the pack nats 0.7.0 in a smaller shape (was nats 1.0.0) |
-| [nodescaler-operator](modules/nodescaler-operator/README.md) | 0.10.0 | the pack nodescaler-operator 0.10.0, in full |
-| [norca-acme](modules/norca-acme/README.md) | 0.1.0 | the pack norca-acme 0.1.0, in full |
-| [norca-dns](modules/norca-dns/README.md) | 0.1.1 | the pack norca-dns 0.1.1, in full |
-| [norca-provider](modules/norca-provider/README.md) | 0.4.0 | the pack norca-provider 0.4.0, in full |
-| [openobserve](modules/openobserve/README.md) | 0.2.0 | the pack openobserve 0.2.0, in full |
+| [nodescaler-operator](modules/nodescaler-operator/README.md) | 0.10.1 | the pack nodescaler-operator 0.10.0, in full |
+| [norca-acme](modules/norca-acme/README.md) | 0.1.1 | the pack norca-acme 0.1.0, in full |
+| [norca-dns](modules/norca-dns/README.md) | 0.1.2 | the pack norca-dns 0.1.1, in full |
+| [norca-provider](modules/norca-provider/README.md) | 0.4.1 | the pack norca-provider 0.4.0, in full |
+| [openobserve](modules/openobserve/README.md) | 0.2.1 | the pack openobserve 0.2.0, in full |
 | [otel-collector](modules/otel-collector/README.md) | 0.1.2 | the pack otel-collector 0.1.2, in full |
 | [postgres](modules/postgres/README.md) | 0.4.0 | the pack postgres 0.1.0, in full |
-| [postgres-demo](modules/postgres-demo/README.md) | 0.3.0 | a demonstration of the language from the pack postgres (was postgres 0.3.0) |
+| [postgres-demo](modules/postgres-demo/README.md) | 0.3.1 | a demonstration of the language from the pack postgres (was postgres 0.3.0) |
 | [redis](modules/redis/README.md) | 0.3.0 | the built-in pack redis 0.2.1 of norca, its faults kept |
 | [rustfs](modules/rustfs/README.md) | 0.2.0 | the pack rustfs 0.2.0, in full |
 | [seaweedfs](modules/seaweedfs/README.md) | 0.1.0 | the pack seaweedfs 0.1.0, in full |
