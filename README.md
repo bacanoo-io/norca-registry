@@ -34,22 +34,53 @@ rig {
 
 module "bus" {
   source  = "norca/nats"
-  version = "~> 1.0"
+  version = "~> 2.0"
 }
 ```
 
 Each module has its own version and is released by a tag
-`<module>/v<version>` (`nats/v1.0.0`), never moved. `scripts/check-modules.sh`
-runs the checks of the modules with the `rig` program: `rig fmt -check`,
-`rig module validate` (the example values rendered through Norca's job
-decoder) and `rig module test`.
+`<module>/v<version>` (`nats/v2.0.0`), never moved. The scripts of the
+registry, with the `rig` program on the PATH:
+
+- `scripts/check-modules.sh`: `rig fmt -check`, `rig module validate` (the
+  defaults and the example values rendered through Norca's job decoder) and
+  `rig module test` of every module.
+- `scripts/compare-packs.sh <pack>...`: the acceptance of a conversion (rig
+  design 14). For the defaults and every example, the module renders the
+  jobs, ACL policies, kinds and admission policies of the pack, compared as
+  parsed resources (the pack's resource files rendered by rig in a module of
+  their own, so both pass the same decoders). An example of the module that
+  the pack has not is given to both.
+- `scripts/check-modules-server.sh`: every job the modules render, for the
+  defaults and every example, passes the validation of a Norca server
+  (`PUT /v1/validate/job`; `CREATE_NODE_POOLS=1` on a throwaway dev agent).
+
+Every pack of the registry is converted (`rig convert pack`, then the
+templates written as HCL); all 85 cases of `compare-packs.sh` match and all
+104 rendered jobs pass the server's validation.
 
 | Module | Version | From |
 | --- | --- | --- |
+| [consul](modules/consul/README.md) | 0.2.0 | the pack consul 0.2.0, in full |
+| [forgejo](modules/forgejo/README.md) | 0.2.0 | the pack forgejo 0.2.0, in full |
+| [loadbalancer-operator](modules/loadbalancer-operator/README.md) | 0.4.0 | the pack loadbalancer-operator 0.4.0, in full |
+| [mtls-gateway](modules/mtls-gateway/README.md) | 0.2.1 | the pack mtls-gateway 0.2.1, in full |
+| [nats](modules/nats/README.md) | 2.0.0 | the pack nats 0.7.0, in full |
+| [nats-demo](modules/nats-demo/README.md) | 1.0.0 | a demonstration of the language: the pack nats 0.7.0 in a smaller shape (was nats 1.0.0) |
+| [nodescaler-operator](modules/nodescaler-operator/README.md) | 0.10.0 | the pack nodescaler-operator 0.10.0, in full |
+| [norca-acme](modules/norca-acme/README.md) | 0.1.0 | the pack norca-acme 0.1.0, in full |
+| [norca-dns](modules/norca-dns/README.md) | 0.1.1 | the pack norca-dns 0.1.1, in full |
+| [norca-provider](modules/norca-provider/README.md) | 0.4.0 | the pack norca-provider 0.4.0, in full |
+| [openobserve](modules/openobserve/README.md) | 0.2.0 | the pack openobserve 0.2.0, in full |
+| [otel-collector](modules/otel-collector/README.md) | 0.1.2 | the pack otel-collector 0.1.2, in full |
+| [postgres](modules/postgres/README.md) | 0.4.0 | the pack postgres 0.1.0, in full |
+| [postgres-demo](modules/postgres-demo/README.md) | 0.3.0 | a demonstration of the language from the pack postgres (was postgres 0.3.0) |
 | [redis](modules/redis/README.md) | 0.3.0 | the built-in pack redis 0.2.1 of norca, its faults kept |
-| [nats](modules/nats/README.md) | 1.0.0 | the pack nats 0.7.0, in a smaller shape |
-| [postgres](modules/postgres/README.md) | 0.3.0 | the pack postgres |
-| lib/placement | 1.0.0 | a library the others call; not installed on its own |
+| [rustfs](modules/rustfs/README.md) | 0.2.0 | the pack rustfs 0.2.0, in full |
+| [seaweedfs](modules/seaweedfs/README.md) | 0.1.0 | the pack seaweedfs 0.1.0, in full |
+| [seaweedfs-csi](modules/seaweedfs-csi/README.md) | 0.1.0 | the pack seaweedfs-csi 0.1.0, in full |
+| [traefik](modules/traefik/README.md) | 0.3.0 | the pack traefik 0.3.0, in full |
+| lib/placement | 1.1.0 | a library the others call; not installed on its own |
 
 ## Packs
 
@@ -179,6 +210,15 @@ packs/<name>/            one pack per directory (the layout "norca pack registry
 examples/<name>/*.hcl    variable files, checked by scripts/check-packs.sh
 scripts/check-packs.sh   local and CI checks
 operators/<name>/        operators that aren't packs: Go source, a job and an engine to adapt
+modules/<name>/          the module of Rig converted from a pack (branch rig)
+  metadata.hcl           the module block: name, version, requirements
+  variables.hcl          variables with their checks and rules
+  <name>.norca.hcl       a job; <name>.acl.hcl, <name>.kind.hcl, ... other resources
+  locals.hcl, modules.hcl  locals and the calls of child modules (lib/placement)
+  outputs.hcl            outputs, the notes after an install among them
+  examples/*.vars.hcl    values, rendered by rig module validate
+modules/lib/<name>/      library modules the others call
+scripts/check-modules.sh, compare-packs.sh, check-modules-server.sh   the checks of the modules
 ```
 
 ## Contributing

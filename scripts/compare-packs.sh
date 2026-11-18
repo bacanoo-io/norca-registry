@@ -123,11 +123,11 @@ others_pack, others_module = {}, {}
 
 def key(r):
     spec = r["spec"] if isinstance(r["spec"], dict) else {}
-    return r["kind"] + " " + str(spec.get("Name") or spec.get("name") or spec.get("ID") or spec.get("Path") or r["name"])
+    return r["kind"] + " " + str(spec.get("Name") or spec.get("name") or spec.get("Kind") or spec.get("ID") or spec.get("Path") or r["name"])
 
 def named(r):
     """A resource that names itself by its label only has that name."""
-    if isinstance(r["spec"], dict) and not any(k in r["spec"] for k in ("name", "Name", "ID", "Path")):
+    if isinstance(r["spec"], dict) and not any(k in r["spec"] for k in ("name", "Name", "ID", "Path", "Kind")):
         r["spec"]["name"] = r["name"]
     return r
 
