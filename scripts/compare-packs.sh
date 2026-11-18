@@ -125,14 +125,21 @@ def key(r):
     spec = r["spec"] if isinstance(r["spec"], dict) else {}
     return r["kind"] + " " + str(spec.get("Name") or spec.get("name") or spec.get("ID") or spec.get("Path") or r["name"])
 
+def named(r):
+    """A resource that names itself by its label only has that name."""
+    if isinstance(r["spec"], dict) and not any(k in r["spec"] for k in ("name", "Name", "ID", "Path")):
+        r["spec"]["name"] = r["name"]
+    return r
+
 for r in json.load(open(os.path.join(dir, "module.json")))["resources"]:
+    named(r)
     if r["kind"] == "job":
         module[r["spec"]["ID"]] = r["spec"]
     else:
         others_module[key(r)] = r
 if os.path.exists(os.path.join(dir, "packres.json")):
     for r in json.load(open(os.path.join(dir, "packres.json")))["resources"]:
-        others_pack[key(r)] = r
+        others_pack[key(named(r))] = r
 
 ok = True
 for jobs in (pack, module):
