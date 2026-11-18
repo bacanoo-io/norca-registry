@@ -39,6 +39,14 @@ compare() { # <pack> <name> <pack var file or ""> <module var file or "">
   local pargs=() margs=()
   [ -n "$pvars" ] && pargs+=("--var-file=$pvars")
   [ -n "$mvars" ] && margs+=(-f "$mvars")
+  # The namespace and region a pack example sets are the release's in a
+  # module.
+  local release_var
+  for release_var in namespace region; do
+    local val=""
+    [ -n "$pvars" ] && val="$(sed -nE "s/^${release_var}[[:space:]]*=[[:space:]]*\"(.*)\"[[:space:]]*$/\1/p" "$pvars")"
+    [ -n "$val" ] && margs+=("-$release_var" "$val")
+  done
   # shellcheck disable=SC2206
   pargs+=(${required[$pack]:-})
   # shellcheck disable=SC2206
@@ -69,7 +77,11 @@ src, out = sys.argv[1], sys.argv[2]
 base, kind = os.path.basename(src).split(".", 1)
 text = open(src).read()
 m = re.search(r'^(\w+) "([^"]+)" \{\n', text, re.M)
-if m and m.group(2) != base:
+if kind == "admission.hcl" and not re.search(r'^admission ', text, re.M):
+    # The pack writes the attributes of an admission policy at the top of
+    # its file; a module writes them in an admission block.
+    text = f'admission "{base}" {{\n' + text + '\n}\n'
+elif m and m.group(2) != base:
     text = text[:m.start()] + f'{m.group(1)} "{base}" {{\n  name = "{m.group(2)}"\n' + text[m.end():]
 open(os.path.join(out, base + "." + kind), "w").write(text)
 PY
