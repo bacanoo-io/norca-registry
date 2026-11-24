@@ -179,3 +179,5 @@ Converted from the pack `loadbalancer-operator` 0.4.0 with `rigger convert pack`
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh loadbalancer-operator`). The job ID is `job_name`, as in the pack. The namespace and the region are
 the release's.
+
+The module is version 0.5.0 and has nothing the pack has not: after the conversion the pack changed defaults without a new version (`driver` and `proxy_driver` are `exec`, the tokens of the classes are in the namespace of the job, `norca-system`), the module follows them, and by the rule of the registry a changed default raises the minor version.

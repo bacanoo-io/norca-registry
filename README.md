@@ -75,7 +75,7 @@ pass the server's validation.
 | --- | --- | --- |
 | [consul](modules/consul/README.md) | 0.2.0 | the pack consul 0.2.0, in full |
 | [forgejo](modules/forgejo/README.md) | 0.2.0 | the pack forgejo 0.2.0, in full |
-| [loadbalancer-operator](modules/loadbalancer-operator/README.md) | 0.4.1 | the pack loadbalancer-operator 0.4.0, in full |
+| [loadbalancer-operator](modules/loadbalancer-operator/README.md) | 0.5.0 | the pack loadbalancer-operator 0.4.0, in full |
 | [mtls-gateway](modules/mtls-gateway/README.md) | 0.2.1 | the pack mtls-gateway 0.2.1, in full |
 | [nats](modules/nats/README.md) | 2.0.0 | the pack nats 0.7.0, in full |
 | [nats-demo](modules/nats-demo/README.md) | 1.0.0 | a demonstration of the language: the pack nats 0.7.0 in a smaller shape (was nats 1.0.0) |
