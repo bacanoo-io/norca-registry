@@ -1,0 +1,4 @@
+{
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/seaweedfs-csi\"},\"image\":{\"docker-manifest-digest\":\"sha256:4859201fb529309da1045278296f5d63171d771ed6b5ad28bb95bfe968f57475\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"seaweedfs-csi\",\"rigger.version\":\"0.1.0\"}}",
+  "signature": "MEYCIQC7YLlviNoNUktYXHtHxxGp5jX9AIw9F3kscpv7F5pmVgIhAOK2VSsdXyAs0RmzSHF+44w5WQa2+QkYQwZcfgLrtDKA"
+}
