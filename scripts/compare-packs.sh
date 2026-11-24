@@ -11,7 +11,9 @@
 #   modules/<pack>, modules/<pack>/examples/<name>.vars.hcl  the module and the same examples
 #
 # An example of the module that the pack has not is given to both: the
-# variables keep their names.
+# variables keep their names. The few examples that set variables the pack
+# has not are named in module_only below: they are rendered, not compared,
+# and printed as "not compared".
 #
 # Usage: scripts/compare-packs.sh <pack>...
 # Environment: NORCA, RIGGER (the programs, default on the PATH), KEEP (a
@@ -31,7 +33,27 @@ export NORCA_ADDR="http://127.0.0.1:1" GIT_TERMINAL_PROMPT=0
 declare -A required=([consul]="--var=consul_license_accepted=true")
 declare -A required_module=([consul]="-var=consul_license_accepted=true")
 
+# Examples of a module that are of the module alone, <module>/<example>
+# with the reason: they set variables the pack has not, so the pack cannot
+# render them and there is nothing to compare them with. They must still
+# render here, and check-modules.sh and check-modules-server.sh validate
+# them like every example. The list is short on purpose: every other
+# example of a module is compared, and so are the defaults of these
+# modules. A name here that is no example of its module, or that the pack
+# has too, fails.
+declare -A module_only=(
+)
+
 failed=0
+
+render_only() { # <pack> <name> <module var file> <reason>
+  local pack="$1" name="$2" mvars="$3" why="$4" dir="$work/$1/$2"
+  mkdir -p "$dir"
+  if ! (cd "$root" && "$rigger" module render "modules/$pack" -release "$pack" -f "$mvars") >"$dir/module.json" 2>"$dir/module.log"; then
+    cat "$dir/module.log"; echo "FAIL: $pack ($name): the module does not render"; failed=1; return
+  fi
+  echo "not compared: $pack ($name): $why"
+}
 
 compare() { # <pack> <name> <pack var file or ""> <module var file or "">
   local pack="$1" name="$2" pvars="$3" mvars="$4" dir="$work/$1/$2"
@@ -231,12 +253,28 @@ for pack in "$@"; do
     compare "$pack" "$name" "$ex" "$mex"
   done
   # Examples of the module that the pack has not: the same values in both,
-  # as the variables keep their names.
+  # as the variables keep their names; those of module_only are rendered.
   for mex in "$root/modules/$pack/examples"/*.vars.hcl; do
     [ -f "$mex" ] || continue
     name="$(basename "$mex" .vars.hcl)"
     [ -f "$root/examples/$pack/$name.hcl" ] && continue
+    if [ -n "${module_only[$pack/$name]:-}" ]; then
+      render_only "$pack" "$name" "$mex" "${module_only[$pack/$name]}"
+      continue
+    fi
     compare "$pack" "$name" "$mex" "$mex"
+  done
+  # The list names what is there: an entry without its example, or with an
+  # example of the pack beside it, would hide nothing but says something
+  # that is not so.
+  for key in "${!module_only[@]}"; do
+    [ "${key%%/*}" = "$pack" ] || continue
+    name="${key#*/}"
+    if [ ! -f "$root/modules/$pack/examples/$name.vars.hcl" ]; then
+      echo "FAIL: $pack ($name): named in module_only, but modules/$pack/examples/$name.vars.hcl is missing"; failed=1
+    elif [ -f "$root/examples/$pack/$name.hcl" ]; then
+      echo "FAIL: $pack ($name): named in module_only, but the pack has the example too"; failed=1
+    fi
   done
 done
 

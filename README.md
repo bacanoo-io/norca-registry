@@ -58,7 +58,10 @@ PATH:
   their own, so both pass the same decoders). An example of the module that
   the pack has not is given to both. The module is rendered in the namespace
   the example of the pack sets, or else in the default of the pack's
-  `namespace` variable (`norca-system` for the operator packs).
+  `namespace` variable (`norca-system` for the operator packs). An example
+  that sets variables the pack has not is named in the script
+  (`module_only`, each with its reason): it is rendered, printed as `not
+  compared`, and nothing else is left out.
 - `scripts/check-modules-server.sh`: every job the modules render, for the
   defaults and every example, passes the validation of a Norca server
   (`PUT /v1/validate/job`; `CREATE_NODE_POOLS=1` on a throwaway dev agent).
