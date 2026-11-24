@@ -63,6 +63,12 @@ kind "dns-record" {
             type        = "boolean"
             description = "Take over a record set of the name and type that norca-dns did not write"
           }
+          deletion_policy = {
+            type        = "string"
+            enum        = ["delete", "retain"]
+            default     = "delete"
+            description = "What deleting the record does with its record set: delete removes it (the record stays until that succeeds), retain leaves it in the zone"
+          }
         }
       }
       status = {
@@ -113,6 +119,7 @@ kind "dns-record" {
     column "Type" { path = "spec.type" }
     column "Values" { path = "status.values" }
     column "Zone" { path = "status.zone" }
+    column "Deletion" { path = "spec.deletion_policy" }
     column "Ready" { path = "status.conditions[?type=='Ready'].status" }
   }
 }
