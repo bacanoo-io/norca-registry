@@ -1,0 +1,4 @@
+{
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/norca-dns\"},\"image\":{\"docker-manifest-digest\":\"sha256:603e5260bf486d23b25604c3f2fa1e30baf929962b992e8b5bd294050cf60e00\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"norca-dns\",\"rigger.version\":\"0.3.0\"}}",
+  "signature": "MEQCIDczoHaPxVHA/BlDZ6MoZ5zl33ug/RaWwMKuTR8iuQAoAiAGdyIqq4mGUXIiVH2699sbkeiRROvrIzLggyDwYUcI+Q=="
+}
