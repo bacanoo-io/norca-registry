@@ -84,7 +84,7 @@ pass the server's validation.
 | [otel-collector](modules/otel-collector/README.md) | 0.1.2 | the pack otel-collector 0.1.2, in full |
 | [postgres](modules/postgres/README.md) | 0.4.0 | the pack postgres 0.1.0, in full |
 | [postgres-demo](modules/postgres-demo/README.md) | 0.3.1 | a demonstration of the language from the pack postgres (was postgres 0.3.0) |
-| [redis](modules/redis/README.md) | 0.3.0 | the built-in pack redis 0.2.1 of norca, its faults kept |
+| [redis](modules/redis/README.md) | 0.4.0 | one server; began as the built-in pack redis 0.2.1 of norca, its faults fixed |
 | [rustfs](modules/rustfs/README.md) | 0.2.0 | the pack rustfs 0.2.0, in full |
 | [seaweedfs](modules/seaweedfs/README.md) | 0.1.0 | the pack seaweedfs 0.1.0, in full |
 | [seaweedfs-csi](modules/seaweedfs-csi/README.md) | 0.1.0 | the pack seaweedfs-csi 0.1.0, in full |
