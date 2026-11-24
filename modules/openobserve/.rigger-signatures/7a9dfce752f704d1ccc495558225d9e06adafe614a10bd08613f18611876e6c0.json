@@ -1,0 +1,4 @@
+{
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/openobserve\"},\"image\":{\"docker-manifest-digest\":\"sha256:22d781d2ba5a79c3d8743f35997981c5e6907a2c4f1da6bb6003c4f77fee08ce\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"openobserve\",\"rigger.version\":\"0.2.1\"}}",
+  "signature": "MEUCIDn39mnl1hgFBZYPRP3WBNRNeuuF5JenVaRBbSCy68AxAiEA8bJAg0U2qRe2102iGFjLV2fgXCBf5ZctpAnF95k6ZiU="
+}
