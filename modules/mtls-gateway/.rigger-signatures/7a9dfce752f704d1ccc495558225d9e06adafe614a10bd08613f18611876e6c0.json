@@ -1,0 +1,4 @@
+{
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/mtls-gateway\"},\"image\":{\"docker-manifest-digest\":\"sha256:2537c96728d3efe4c58c1c508907e5dc02025a7577531e4df1c0d523a53843a4\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"mtls-gateway\",\"rigger.version\":\"0.2.1\"}}",
+  "signature": "MEUCIBkWG/OeZk3S8n6LNN0V9HyUClfZG+FdbIph/V5AiU4yAiEAqfpIDB4fQvN5t9HmbAd5U987g3jM+YtgHF/vGbBZkfU="
+}
