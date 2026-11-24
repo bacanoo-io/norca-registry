@@ -14,14 +14,13 @@ reference operator pack. `norca pack` uses it like any git pack registry
 (Nomad Pack format, with Norca's extended package format: object kinds, ACL and
 admission policies next to jobs, a JSON Schema for the variables).
 
-## Modules of Rigger (branch `rigger`)
+## Modules of Rigger
 
-On the branch `rigger` of this clone (`norca-rigger-registry`), the packs are
-converted to modules of [Rigger](https://github.com/bacanoo-io/norca-rigger), the
-package manager that replaces `norca pack` (design of Rigger, sections 7.4 and
-13). The modules live in `modules/` next to `packs/`, so both are checked in
-one tree until the packs go; the branch is merged into norca-registry then.
-A stack names this repository as a registry and installs a module by name:
+The packs are converted to modules of
+[Rigger](https://github.com/bacanoo-io/norca/tree/main/rigger), the package
+manager that replaces `norca pack`. The modules live in `modules/` next to
+`packs/`, so both are checked in one tree until the packs go. A stack names
+this repository as a registry and installs a module by name:
 
 ```hcl
 rigger {
@@ -43,16 +42,14 @@ Each module has its own version and is released by a tag
 with the signing key of the namespace `norca` of the global registry
 (`norca-global-registry`): `rigger module publish modules/<module> -key
 norca.key` signs the module, commits the signature and tags it; once the tag
-is pushed, the global registry lists it as `norca/<module>`. The tags made
-before the key are not signed: a module enters the global registry with its
-next version. The scripts of the registry, with the `rigger` program on the
-PATH:
+is pushed, the global registry lists it as `norca/<module>`. The scripts of
+the registry, with the `rigger` program on the PATH:
 
 - `scripts/check-modules.sh`: `rigger fmt -check`, `rigger module validate` (the
   defaults and the example values rendered through Norca's job decoder) and
   `rigger module test` of every module.
-- `scripts/compare-packs.sh <pack>...`: the acceptance of a conversion (rigger
-  design 14). For the defaults and every example, the module renders the
+- `scripts/compare-packs.sh <pack>...`: the acceptance of a conversion. For
+  the defaults and every example, the module renders the
   jobs, ACL policies, kinds and admission policies of the pack, compared as
   parsed resources (the pack's resource files rendered by rigger in a module of
   their own, so both pass the same decoders). An example of the module that
