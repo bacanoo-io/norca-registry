@@ -60,6 +60,9 @@ providers are applications of their own and register themselves, for example
   `nodescaler/bootstrap/<region>` and `nodescaler/network/<region>`.
 - The binary on the nodes of the pool (`/usr/local/bin/norca-nodescaler`), or
   an image (`driver = "docker"`).
+- Nodes without the raw_exec driver: the job keeps off nodes with it unless
+  `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
+  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
 
 ## Variables
 
@@ -70,7 +73,8 @@ providers are applications of their own and register themselves, for example
 | `region`, `datacenters` | the release's, `["*"]` | Where the job runs; one operator per region. |
 | `node_pool` | `default` | Run it outside the pools it scales. |
 | `count` | `2` | Instances, on different nodes and, where there are several, in different datacenters: when a datacenter is lost the operator must still be there to add nodes in the others. |
-| `driver`, `binary`, `image` | `raw_exec`, `/usr/local/bin/norca-nodescaler` | How the binary runs. |
+| `driver`, `binary`, `image` | `exec`, `/usr/local/bin/norca-nodescaler` | How the binary runs; `raw_exec` only with `allow_raw_exec_nodes`. |
+| `allow_raw_exec_nodes` | `false` | Allow nodes with the raw_exec driver and `driver = "raw_exec"` (JOG-19). |
 | `cpu`, `memory`, `log_level` | `100`, `64`, `info` | |
 | `variables_namespace` | `""` | Namespace of the Variables under `nodescaler/`; empty: the namespace of the job. `node_scaling.namespace` of norca-deployer must name the same one. |
 | `provider_ttl` | `3m` | How old the heartbeat of a provider may be. |
@@ -97,7 +101,7 @@ norca module run  nodescaler-operator --registry=norca --var=node_pool=system
 rigger install ./modules/nodescaler-operator -name nodescaler -namespace norca-system
 ```
 
-Outputs: `job`, `join_service` and `notes`. The ACL policy is the resource `operator`.
+Outputs: `job`, `join_service` and `notes`. The ACL policy is the resource `operator`. `driver = "raw_exec"` without `allow_raw_exec_nodes = true` is refused by the rule `raw_exec` (the `fail` of the pack); `examples/raw-exec.vars.hcl` is the allowed way.
 
 ## From the pack
 

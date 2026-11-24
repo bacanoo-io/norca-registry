@@ -97,7 +97,11 @@ policies bound to them and, by default, their token Variables and secrets
 are in the namespace of the release, so install them with `-namespace
 norca-system`. The modules expect the namespace and don't create it: create
 it once with `norca namespace apply -description "Norca operators"
-norca-system`.
+norca-system`. Their jobs carry the same constraint on
+`${attr.driver.raw_exec}` and the same default driver `exec`, and
+`allow_raw_exec_nodes` leaves the constraint out; `driver = "raw_exec"`
+without it is refused by the rule `raw_exec` of the module (the `fail` of
+the pack), which the tests of each of the five modules check.
 
 ## Packs
 

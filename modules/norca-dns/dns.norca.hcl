@@ -17,6 +17,19 @@ job "dns" {
     operator  = "is_not_set"
   }
 
+  # Never on a node with the raw_exec driver (review finding JOG-19): a
+  # raw_exec task or alloc-node-exec there runs as the user of the agent and
+  # reads the secrets of every allocation of the node, the identity token of
+  # this job and its bound ACL policies among them (allow_raw_exec_nodes).
+  dynamic "constraint" {
+    for_each = var.allow_raw_exec_nodes ? [] : [1]
+
+    content {
+      attribute = runtime("attr.driver.raw_exec")
+      operator  = "is_not_set"
+    }
+  }
+
   group "dns" {
     # One instance: a record is written by one writer at a time; a record
     # that changes while the instance is away is reconciled by the next one.

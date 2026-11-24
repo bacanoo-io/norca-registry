@@ -54,7 +54,11 @@ removed when the provider stops (`deregister_on_exit`).
 - The binary on the nodes (`/usr/local/bin/norca-provider`, built in a
   norca-platform checkout with `go build -o norca-provider ./cmd/norca-provider`),
   or an image (`driver = "docker"`, the `Dockerfile` of norca-platform). The
-  `docker` platform runs the docker CLI of its host: use `raw_exec` for it.
+  `docker` platform runs the docker CLI of its host: use `raw_exec` for it,
+  with `allow_raw_exec_nodes = true`.
+- Nodes without the raw_exec driver: the job keeps off nodes with it unless
+  `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
+  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
 - The kinds: `NodeProvider` is registered by the core, `LoadBalancerClass`
   by the loadbalancer-operator module (`class_kind_enabled`), `DNSZone` by
   this module (`zone_kind_enabled`).
@@ -82,7 +86,8 @@ removed when the provider stops (`deregister_on_exit`).
 | `secrets` | `false` | The items of `nomad/jobs/<job_name>` as environment variables of the task; the Variable must exist. |
 | `tls_enabled` | `false` | https with the items `tls_cert` and `tls_key` of the job's Variable. The LoadBalancer operator calls http only with `class_allow_http`. |
 | `deregister_on_exit` | `true` | Remove the registrations when the provider stops. |
-| `driver`, `binary`, `image` | `raw_exec`, `/usr/local/bin/norca-provider` | How the task runs. |
+| `driver`, `binary`, `image` | `exec`, `/usr/local/bin/norca-provider` | How the task runs; `raw_exec` only with `allow_raw_exec_nodes`. |
+| `allow_raw_exec_nodes` | `false` | Allow nodes with the raw_exec driver and `driver = "raw_exec"` (JOG-19). |
 | `zone_kind_enabled` | `true` | Register the `norca.io/DNSZone` kind. |
 | `acl_policy_enabled` | `true` | Disable it on agents without ACLs. |
 
@@ -123,7 +128,7 @@ norca object list norca.io/LoadBalancerClass
 rigger install ./modules/norca-provider -name norca-provider -namespace norca-system -f providers.vars.hcl
 ```
 
-Outputs: `job` and `notes`. The kind `norca.io/DNSZone` is the resource `dns-zone`, the ACL policy `provider`; `zone_kind_enabled` and `acl_policy_enabled` leave them out. A single datacenter is refused by the rule `datacenters` (the `fail` of the pack).
+Outputs: `job` and `notes`. The kind `norca.io/DNSZone` is the resource `dns-zone`, the ACL policy `provider`; `zone_kind_enabled` and `acl_policy_enabled` leave them out. A single datacenter is refused by the rule `datacenters`, and `driver = "raw_exec"` without `allow_raw_exec_nodes = true` by the rule `raw_exec` (the `fail` calls of the pack); `examples/lab.vars.hcl` is the allowed way of the second.
 
 ## From the pack
 
