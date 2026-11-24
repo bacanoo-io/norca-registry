@@ -1,0 +1,4 @@
+{
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/loadbalancer-operator\"},\"image\":{\"docker-manifest-digest\":\"sha256:903f857c224be8067c8fdab6ea9ae65aefceff5fe174f4fe54036735d0635f14\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"loadbalancer-operator\",\"rigger.version\":\"0.5.0\"}}",
+  "signature": "MEQCIDCnCx8b812M0GtzGSv+B59HagWzfwfAVW/wdaya3Xz7AiBbC9InaPht2CHHU1MImU4iF4ELGNM1i9aV9YEf26WGiA=="
+}
