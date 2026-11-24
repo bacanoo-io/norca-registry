@@ -9,7 +9,7 @@ policy "openobserve" {
   description = "Tasks of the OpenObserve job ${local.job} (openobserve pack): ingest credentials"
   rules {
     dynamic "namespace" {
-      for_each = [rig.namespace]
+      for_each = [rigger.namespace]
       labels   = [namespace.value]
 
       content {
@@ -27,7 +27,7 @@ policy "openobserve" {
   }
 
   job_acl {
-    namespace = rig.namespace
+    namespace = rigger.namespace
     job_id    = local.job
   }
 }

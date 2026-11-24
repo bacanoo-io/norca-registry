@@ -11,7 +11,7 @@ job "dump" {
 
   id          = "${local.job}-dump"
   name        = "${local.job}-dump"
-  region      = rig.region
+  region      = rigger.region
   datacenters = module.placement.datacenters
   node_pool   = module.placement.node_pool
   type        = "batch"

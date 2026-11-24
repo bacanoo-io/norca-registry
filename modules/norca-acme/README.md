@@ -124,14 +124,14 @@ norca object list norca.io/CertificateIssuer
 ## Install
 
 ```shell
-rig install ./modules/norca-acme -name norca-acme -namespace norca-system
+rigger install ./modules/norca-acme -name norca-acme -namespace norca-system
 ```
 
 Outputs: `job`, `controller` and `notes`. The ACL policy is the resource `acme`; `acl_policy_enabled` leaves it out.
 
 ## From the pack
 
-Converted from the pack `norca-acme` 0.1.0 with `rig convert pack`; for the
+Converted from the pack `norca-acme` 0.1.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh norca-acme`). The job ID is `job_name`, as in the pack. The namespace and the region are
 the release's.

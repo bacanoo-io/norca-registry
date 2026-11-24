@@ -4,17 +4,17 @@
 #
 # Every job the modules render, for their defaults and every example, passes
 # the validation of a Norca server (PUT /v1/validate/job): what the
-# decoder of rig cannot know, the server checks.
+# decoder of rigger cannot know, the server checks.
 #
 # Usage: scripts/check-modules-server.sh [module...]   (default: every module)
-# Environment: RIG (the program, default on the PATH), NORCA_ADDR (the
+# Environment: RIGGER (the program, default on the PATH), NORCA_ADDR (the
 #              server, default http://127.0.0.1:4646), NORCA_TOKEN,
 #              CREATE_NODE_POOLS=1 to create the node pools the jobs name
 #              (for a throwaway dev agent).
 set -uo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-rig="${RIG:-rig}"
+rigger="${RIGGER:-rigger}"
 addr="${NORCA_ADDR:-http://127.0.0.1:4646}"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
@@ -24,10 +24,10 @@ declare -A required=([consul]="-var=consul_license_accepted=true")
 
 failed=0
 
-check() { # <module dir> <name> [rig args...]
+check() { # <module dir> <name> [rigger args...]
   local dir="$1" name="$2"; shift 2
   local m; m="$(basename "$dir")"
-  if ! "$rig" module render "$dir" "$@" >"$work/out.json" 2>"$work/err.log"; then
+  if ! "$rigger" module render "$dir" "$@" >"$work/out.json" 2>"$work/err.log"; then
     if [ "$name" = default ] && grep -q 'No value for a variable' "$work/err.log"; then
       echo "skip: $m (default): it has required variables"
       return

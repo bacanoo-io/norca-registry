@@ -124,14 +124,14 @@ norca volume status data          # after a task mounts it: Node Usage
 ## Install
 
 ```shell
-rig install ./modules/seaweedfs-csi -name seaweedfs-csi
+rigger install ./modules/seaweedfs-csi -name seaweedfs-csi
 ```
 
 Outputs: `plugin_id` and `notes`.
 
 ## From the pack
 
-Converted from the pack `seaweedfs-csi` 0.1.0 with `rig convert pack`; for the
+Converted from the pack `seaweedfs-csi` 0.1.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs of the pack
 (`scripts/compare-packs.sh seaweedfs-csi`). The job ID is `job_name`, or the
 release's name when empty (the pack took the pack's name); the

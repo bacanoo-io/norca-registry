@@ -469,14 +469,14 @@ role has its own HTTP service with the checks: `<job>` for the routers,
 ## Install
 
 ```shell
-rig install ./modules/openobserve -name openobserve -namespace observability -f modules/openobserve/examples/single.vars.hcl
+rigger install ./modules/openobserve -name openobserve -namespace observability -f modules/openobserve/examples/single.vars.hcl
 ```
 
 Outputs: `service`, `ingest` and `notes`. The groups (one in single mode, one per node role in cluster mode) are one dynamic group; the bootstrap script is assembled from heredocs (`locals.hcl`), so it is the text the pack wrote. The deprecated `tls_restart_interval` of the pack, ignored since 0.2.0, is not a variable of the module; the `fail` checks are rules.
 
 ## From the pack
 
-Converted from the pack `openobserve` 0.2.0 with `rig convert pack`; for the
+Converted from the pack `openobserve` 0.2.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh openobserve`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
 the release's.

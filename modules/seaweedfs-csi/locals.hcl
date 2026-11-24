@@ -3,7 +3,7 @@
 
 locals {
   # The ID of the job; empty is the release.
-  job = coalesce(var.job_name, rig.release)
+  job = coalesce(var.job_name, rigger.release)
 
   # The archives of a task: what each one downloads, with its checksum.
   weed_artifacts     = var.weed_artifact_url == "" ? [] : [{ source = var.weed_artifact_url, checksum = var.weed_artifact_checksum }]

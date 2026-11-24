@@ -9,7 +9,7 @@
 job "traefik" {
   id          = local.job
   name        = local.job
-  region      = rig.region
+  region      = rigger.region
   datacenters = module.placement.datacenters
   node_pool   = module.placement.node_pool
   type        = var.job_type

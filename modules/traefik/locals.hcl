@@ -4,7 +4,7 @@
 locals {
   # The ID of the job and the name of its admin service; empty is the
   # release.
-  job  = coalesce(var.job_name, rig.release)
+  job  = coalesce(var.job_name, rigger.release)
   host = var.network_mode == "host"
 
   certs           = var.tls_certificates
@@ -120,7 +120,7 @@ locals {
     ["http:", "  serversTransports:"],
     flatten([for b in var.mtls_backends : [
       "    mtls-${b.name}:",
-      "      serverName: \"${b.service}.service.${b.namespace != "" ? b.namespace : rig.namespace}.norca\"",
+      "      serverName: \"${b.service}.service.${b.namespace != "" ? b.namespace : rigger.namespace}.norca\"",
       "      rootCAs:",
       "        - |",
       "{{ file (env \"NORCA_MTLS_CA_FILE\") | trimSpace | indent 10 }}",

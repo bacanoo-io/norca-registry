@@ -14,21 +14,21 @@ output "watch_namespace" {
 output "notes" {
   value = join("\n", concat(
     split("\n", <<-EOT
-      LoadBalancer operator "${var.job_name}" in namespace ${rig.namespace}: ${var.count} controller instance(s), driver ${var.driver}, proxies with ${var.proxy_driver}. It reconciles the LoadBalancer objects of ${local.all ? "every namespace" : "the namespace ${local.watch}"}.
+      LoadBalancer operator "${var.job_name}" in namespace ${rigger.namespace}: ${var.count} controller instance(s), driver ${var.driver}, proxies with ${var.proxy_driver}. It reconciles the LoadBalancer objects of ${local.all ? "every namespace" : "the namespace ${local.watch}"}.
 
       Create a load balancer:
         cat > web-lb.hcl <<EOF
         kind      = "norca.io/LoadBalancer"
         name      = "web"
-        namespace = "${local.all ? rig.namespace : local.watch}"
+        namespace = "${local.all ? rigger.namespace : local.watch}"
         spec {
           service = "web"
           port    = 8080
         }
         EOF
         norca object apply web-lb.hcl
-        norca object list norca.io/LoadBalancer -namespace ${local.all ? rig.namespace : local.watch}
-        norca object events norca.io/LoadBalancer web -namespace ${local.all ? rig.namespace : local.watch}
+        norca object list norca.io/LoadBalancer -namespace ${local.all ? rigger.namespace : local.watch}
+        norca object events norca.io/LoadBalancer web -namespace ${local.all ? rigger.namespace : local.watch}
 
       or mark a service with the norca_lb_class / norca_lb_port meta keys.
     EOT

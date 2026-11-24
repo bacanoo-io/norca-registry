@@ -3,7 +3,7 @@
 
 locals {
   # The ID of the job and the name of its service; empty is the release.
-  job         = coalesce(var.job_name, rig.release)
+  job         = coalesce(var.job_name, rigger.release)
   distributed = var.mode == "distributed"
 
   # The drives of a distributed store: one endpoint per node.

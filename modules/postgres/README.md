@@ -237,14 +237,14 @@ The setup task waits with `pg_isready` before it connects.
 ## Install
 
 ```shell
-rig install ./modules/postgres -name postgres -namespace data -f modules/postgres/examples/openobserve.vars.hcl
+rigger install ./modules/postgres -name postgres -namespace data -f modules/postgres/examples/openobserve.vars.hcl
 ```
 
 Outputs: `service`, `databases` and `notes`. The dump is the job `dump` (`dump_enabled`); the `fail` checks of the pack are rules. The module is version 0.4.0: the tag postgres/v0.3.0 is the demonstration module of the language, now `postgres-demo`.
 
 ## From the pack
 
-Converted from the pack `postgres` 0.1.0 with `rig convert pack`; for the
+Converted from the pack `postgres` 0.1.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh postgres`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
 the release's.

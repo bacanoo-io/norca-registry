@@ -7,7 +7,7 @@ job "controller" {
   id          = var.job_name
   name        = var.job_name
   type        = "service"
-  region      = rig.region
+  region      = rigger.region
   datacenters = var.datacenters
 
   group "controller" {

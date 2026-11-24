@@ -6,7 +6,7 @@ locals {
   docker = var.driver == "docker"
 
   # The tokens of the DNS zones are in the namespace of the release.
-  tokens_here = var.zone_token_namespace == rig.namespace
+  tokens_here = var.zone_token_namespace == rigger.namespace
 
   # The CA files of the task: the ACME directory's and the DNS providers'.
   ca_files = local.mock ? [] : concat(
@@ -20,7 +20,7 @@ locals {
       "-controller", var.controller,
       "-interval", var.interval,
       "-http01-listen", var.http01_enabled ? ":${runtime_env("NORCA_PORT_http01")}" : "",
-      "-secret-namespace", rig.namespace,
+      "-secret-namespace", rigger.namespace,
       "-secret-prefix", var.secret_prefix,
       "-zone-token-namespace", var.zone_token_namespace,
       "-zone-ttl", var.zone_ttl,

@@ -228,14 +228,14 @@ readiness check.
 ## Install
 
 ```shell
-rig install ./modules/otel-collector -name otel-collector -namespace observability -f modules/otel-collector/examples/observability.vars.hcl
+rigger install ./modules/otel-collector -name otel-collector -namespace observability -f modules/otel-collector/examples/observability.vars.hcl
 ```
 
 Outputs: `otlp` and `notes`. The configuration of the collector is built line by line (`locals.hcl`), so it is the text the pack wrote; the three `fail` checks of the pack are rules.
 
 ## From the pack
 
-Converted from the pack `otel-collector` 0.1.2 with `rig convert pack`; for the
+Converted from the pack `otel-collector` 0.1.2 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh otel-collector`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
 the release's.

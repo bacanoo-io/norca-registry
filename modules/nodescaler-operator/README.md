@@ -83,14 +83,14 @@ norca module run  nodescaler-operator --registry=norca --var=node_pool=system
 ## Install
 
 ```shell
-rig install ./modules/nodescaler-operator -name nodescaler -namespace norca-system
+rigger install ./modules/nodescaler-operator -name nodescaler -namespace norca-system
 ```
 
 Outputs: `job`, `join_service` and `notes`. The ACL policy is the resource `operator`.
 
 ## From the pack
 
-Converted from the pack `nodescaler-operator` 0.10.0 with `rig convert pack`; for the
+Converted from the pack `nodescaler-operator` 0.10.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh nodescaler-operator`). The job ID is `job_name`, as in the pack. The namespace and the region are
 the release's.

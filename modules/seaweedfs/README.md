@@ -62,7 +62,7 @@ Mirror the archive for air-gapped clusters (`artifact_url`), or install
 ## Install
 
 ```shell
-rig install ./modules/seaweedfs -name seaweedfs -var node=storage-1
+rigger install ./modules/seaweedfs -name seaweedfs -var node=storage-1
 ```
 
 Outputs: `job`, `filer_service` (the `filer_service` of seaweedfs-csi) and
@@ -70,7 +70,7 @@ Outputs: `job`, `filer_service` (the `filer_service` of seaweedfs-csi) and
 
 ## From the pack
 
-Converted from the pack `seaweedfs` 0.1.0 with `rig convert pack`; for the
+Converted from the pack `seaweedfs` 0.1.0 with `rigger convert pack`; for the
 defaults and every example it renders the job of the pack
 (`scripts/compare-packs.sh seaweedfs`). The job ID is `job_name`, or the
 release's name when empty (the pack took the pack's name); the

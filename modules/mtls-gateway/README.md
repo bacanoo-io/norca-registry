@@ -153,14 +153,14 @@ and `POST /quitquitquit` through the metrics listener.
 ## Install
 
 ```shell
-rig install ./modules/mtls-gateway -name mtls-gateway
+rigger install ./modules/mtls-gateway -name mtls-gateway
 ```
 
 Outputs: `service` and `notes`. The job is always in the `default` namespace, whatever the namespace of the release, as in the pack: upstreams of other regions look for gateways only there. The two `fail` checks of the pack are the rules `raw_exec_on_host` and `metrics_need_the_task`.
 
 ## From the pack
 
-Converted from the pack `mtls-gateway` 0.2.1 with `rig convert pack`; for the
+Converted from the pack `mtls-gateway` 0.2.1 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh mtls-gateway`). The job ID is `job_name`, as in the pack. The namespace and the region are
 the release's.

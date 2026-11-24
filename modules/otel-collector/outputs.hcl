@@ -27,8 +27,8 @@ output "notes" {
     [
       "",
       "Checks:",
-      "  norca job status -namespace ${rig.namespace} ${local.job}",
-      "  norca alloc logs -namespace ${rig.namespace} -task collector <alloc ID>",
+      "  norca job status -namespace ${rigger.namespace} ${local.job}",
+      "  norca alloc logs -namespace ${rigger.namespace} -task collector <alloc ID>",
     ],
   ))
   description = "The sources of the collector and how to check it."

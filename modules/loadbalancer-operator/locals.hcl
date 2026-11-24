@@ -7,9 +7,9 @@ locals {
 
   # The namespace of the LoadBalancer objects the controller reconciles;
   # "*" for every namespace.
-  watch  = var.watch_namespace != "" ? var.watch_namespace : rig.namespace
+  watch  = var.watch_namespace != "" ? var.watch_namespace : rigger.namespace
   all    = local.watch == "*"
-  job_ns = rig.namespace
+  job_ns = rigger.namespace
   tokens = var.class_token_namespace
 
   controller_args = concat(
@@ -17,7 +17,7 @@ locals {
       "controller",
       "-objects", "native",
       "-namespace", local.watch,
-      "-lease-namespace", rig.namespace,
+      "-lease-namespace", rigger.namespace,
       "-log-level", var.log_level,
       "-discover-services=${var.discover_services}",
       "-proxy-driver", var.proxy_driver,

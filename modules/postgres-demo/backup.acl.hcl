@@ -11,7 +11,7 @@ policy "backup" {
 
   rules {
     dynamic "namespace" {
-      for_each = [rig.namespace]
+      for_each = [rigger.namespace]
       labels   = [namespace.value]
 
       content {

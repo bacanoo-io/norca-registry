@@ -10,7 +10,7 @@ job "gateway" {
   # Always the default namespace: upstreams of other regions look for
   # gateways only there.
   namespace   = "default"
-  region      = rig.region
+  region      = rigger.region
   datacenters = module.placement.datacenters
   node_pool   = module.placement.node_pool
   type        = var.job_type

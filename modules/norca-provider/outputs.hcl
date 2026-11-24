@@ -8,7 +8,7 @@ output "job" {
 
 output "notes" {
   value       = <<-EOT
-    norca-provider "${var.job_name}" in namespace ${rig.namespace}: driver ${var.driver}, port ${var.port}.
+    norca-provider "${var.job_name}" in namespace ${rigger.namespace}: driver ${var.driver}, port ${var.port}.
 
     It registers a norca.io/NodeProvider object for every provider with a node
     section and a norca.io/LoadBalancerClass object for every class:
@@ -17,7 +17,7 @@ output "notes" {
     %{if var.secrets}
     The secrets of the providers come from the Variable nomad/jobs/${var.job_name}
     (each item is an environment variable of the task, for env:NAME):
-      norca var put -namespace ${rig.namespace} nomad/jobs/${var.job_name} PROVIDER_TOKEN=... HCLOUD_TOKEN=...
+      norca var put -namespace ${rigger.namespace} nomad/jobs/${var.job_name} PROVIDER_TOKEN=... HCLOUD_TOKEN=...
     %{endif}
     The operators read the token of a provider from its token_variable (item
     token), with the same value as the provider's own token:

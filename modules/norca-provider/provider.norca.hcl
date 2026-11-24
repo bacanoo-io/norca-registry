@@ -7,7 +7,7 @@ job "provider" {
   id          = var.job_name
   name        = var.job_name
   type        = "service"
-  region      = rig.region
+  region      = rigger.region
   datacenters = var.datacenters
   node_pool   = var.node_pool
 

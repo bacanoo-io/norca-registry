@@ -32,7 +32,7 @@ policy "acme" {
     # binding; and the tokens of the DNS zones when they are in the same
     # namespace.
     dynamic "namespace" {
-      for_each = [rig.namespace]
+      for_each = [rigger.namespace]
       labels   = [namespace.value]
 
       content {
@@ -83,7 +83,7 @@ policy "acme" {
   }
 
   job_acl {
-    namespace = rig.namespace
+    namespace = rigger.namespace
     job_id    = var.job_name
   }
 }

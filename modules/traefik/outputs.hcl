@@ -47,7 +47,7 @@ output "notes" {
         namespace "*" {
           capabilities = ["read-job"]
         }
-        norca acl policy apply -namespace ${rig.namespace} -job ${local.job} traefik-catalog policy.hcl
+        norca acl policy apply -namespace ${rigger.namespace} -job ${local.job} traefik-catalog policy.hcl
     EOT
     ) : [],
   ))

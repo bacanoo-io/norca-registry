@@ -135,14 +135,14 @@ finalizer).
 ## Install
 
 ```shell
-rig install ./modules/loadbalancer-operator -name loadbalancer -namespace norca-system
+rigger install ./modules/loadbalancer-operator -name loadbalancer -namespace norca-system
 ```
 
 Outputs: `job`, `watch_namespace` and `notes`. The kinds are the resources `load-balancer` and `load-balancer-class`, the ACL policy `controller`, the admission policy `service-marks`. The rules of the ACL policy are built line by line (`locals.hcl`), so they are the text the pack wrote for every placement of the watched namespace, the job and the tokens.
 
 ## From the pack
 
-Converted from the pack `loadbalancer-operator` 0.4.0 with `rig convert pack`; for the
+Converted from the pack `loadbalancer-operator` 0.4.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh loadbalancer-operator`). The job ID is `job_name`, as in the pack. The namespace and the region are
 the release's.

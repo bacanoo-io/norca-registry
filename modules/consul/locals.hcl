@@ -4,7 +4,7 @@
 locals {
   # The ID of the server job and the prefix of the others; empty is the
   # release.
-  job          = coalesce(var.job_name, rig.release)
+  job          = coalesce(var.job_name, rigger.release)
   tls          = var.tls_enabled
   docker       = var.driver == "docker"
   host_network = var.host_network == "" ? null : var.host_network

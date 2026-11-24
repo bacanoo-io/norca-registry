@@ -382,14 +382,14 @@ Planned, not built:
 ## Install
 
 ```shell
-rig install ./modules/forgejo -name forgejo -namespace platform -f modules/forgejo/examples/registry-https.vars.hcl
+rigger install ./modules/forgejo -name forgejo -namespace platform -f modules/forgejo/examples/registry-https.vars.hcl
 ```
 
 Outputs: `service`, `registry` and `notes`. The dump is the job `dump` (`dump_enabled`); the `fail` check of the pack is the rule `ssh_port`.
 
 ## From the pack
 
-Converted from the pack `forgejo` 0.2.0 with `rig convert pack`; for the
+Converted from the pack `forgejo` 0.2.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh forgejo`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
 the release's.

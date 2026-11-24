@@ -9,7 +9,7 @@ job "clients" {
 
   id          = "${local.job}-clients"
   name        = "${local.job}-clients"
-  region      = rig.region
+  region      = rigger.region
   datacenters = length(var.datacenters) > 0 ? var.datacenters : null
   node_pool   = var.node_pool == "" ? null : var.node_pool
   type        = "system"

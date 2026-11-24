@@ -471,14 +471,14 @@ constraints with `server_node_meta = ""` (then do not run the clients there:
 ## Install
 
 ```shell
-rig install ./modules/consul -name consul -namespace consul -var consul_license_accepted=true
+rigger install ./modules/consul -name consul -namespace consul -var consul_license_accepted=true
 ```
 
-Outputs: `service`, `serf_service` and `notes`. The client agents are the job `clients` (`clients_enabled`), the snapshots the job `snapshot` (`snapshot_enabled`). `consul_license_accepted` is required and must be true (the rule `license`, the `fail` of the pack): the installer accepts the Consul license (BSL 1.1); the module, like the pack, references the official release and never ships it. `rig module validate` warns that only a rule reads it, as the design has it for a variable that only rules read.
+Outputs: `service`, `serf_service` and `notes`. The client agents are the job `clients` (`clients_enabled`), the snapshots the job `snapshot` (`snapshot_enabled`). `consul_license_accepted` is required and must be true (the rule `license`, the `fail` of the pack): the installer accepts the Consul license (BSL 1.1); the module, like the pack, references the official release and never ships it. `rigger module validate` warns that only a rule reads it, as the design has it for a variable that only rules read.
 
 ## From the pack
 
-Converted from the pack `consul` 0.2.0 with `rig convert pack`; for the
+Converted from the pack `consul` 0.2.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh consul`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
 the release's.

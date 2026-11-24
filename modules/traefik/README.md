@@ -208,14 +208,14 @@ norca module run traefik --registry=norca --name=traefik -f examples/traefik/web
 ## Install
 
 ```shell
-rig install ./modules/traefik -name traefik -namespace edge -f modules/traefik/examples/web.vars.hcl
+rigger install ./modules/traefik -name traefik -namespace edge -f modules/traefik/examples/web.vars.hcl
 ```
 
 Outputs: `service`, `entrypoints` and `notes`. The checks of the entrypoints and mTLS backends (the `traefik.validate` helper of the pack) are rules. The configuration files are built from lists of lines, so they are the text the pack wrote, line for line.
 
 ## From the pack
 
-Converted from the pack `traefik` 0.3.0 with `rig convert pack`; for the
+Converted from the pack `traefik` 0.3.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh traefik`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
 the release's.

@@ -89,14 +89,14 @@ See [Variables](variables.hcl) for the job settings.
 ## Install
 
 ```shell
-rig install ./modules/norca-dns -name norca-dns -namespace norca-system
+rigger install ./modules/norca-dns -name norca-dns -namespace norca-system
 ```
 
 Outputs: `job` and `notes`. The kind `norca.io/DNSRecord` is the resource `dns-record`, the ACL policy `dns`; `record_kind_enabled` and `acl_policy_enabled` leave them out.
 
 ## From the pack
 
-Converted from the pack `norca-dns` 0.1.1 with `rig convert pack`; for the
+Converted from the pack `norca-dns` 0.1.1 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh norca-dns`). The job ID is `job_name`, as in the pack. The namespace and the region are
 the release's.

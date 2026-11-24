@@ -8,7 +8,7 @@ policy "operator" {
     # A namespace of its own replaces the rules of "*" for it, so every block
     # repeats the capabilities on the jobs (see the namespace "*").
     dynamic "namespace" {
-      for_each = [rig.namespace]
+      for_each = [rigger.namespace]
       labels   = [namespace.value]
 
       content {
@@ -88,7 +88,7 @@ policy "operator" {
   }
 
   job_acl {
-    namespace = rig.namespace
+    namespace = rigger.namespace
     job_id    = var.job_name
   }
 }

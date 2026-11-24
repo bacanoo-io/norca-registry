@@ -3,7 +3,7 @@
 
 locals {
   # The ID of the job and the name of its service; empty is the release.
-  job   = coalesce(var.job_name, rig.release)
+  job   = coalesce(var.job_name, rigger.release)
   user  = "${var.uid}:${var.gid}"
   tls   = var.tls_mode != "none"
   setup = length(var.databases) > 0 || var.monitoring_enabled

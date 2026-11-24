@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Norca contributors
 # SPDX-License-Identifier: MPL-2.0
 #
-# The acceptance check of a converted module (rig design 14): for the
+# The acceptance check of a converted module (rigger design 14): for the
 # default values and every example of a pack, the jobs the module renders
 # equal the jobs the pack renders, compared as parsed jobs (the JSON of the
 # API), not as text; so do its ACL policies, kinds and admission policies.
@@ -14,13 +14,13 @@
 # variables keep their names.
 #
 # Usage: scripts/compare-packs.sh <pack>...
-# Environment: NORCA, RIG (the programs, default on the PATH), KEEP (a
+# Environment: NORCA, RIGGER (the programs, default on the PATH), KEEP (a
 #              directory to keep the parsed jobs in).
 set -uo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
 norca="${NORCA:-norca}"
-rig="${RIG:-rig}"
+rigger="${RIGGER:-rigger}"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
@@ -63,7 +63,7 @@ compare() { # <pack> <name> <pack var file or ""> <module var file or "">
   done < <(find "$dir/pack" -type f -name '*.nomad*' | sort)
 
   # The other resources of the pack (ACL policies, kinds, admission
-  # policies) are HCL files of the same names as a module's: rendered by rig
+  # policies) are HCL files of the same names as a module's: rendered by rigger
   # in a module of their own, both sides pass the same decoder.
   local res packmod="$dir/packmod" found=0
   mkdir -p "$packmod"
@@ -89,12 +89,12 @@ PY
   done < <(find "$dir/pack" -type f -name '*.hcl' ! -name '*.nomad*' | sort)
   if [ "$found" = 1 ]; then
     printf 'module {\n  name    = "%s"\n  version = "0.0.0"\n}\n' "$pack" >"$packmod/metadata.hcl"
-    if ! "$rig" module render "$packmod" -release "$pack" >"$dir/packres.json" 2>"$dir/packres.log"; then
+    if ! "$rigger" module render "$packmod" -release "$pack" >"$dir/packres.json" 2>"$dir/packres.log"; then
       cat "$dir/packres.log"; echo "FAIL: $pack ($name): the resources of the pack do not render"; failed=1; return
     fi
   fi
 
-  if ! (cd "$root" && "$rig" module render "modules/$pack" -release "$pack" "${margs[@]}") >"$dir/module.json" 2>"$dir/module.log"; then
+  if ! (cd "$root" && "$rigger" module render "modules/$pack" -release "$pack" "${margs[@]}") >"$dir/module.json" 2>"$dir/module.log"; then
     cat "$dir/module.log"; echo "FAIL: $pack ($name): the module does not render"; failed=1; return
   fi
 
@@ -127,7 +127,7 @@ def key(r):
 
 def rules_tokens(text):
     """The rules of an ACL policy as tokens: a module writes them as a block,
-    which rig writes as HCL of its own layout, its comments staying in the
+    which rigger writes as HCL of its own layout, its comments staying in the
     module; the pack wrote them as text. Comments, blank lines and the
     amount of white space don't count."""
     lines = [l for l in text.splitlines() if l.strip() and not l.strip().startswith(("#", "//"))]

@@ -3,7 +3,7 @@
 
 locals {
   # The ID of the job and the prefix of its services; empty is the release.
-  job       = coalesce(var.job_name, rig.release)
+  job       = coalesce(var.job_name, rigger.release)
   secrets   = var.secrets_variable != "" ? var.secrets_variable : "nomad/jobs/${local.job}"
   docker    = var.driver == "docker"
   clustered = var.count > 1

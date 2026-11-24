@@ -9,7 +9,7 @@ locals {
   args = concat(
     [
       "-log-level", var.log_level,
-      "-lease-namespace", rig.namespace,
+      "-lease-namespace", rigger.namespace,
       "-token-namespace", var.variables_namespace,
       "-bootstrap-namespace", var.variables_namespace,
       "-provider-ttl", var.provider_ttl,
@@ -25,7 +25,7 @@ locals {
       "-join-check-address=${var.join_check_address}",
       "-join-key-store", var.join_key_store,
       "-join-service", "${var.job_name}-join",
-      "-join-service-namespace", rig.namespace,
+      "-join-service-namespace", rigger.namespace,
     ], flatten([for u in var.join_urls : ["-join-url", u]])) : [],
     # In a container the address of the host cannot be bound; the port is
     # mapped to the same port of the container.

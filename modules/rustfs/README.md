@@ -210,14 +210,14 @@ keep their jobs unchanged.
 ## Install
 
 ```shell
-rig install ./modules/rustfs -name rustfs -namespace storage -f modules/rustfs/examples/single-node.vars.hcl
+rigger install ./modules/rustfs -name rustfs -namespace storage -f modules/rustfs/examples/single-node.vars.hcl
 ```
 
 Outputs: `service`, `s3_port` and `notes`. The four `fail` checks of the pack are rules.
 
 ## From the pack
 
-Converted from the pack `rustfs` 0.2.0 with `rig convert pack`; for the
+Converted from the pack `rustfs` 0.2.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh rustfs`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
 the release's.

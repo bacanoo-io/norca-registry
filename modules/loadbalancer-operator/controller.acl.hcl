@@ -170,7 +170,7 @@ policy "controller" {
   }
 
   job_acl {
-    namespace = rig.namespace
+    namespace = rigger.namespace
     job_id    = var.job_name
   }
 }

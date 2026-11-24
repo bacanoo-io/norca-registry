@@ -13,7 +13,7 @@ output "join_service" {
 
 output "notes" {
   value       = <<-EOT
-    Node scaling operator "${var.job_name}" in namespace ${rig.namespace}: ${var.count} instance(s) in the node pool ${var.node_pool}, driver ${var.driver}.
+    Node scaling operator "${var.job_name}" in namespace ${rigger.namespace}: ${var.count} instance(s) in the node pool ${var.node_pool}, driver ${var.driver}.
 
     It reads the bootstrap and the network ranges of the region from the
     Variables nodescaler/bootstrap/<region> and nodescaler/network/<region> in the

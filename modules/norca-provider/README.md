@@ -104,14 +104,14 @@ norca object list norca.io/LoadBalancerClass
 ## Install
 
 ```shell
-rig install ./modules/norca-provider -name norca-provider -namespace norca-system -f providers.vars.hcl
+rigger install ./modules/norca-provider -name norca-provider -namespace norca-system -f providers.vars.hcl
 ```
 
 Outputs: `job` and `notes`. The kind `norca.io/DNSZone` is the resource `dns-zone`, the ACL policy `provider`; `zone_kind_enabled` and `acl_policy_enabled` leave them out. A single datacenter is refused by the rule `datacenters` (the `fail` of the pack).
 
 ## From the pack
 
-Converted from the pack `norca-provider` 0.4.0 with `rig convert pack`; for the
+Converted from the pack `norca-provider` 0.4.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh norca-provider`). The job ID is `job_name`, as in the pack. The namespace and the region are
 the release's.

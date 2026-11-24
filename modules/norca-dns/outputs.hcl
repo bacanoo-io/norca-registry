@@ -8,7 +8,7 @@ output "job" {
 
 output "notes" {
   value       = <<-EOT
-    norca-dns "${var.job_name}" in namespace ${rig.namespace}: driver ${var.driver}.
+    norca-dns "${var.job_name}" in namespace ${rigger.namespace}: driver ${var.driver}.
 
     It keeps the record sets of the norca.io/DNSRecord objects:
       kind      = "norca.io/DNSRecord"

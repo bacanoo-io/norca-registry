@@ -3,7 +3,7 @@
 
 locals {
   # The ID of the job and the name of its service; empty is the release.
-  job     = coalesce(var.job_name, rig.release)
+  job     = coalesce(var.job_name, rigger.release)
   cluster = var.mode == "cluster"
   mtls    = var.tls_mode == "mtls"
   http    = var.tls_mode == "none"

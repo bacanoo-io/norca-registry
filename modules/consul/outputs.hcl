@@ -24,10 +24,10 @@ output "notes" {
       With Norca ACLs enabled, the bootstrap task needs this policy bound to it
       (this is the only manual step). Save it as ${local.job}-bootstrap.hcl and
       apply it before the first run:
-        norca acl policy apply -namespace ${rig.namespace} -job ${local.job} -group servers -task bootstrap \
+        norca acl policy apply -namespace ${rigger.namespace} -job ${local.job} -group servers -task bootstrap \
           ${local.job}-bootstrap ${local.job}-bootstrap.hcl
 
-      namespace "${rig.namespace}" {
+      namespace "${rigger.namespace}" {
         variables {
           path "nomad/jobs/${local.job}/servers/bootstrap" {
             capabilities = ["read", "write"]
@@ -49,23 +49,23 @@ output "notes" {
       "Mark the server nodes (${var.server_count}, one per datacenter${var.server_node_meta != "" ? ", meta ${var.server_node_meta} = \"true\"" : ""})${var.driver != "raw_exec" ? " and give them the host volume \"${var.server_host_volume}\"" : ""}.",
       "",
       "The management token (keep it safe; the CA key is in the same Variable):",
-      "  norca var get -namespace ${rig.namespace} -item=management_token ${local.src_var}",
+      "  norca var get -namespace ${rigger.namespace} -item=management_token ${local.src_var}",
       "",
       "Check the cluster (any server allocation):",
-      "  norca service info -namespace ${rig.namespace} ${local.job}",
-      "  norca alloc exec -namespace ${rig.namespace} -task server <alloc id> \\",
+      "  norca service info -namespace ${rigger.namespace} ${local.job}",
+      "  norca alloc exec -namespace ${rigger.namespace} -task server <alloc id> \\",
       "    consul operator raft list-peers -token=<management token>",
     ],
     var.snapshot_enabled && var.snapshot_s3_credentials ? [
       "",
       "The snapshot job reads its S3 credentials from a Variable:",
-      "  norca var put -namespace ${rig.namespace} nomad/jobs/${local.snapshot} aws_access_key_id=<id> aws_secret_access_key=-",
+      "  norca var put -namespace ${rigger.namespace} nomad/jobs/${local.snapshot} aws_access_key_id=<id> aws_secret_access_key=-",
     ] : [],
     var.metrics_enabled ? [
       "",
       "Metrics (service ${local.job}-metrics): the secret ID of the metrics token, read by the",
       "acl-setup task and the otel-collector module (create it before the run):",
-      "  cat /proc/sys/kernel/random/uuid | norca secret put -namespace ${rig.namespace} ${var.metrics_token_secret_path} token=-",
+      "  cat /proc/sys/kernel/random/uuid | norca secret put -namespace ${rigger.namespace} ${var.metrics_token_secret_path} token=-",
     ] : [],
     [
       "",

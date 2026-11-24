@@ -3,7 +3,7 @@
 
 locals {
   # The ID of the job and the name of its service; empty is the release.
-  job = coalesce(var.job_name, rig.release)
+  job = coalesce(var.job_name, rigger.release)
 
   # The workload identity serves the mTLS certificate and bundle.
   identity = var.openobserve_tls == "mtls" || var.postgres_tls == "verify-ca"

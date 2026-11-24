@@ -429,14 +429,14 @@ shows the jobs without submitting them.
 ## Install
 
 ```shell
-rig install ./modules/nats -name nats -namespace messaging -f modules/nats/examples/userpass.vars.hcl
+rigger install ./modules/nats -name nats -namespace messaging -f modules/nats/examples/userpass.vars.hcl
 ```
 
 Outputs: `service`, `client_port`, `accounts`, `jetstream_domain` and `notes`. The configuration of the server is built line by line (`locals.hcl`), so it is the text the pack wrote; the checks of the pack (`nats.validate`) are rules. The module is version 2.0.0: the tag nats/v1.0.0 is the demonstration module of the language, now `nats-demo`.
 
 ## From the pack
 
-Converted from the pack `nats` 0.7.0 with `rig convert pack`; for the
+Converted from the pack `nats` 0.7.0 with `rigger convert pack`; for the
 defaults and every example it renders the jobs and other resources of the
 pack (`scripts/compare-packs.sh nats`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
 the release's.

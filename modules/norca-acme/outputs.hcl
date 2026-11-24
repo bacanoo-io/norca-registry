@@ -13,7 +13,7 @@ output "controller" {
 
 output "notes" {
   value       = <<-EOT
-    norca-acme "${var.job_name}" in namespace ${rig.namespace}: driver ${var.driver}, controller name "${var.controller}".
+    norca-acme "${var.job_name}" in namespace ${rigger.namespace}: driver ${var.driver}, controller name "${var.controller}".
 
     It is the controller of the issuers that name it:
       kind = "norca.io/CertificateIssuer"
@@ -33,7 +33,7 @@ output "notes" {
     %{if var.http01_enabled}
     HTTP-01: the service "${var.job_name}" answers /.well-known/acme-challenge/%{if length(var.http01_entrypoints) > 0}
     and routes it on the Traefik entrypoints ${join(", ", var.http01_entrypoints)} (the Traefik module needs
-    acme_challenge = true and the namespace ${rig.namespace} in catalog_namespaces).%{else}
+    acme_challenge = true and the namespace ${rigger.namespace} in catalog_namespaces).%{else}
     Route that path of every host on port 80 to the service.%{endif}
     %{endif}
     DNS-01: for the names of the norca.io/DNSZone objects norca-provider
