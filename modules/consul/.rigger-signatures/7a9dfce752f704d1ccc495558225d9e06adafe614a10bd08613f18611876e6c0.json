@@ -1,0 +1,4 @@
+{
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/consul\"},\"image\":{\"docker-manifest-digest\":\"sha256:19059fec090d235b973ce0bee65ccb0526892c24cde24ee304582df5f784d584\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"consul\",\"rigger.version\":\"0.2.0\"}}",
+  "signature": "MEYCIQComqVGd9R8aHL4lK2fPzFTkswhfwue1cqldb528cX0MAIhAKtXDMW/yABMa5r3NmR4IhuqEYFJYC6f7PQDhpv2fgwI"
+}
