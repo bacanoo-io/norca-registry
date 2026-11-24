@@ -67,8 +67,9 @@ PATH:
   (`PUT /v1/validate/job`; `CREATE_NODE_POOLS=1` on a throwaway dev agent).
 
 Every pack of the registry is converted (`rigger convert pack`, then the
-templates written as HCL); all 89 cases of `compare-packs.sh` match and all
-108 rendered jobs pass the server's validation.
+templates written as HCL); all 89 cases of `compare-packs.sh` match, 1
+example is of a module alone (not compared), and all 109 rendered jobs pass
+the server's validation.
 
 | Module | Version | From |
 | --- | --- | --- |
@@ -80,7 +81,7 @@ templates written as HCL); all 89 cases of `compare-packs.sh` match and all
 | [nats-demo](modules/nats-demo/README.md) | 1.0.0 | a demonstration of the language: the pack nats 0.7.0 in a smaller shape (was nats 1.0.0) |
 | [nodescaler-operator](modules/nodescaler-operator/README.md) | 0.11.0 | the pack nodescaler-operator 0.11.0, in full |
 | [norca-acme](modules/norca-acme/README.md) | 0.2.0 | the pack norca-acme 0.2.0, in full |
-| [norca-dns](modules/norca-dns/README.md) | 0.2.0 | the pack norca-dns 0.2.0, in full |
+| [norca-dns](modules/norca-dns/README.md) | 0.3.0 | the pack norca-dns 0.2.0, in full, and several instances with leader election |
 | [norca-provider](modules/norca-provider/README.md) | 0.5.0 | the pack norca-provider 0.5.0, in full |
 | [openobserve](modules/openobserve/README.md) | 0.2.1 | the pack openobserve 0.2.0, in full |
 | [otel-collector](modules/otel-collector/README.md) | 0.1.2 | the pack otel-collector 0.1.2, in full |

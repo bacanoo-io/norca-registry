@@ -42,6 +42,10 @@ declare -A required_module=([consul]="-var=consul_license_accepted=true")
 # modules. A name here that is no example of its module, or that the pack
 # has too, fails.
 declare -A module_only=(
+  # Several instances with leader election (review finding CON-6e). The
+  # maintainer decided on 2026-11-24 that the modules get it and the packs,
+  # which are being replaced, do not.
+  [norca-dns/several-instances]="count and leader election are variables of the module (CON-6e)"
 )
 
 failed=0

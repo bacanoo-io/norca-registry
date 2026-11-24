@@ -51,6 +51,42 @@ policy "dns" {
               capabilities = ["read"]
             }
           }
+
+          # The lease of the leader election, when the tokens are in the
+          # namespace of the job (see below).
+          dynamic "path" {
+            for_each = local.leader_election && local.tokens_here ? [local.lease_path] : []
+            labels   = [path.value]
+
+            content {
+              capabilities = ["read", "write"]
+            }
+          }
+        }
+      }
+    }
+
+    # The lease of the leader election (review finding CON-6e), a Variable
+    # of the namespace of the job: every instance reads it, and writes it
+    # with check-and-set to take, renew and release the lead. It is never
+    # listed or deleted. In a block of its own when the tokens are in
+    # another namespace, with a capability for the same reason as above.
+    dynamic "namespace" {
+      for_each = local.leader_election && !local.tokens_here ? [rigger.namespace] : []
+      labels   = [namespace.value]
+
+      content {
+        capabilities = ["list-jobs"]
+
+        variables {
+          dynamic "path" {
+            for_each = [local.lease_path]
+            labels   = [path.value]
+
+            content {
+              capabilities = ["read", "write"]
+            }
+          }
         }
       }
     }

@@ -31,9 +31,22 @@ job "dns" {
   }
 
   group "dns" {
-    # One instance: a record is written by one writer at a time; a record
-    # that changes while the instance is away is reconciled by the next one.
-    count = 1
+    # One instance by default: a record is written by one writer at a time;
+    # a record that changes while the instance is away is reconciled by the
+    # next one. Several instances run with leader election (locals.hcl), so
+    # there is still one writer, and a standby takes over within the lease.
+    count = var.count
+
+    # The instances on different nodes: one node going does not take the
+    # operator with it.
+    dynamic "constraint" {
+      for_each = var.count > 1 ? [1] : []
+
+      content {
+        operator = "distinct_hosts"
+        value    = "true"
+      }
+    }
 
     task "dns" {
       driver = var.driver

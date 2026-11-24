@@ -38,6 +38,24 @@ variable "node_pool" {
   }
 }
 
+variable "count" {
+  description = "Instances of the operator. More than one run on different nodes with leader election: one of them writes the records, the others are standbys that take over when it is lost."
+  type        = number
+  default     = 1
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 5
+  }
+}
+
+variable "leader_election" {
+  description = "Run the operator with leader election (-leader-election): the instances share a lease, the Variable controller-lease/norca-dns in the namespace of the job, and only the one that holds it writes the zones. Always on with more than one instance (count). Turn it on for one instance too where an allocation that was lost but still runs must not write beside its replacement (review finding CON-6e). The ACL policy of the module then grants the lease."
+  type        = bool
+  default     = false
+}
+
 variable "driver" {
   description = "Task driver of the operator: exec or raw_exec (the binary installed on the nodes, in the chroot of exec below /usr; raw_exec only with allow_raw_exec_nodes), docker (an image with the binary), or mock_driver (tests on dev agents only)."
   type        = string

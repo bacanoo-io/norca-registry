@@ -8,7 +8,7 @@ output "job" {
 
 output "notes" {
   value       = <<-EOT
-    norca-dns "${var.job_name}" in namespace ${rigger.namespace}: driver ${var.driver}.
+    norca-dns "${var.job_name}" in namespace ${rigger.namespace}: driver ${var.driver}${local.leader_election ? ", instances: ${var.count}, leader election over the Variable ${local.lease_path} of the namespace" : ""}.
 
     It keeps the record sets of the norca.io/DNSRecord objects:
       kind      = "norca.io/DNSRecord"
