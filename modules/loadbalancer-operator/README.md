@@ -44,6 +44,8 @@ On an agent without ACLs (a dev agent), policies can't be written: add
 The controller keeps off nodes with the raw_exec driver unless
 `allow_raw_exec_nodes = true`, and its default driver is `exec`: see
 [operator packs](../../README.md#operator-packs) (review finding JOG-19).
+The proxy jobs it creates use `exec` by default too (`proxy_driver`), so a
+cluster whose nodes run without raw_exec needs no change for them.
 A dev agent usually enables raw_exec: add `-var allow_raw_exec_nodes=true`
 there. `driver = "raw_exec"` without it is refused by the rule `raw_exec`
 (the `fail` of the pack); `examples/raw-exec.vars.hcl` is the allowed way.

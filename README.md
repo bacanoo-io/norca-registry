@@ -64,8 +64,8 @@ PATH:
   (`PUT /v1/validate/job`; `CREATE_NODE_POOLS=1` on a throwaway dev agent).
 
 Every pack of the registry is converted (`rigger convert pack`, then the
-templates written as HCL); all 85 cases of `compare-packs.sh` match and all
-104 rendered jobs pass the server's validation.
+templates written as HCL); all 89 cases of `compare-packs.sh` match and all
+108 rendered jobs pass the server's validation.
 
 | Module | Version | From |
 | --- | --- | --- |

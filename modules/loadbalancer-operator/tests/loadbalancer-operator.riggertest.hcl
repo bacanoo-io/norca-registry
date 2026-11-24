@@ -16,6 +16,16 @@ test "the job keeps off nodes with the raw_exec driver" {
   }
 }
 
+test "the proxy jobs use exec by default" {
+  assert {
+    condition = [
+      for i, arg in resource.job.controller.group.controller.task.controller.config.args :
+      resource.job.controller.group.controller.task.controller.config.args[i + 1] if arg == "-proxy-driver"
+    ] == ["exec"]
+    error_message = "the controller is told to run the proxy jobs with exec"
+  }
+}
+
 test "raw_exec without allow_raw_exec_nodes is refused" {
   values = {
     driver = "raw_exec"
