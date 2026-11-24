@@ -5,13 +5,18 @@ locals {
   mock   = var.driver == "mock_driver"
   docker = var.driver == "docker"
 
+  # The namespace of the Variables under nodescaler/: that of the job, the
+  # namespace of the release, unless variables_namespace names another.
+  vars      = var.variables_namespace != "" ? var.variables_namespace : rigger.namespace
+  vars_here = local.vars == rigger.namespace
+
   # The flags of the operator.
   args = concat(
     [
       "-log-level", var.log_level,
       "-lease-namespace", rigger.namespace,
-      "-token-namespace", var.variables_namespace,
-      "-bootstrap-namespace", var.variables_namespace,
+      "-token-namespace", local.vars,
+      "-bootstrap-namespace", local.vars,
       "-provider-ttl", var.provider_ttl,
       "-provider-allow-http=${var.provider_allow_http}",
       "-orphan-after", var.orphan_after,

@@ -109,9 +109,13 @@ variable "requeue" {
 }
 
 variable "zone_token_namespace" {
-  description = "Namespace of the Variables holding the tokens of the DNS zones (the token_variable of a provider of norca-provider)."
+  description = "Namespace of the Variables holding the tokens of the DNS zones (the token_variable of a provider of norca-provider). Empty: the namespace of the operator job."
   type        = string
-  default     = "default"
+  default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9-]{1,128})?$"
+  }
 }
 
 variable "zone_token_path" {

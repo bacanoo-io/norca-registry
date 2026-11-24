@@ -64,7 +64,7 @@ policy "acme" {
 
     # The tokens of the DNS zones in a namespace of their own.
     dynamic "namespace" {
-      for_each = local.tokens_here ? [] : [var.zone_token_namespace]
+      for_each = local.tokens_here ? [] : [local.tokens]
       labels   = [namespace.value]
 
       content {

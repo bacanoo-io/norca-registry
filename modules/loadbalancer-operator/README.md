@@ -26,11 +26,13 @@ The values are checked against the `validation` blocks and rules of
 ## Install
 
 Build the binary in a norca-platform checkout and install it on the nodes (or
-build an image with it), then install the module from the registry or from a
-checkout of the registry:
+build an image with it), create the namespace of the operators once (the
+module expects it and does not create it, see [Namespaces](#namespaces)), then
+install the module from the registry or from a checkout of the registry:
 
 ```shell
 cd norca-platform && go build -o /usr/local/bin/norca-loadbalancer ./cmd/norca-loadbalancer
+norca namespace apply -description "Norca operators" norca-system
 norca module plan ./modules/loadbalancer-operator
 norca module run  ./modules/loadbalancer-operator --name=lb
 norca module status lb
@@ -46,22 +48,38 @@ applying a release grants no extra permissions.
 
 ## Namespaces
 
-By default the controller reconciles the LoadBalancer objects of the
-namespace its job runs in (`namespace`). **`watch_namespace` names the
-namespace of the objects apart from the namespace of the job**: a namespace,
-or `*` for every namespace.
+The controller job runs in **the namespace of the release (`-namespace`),
+`norca-system` for the operator modules of this registry**, an operations
+namespace they share. It must exist before the install, and no module
+creates it: a namespace that a release installs belongs to that release,
+which would delete it on uninstall and conflict with the other operator
+modules. Create it once, by hand or with the tooling of the cluster:
 
 ```shell
-norca module run ./modules/loadbalancer-operator --name=lb \
-  --var=namespace=ops --var='watch_namespace=*'
+norca namespace apply -description "Norca operators" norca-system
 ```
 
-Use it to serve the namespaces of teams (tenants) from an operations
-namespace. A controller job inside the namespace of a team counts against
-the quota of the team, keeps the namespace from being deleted, and is a job
-that any token of the team with `submit-job` can register again, to run
-under the policy bound to it. With `watch_namespace` the job stays where
-only operators write.
+Give rights in `norca-system` to the operators of the cluster only: the
+controller job runs there with the ACL policy bound to it, and the tokens of
+the classes are Variables of that namespace by default.
+
+**`watch_namespace` names the namespace of the LoadBalancer objects apart
+from the namespace of the job**: a namespace (`default` by default), or `*`
+for every namespace. Empty is the namespace of the job.
+
+```shell
+rigger install ./modules/loadbalancer-operator -name lb -namespace norca-system \
+  -var 'watch_namespace=*'
+```
+
+A controller job inside the namespace of a team would count against the
+quota of the team and keep the namespace from being deleted. Norca refuses a
+change of a job with ACL policies bound to it unless the token holds those
+policies or is a management token, so a team token with `submit-job` can't
+make the job run something else under its policy; a token without those
+policies can't run commands in its allocations either (`alloc exec`). The
+operations namespace keeps the job and the token Variables out of the
+teams' reach altogether.
 
 - The ACL policy gives the controller, in every watched namespace, what it
   needs there: `list-jobs`, `read-job` and `submit-job` (it registers the
@@ -82,8 +100,14 @@ providers: applications that register a `norca.io/LoadBalancerClass` object
 per class and keep a heartbeat in it. `norca-provider` (the
 [`norca-provider`](../norca-provider) module) is one. The controller calls a
 class at its registered endpoint with the token of the Variable the class
-names (item `token`, in `class_token_namespace`; the policy lets it read
-`class_token_path`). A class whose heartbeat is older than `class_ttl` is
+names (item `token`, in `class_token_namespace`, which is the namespace of
+the job when empty; the policy lets it read `class_token_path`):
+
+```shell
+norca var put -namespace norca-system providers/hetzner-eu token=...
+```
+
+A class whose heartbeat is older than `class_ttl` is
 reported as `ProviderUnavailable`. Providers serve https; for a certificate
 of a private CA give the CA in `class_ca_cert`, and `class_allow_http`
 accepts http endpoints in a lab.
@@ -102,7 +126,7 @@ The servers call webhooks over https only. Put the certificate and key into
 the job's Variable and the CA into `webhook_ca_cert`:
 
 ```shell
-norca var put nomad/jobs/loadbalancer-controller webhook_cert=@lb.pem webhook_key=@lb-key.pem
+norca var put -namespace norca-system nomad/jobs/loadbalancer-controller webhook_cert=@lb.pem webhook_key=@lb-key.pem
 norca module upgrade ./modules/loadbalancer-operator --name=lb --var=webhook_enabled=true \
   --var=webhook_url=https://lb-webhook.internal:8443 --var-file=ca.hcl
 ```

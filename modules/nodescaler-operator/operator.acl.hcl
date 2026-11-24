@@ -6,7 +6,10 @@ policy "operator" {
   description = "Permissions of the node scaling operator (bound to its job)"
   rules {
     # A namespace of its own replaces the rules of "*" for it, so every block
-    # repeats the capabilities on the jobs (see the namespace "*").
+    # repeats the capabilities on the jobs (see the namespace "*"). The
+    # namespace of the job holds the Variables under nodescaler/ too, unless
+    # variables_namespace names another one: then they have a block of their
+    # own below.
     dynamic "namespace" {
       for_each = [rigger.namespace]
       labels   = [namespace.value]
@@ -23,12 +26,34 @@ policy "operator" {
           path "controller-lease/nodescaler*" {
             capabilities = ["list", "read", "write"]
           }
+
+          # The bootstrap of the region (with the key of the node CA), the
+          # network ranges, and the tokens of the providers.
+          dynamic "path" {
+            for_each = local.vars_here ? ["nodescaler/*"] : []
+            labels   = [path.value]
+
+            content {
+              capabilities = ["list", "read"]
+            }
+          }
+
+          # The records of the nodes that join with a key of their own: the
+          # one-time tokens and the serials of the latest certificates.
+          dynamic "path" {
+            for_each = local.vars_here ? ["nodescaler/join/*"] : []
+            labels   = [path.value]
+
+            content {
+              capabilities = ["list", "read", "write", "destroy"]
+            }
+          }
         }
       }
     }
 
     dynamic "namespace" {
-      for_each = [var.variables_namespace]
+      for_each = local.vars_here ? [] : [local.vars]
       labels   = [namespace.value]
 
       content {

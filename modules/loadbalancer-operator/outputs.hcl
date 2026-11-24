@@ -20,15 +20,15 @@ output "notes" {
         cat > web-lb.hcl <<EOF
         kind      = "norca.io/LoadBalancer"
         name      = "web"
-        namespace = "${local.all ? rigger.namespace : local.watch}"
+        namespace = "${local.all ? "default" : local.watch}"
         spec {
           service = "web"
           port    = 8080
         }
         EOF
         norca object apply web-lb.hcl
-        norca object list norca.io/LoadBalancer -namespace ${local.all ? rigger.namespace : local.watch}
-        norca object events norca.io/LoadBalancer web -namespace ${local.all ? rigger.namespace : local.watch}
+        norca object list norca.io/LoadBalancer -namespace ${local.all ? "default" : local.watch}
+        norca object events norca.io/LoadBalancer web -namespace ${local.all ? "default" : local.watch}
 
       or mark a service with the norca_lb_class / norca_lb_port meta keys.
     EOT
@@ -39,7 +39,7 @@ output "notes" {
         norca object-kind webhook approve norca.io/LoadBalancer default
         norca object-kind webhook approve norca.io/LoadBalancer validate
       The webhook task reads its certificate from the Variable nomad/jobs/${var.job_name}
-      (items webhook_cert, webhook_key).
+      of the namespace ${rigger.namespace} (items webhook_cert, webhook_key).
     EOT
     ) : [],
   ))

@@ -10,7 +10,10 @@ locals {
   watch  = var.watch_namespace != "" ? var.watch_namespace : rigger.namespace
   all    = local.watch == "*"
   job_ns = rigger.namespace
-  tokens = var.class_token_namespace
+
+  # The namespace of the tokens of the registered classes: that of the job
+  # unless class_token_namespace names another.
+  tokens = var.class_token_namespace != "" ? var.class_token_namespace : rigger.namespace
 
   controller_args = concat(
     [
@@ -26,7 +29,7 @@ locals {
     [
       "-metrics-addr", runtime_env("NORCA_ADDR_metrics"),
       "-class-ttl", var.class_ttl,
-      "-class-token-namespace", var.class_token_namespace,
+      "-class-token-namespace", local.tokens,
       "-class-allow-http=${var.class_allow_http}",
     ],
     var.class_ca_cert == "" ? [] : ["-class-ca-file", "${runtime_env("NORCA_TASK_DIR")}/class-ca.pem"],

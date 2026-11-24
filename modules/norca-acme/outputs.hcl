@@ -33,11 +33,14 @@ output "notes" {
     %{if var.http01_enabled}
     HTTP-01: the service "${var.job_name}" answers /.well-known/acme-challenge/%{if length(var.http01_entrypoints) > 0}
     and routes it on the Traefik entrypoints ${join(", ", var.http01_entrypoints)} (the Traefik module needs
-    acme_challenge = true and the namespace ${rigger.namespace} in catalog_namespaces).%{else}
+    acme_challenge = true and the namespace ${rigger.namespace} in catalog_namespaces, with the ACL
+    policy the notes of the Traefik module print for a namespace other than its own).%{else}
     Route that path of every host on port 80 to the service.%{endif}
     %{endif}
     DNS-01: for the names of the norca.io/DNSZone objects norca-provider
-    registers (always for a wildcard):
+    registers (always for a wildcard), with the token of a zone in the Variable
+    its provider names (token_variable, item token) in the namespace
+    ${local.tokens}:
       norca object list norca.io/DNSZone
   EOT
   description = "How to use the controller."

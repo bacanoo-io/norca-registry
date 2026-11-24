@@ -40,11 +40,14 @@ compare() { # <pack> <name> <pack var file or ""> <module var file or "">
   [ -n "$pvars" ] && pargs+=("--var-file=$pvars")
   [ -n "$mvars" ] && margs+=(-f "$mvars")
   # The namespace and region a pack example sets are the release's in a
-  # module.
+  # module. Where the example sets none, the pack renders with the default
+  # of its variable (norca-system for the operator packs), which a module
+  # has not: the release gets that default.
   local release_var
   for release_var in namespace region; do
     local val=""
     [ -n "$pvars" ] && val="$(sed -nE "s/^${release_var}[[:space:]]*=[[:space:]]*\"(.*)\"[[:space:]]*$/\1/p" "$pvars")"
+    [ -z "$val" ] && val="$(sed -nE "/^variable \"${release_var}\" \{/,/^\}/ s/^[[:space:]]*default[[:space:]]*=[[:space:]]*\"(.*)\"[[:space:]]*$/\1/p" "$root/packs/$pack/variables.hcl")"
     [ -n "$val" ] && margs+=("-$release_var" "$val")
   done
   # shellcheck disable=SC2206

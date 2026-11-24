@@ -56,7 +56,9 @@ PATH:
   jobs, ACL policies, kinds and admission policies of the pack, compared as
   parsed resources (the pack's resource files rendered by rigger in a module of
   their own, so both pass the same decoders). An example of the module that
-  the pack has not is given to both.
+  the pack has not is given to both. The module is rendered in the namespace
+  the example of the pack sets, or else in the default of the pack's
+  `namespace` variable (`norca-system` for the operator packs).
 - `scripts/check-modules-server.sh`: every job the modules render, for the
   defaults and every example, passes the validation of a Norca server
   (`PUT /v1/validate/job`; `CREATE_NODE_POOLS=1` on a throwaway dev agent).
@@ -73,10 +75,10 @@ templates written as HCL); all 85 cases of `compare-packs.sh` match and all
 | [mtls-gateway](modules/mtls-gateway/README.md) | 0.2.1 | the pack mtls-gateway 0.2.1, in full |
 | [nats](modules/nats/README.md) | 2.0.0 | the pack nats 0.7.0, in full |
 | [nats-demo](modules/nats-demo/README.md) | 1.0.0 | a demonstration of the language: the pack nats 0.7.0 in a smaller shape (was nats 1.0.0) |
-| [nodescaler-operator](modules/nodescaler-operator/README.md) | 0.10.1 | the pack nodescaler-operator 0.10.0, in full |
-| [norca-acme](modules/norca-acme/README.md) | 0.1.1 | the pack norca-acme 0.1.0, in full |
-| [norca-dns](modules/norca-dns/README.md) | 0.1.2 | the pack norca-dns 0.1.1, in full |
-| [norca-provider](modules/norca-provider/README.md) | 0.4.1 | the pack norca-provider 0.4.0, in full |
+| [nodescaler-operator](modules/nodescaler-operator/README.md) | 0.11.0 | the pack nodescaler-operator 0.11.0, in full |
+| [norca-acme](modules/norca-acme/README.md) | 0.2.0 | the pack norca-acme 0.2.0, in full |
+| [norca-dns](modules/norca-dns/README.md) | 0.2.0 | the pack norca-dns 0.2.0, in full |
+| [norca-provider](modules/norca-provider/README.md) | 0.5.0 | the pack norca-provider 0.5.0, in full |
 | [openobserve](modules/openobserve/README.md) | 0.2.1 | the pack openobserve 0.2.0, in full |
 | [otel-collector](modules/otel-collector/README.md) | 0.1.2 | the pack otel-collector 0.1.2, in full |
 | [postgres](modules/postgres/README.md) | 0.4.0 | the pack postgres 0.1.0, in full |
@@ -87,6 +89,15 @@ templates written as HCL); all 85 cases of `compare-packs.sh` match and all
 | [seaweedfs-csi](modules/seaweedfs-csi/README.md) | 0.1.0 | the pack seaweedfs-csi 0.1.0, in full |
 | [traefik](modules/traefik/README.md) | 0.3.0 | the pack traefik 0.3.0, in full |
 | lib/placement | 1.1.0 | a library the others call; not installed on its own |
+
+The operator modules (loadbalancer-operator, nodescaler-operator, norca-acme,
+norca-dns, norca-provider) follow what [Operator packs](#operator-packs)
+says of their packs. A module has no `namespace` variable: its jobs, the ACL
+policies bound to them and, by default, their token Variables and secrets
+are in the namespace of the release, so install them with `-namespace
+norca-system`. The modules expect the namespace and don't create it: create
+it once with `norca namespace apply -description "Norca operators"
+norca-system`.
 
 ## Packs
 

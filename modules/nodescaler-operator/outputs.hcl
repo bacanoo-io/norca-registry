@@ -17,8 +17,9 @@ output "notes" {
 
     It reads the bootstrap and the network ranges of the region from the
     Variables nodescaler/bootstrap/<region> and nodescaler/network/<region> in the
-    namespace ${var.variables_namespace}, which norca-deployer writes with
-    node_scaling (and a node CA from `norca-deployer pki issue-node-ca`).
+    namespace ${local.vars}, which norca-deployer writes with
+    node_scaling (namespace: ${local.vars}; and a node CA from
+    `norca-deployer pki issue-node-ca`).
 
     Register a provider (it writes its own norca.io/NodeProvider object), then a
     node group:

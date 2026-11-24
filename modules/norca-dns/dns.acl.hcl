@@ -36,7 +36,7 @@ policy "dns" {
     # namespace (its allow list), and no record of it would be written. Any
     # capability lets the namespace be read; list-jobs is the narrowest.
     dynamic "namespace" {
-      for_each = [var.zone_token_namespace]
+      for_each = [local.tokens]
       labels   = [namespace.value]
 
       content {

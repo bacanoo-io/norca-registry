@@ -111,12 +111,12 @@ variable "log_level" {
 # ---------------------------------------------------------------------------
 
 variable "variables_namespace" {
-  description = "Namespace of the Variables the operator reads: the bootstrap (nodescaler/bootstrap/<region>, with the key of the node CA) and the network ranges (nodescaler/network/<region>) the deployer writes, and the tokens of the providers (keep them under nodescaler/)."
+  description = "Namespace of the Variables the operator reads: the bootstrap (nodescaler/bootstrap/<region>, with the key of the node CA) and the network ranges (nodescaler/network/<region>) the deployer writes, and the tokens of the providers (keep them under nodescaler/). Empty: the namespace of the operator job; norca-deployer writes them into node_scaling.namespace, which must name the same namespace."
   type        = string
-  default     = "default"
+  default     = ""
 
   validation {
-    min_length = 1
+    pattern = "^([a-zA-Z0-9-]{1,128})?$"
   }
 }
 
