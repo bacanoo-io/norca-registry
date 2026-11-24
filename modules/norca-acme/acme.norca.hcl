@@ -31,11 +31,24 @@ job "acme" {
   }
 
   group "acme" {
-    # One instance: the answers of the HTTP-01 challenges are in the memory
-    # of the instance that placed the order, and the edge router would send
-    # a challenge to any instance. An order that is open when the instance
-    # is lost is continued by the next one, from the status of the order.
-    count = 1
+    # One instance by default: the answers of the HTTP-01 challenges are in
+    # the memory of the instance that placed the order, and the edge router
+    # would send a challenge to any instance. An order that is open when the
+    # instance is lost is continued by the next one, from the status of the
+    # order. Several instances run with leader election (locals.hcl): one
+    # works and answers, and the check on /readyz below tells which.
+    count = var.count
+
+    # The instances on different nodes: one node going does not take the
+    # operator with it.
+    dynamic "constraint" {
+      for_each = var.count > 1 ? [1] : []
+
+      content {
+        operator = "distinct_hosts"
+        value    = "true"
+      }
+    }
 
     dynamic "network" {
       for_each = var.http01_enabled ? [1] : []
@@ -60,6 +73,26 @@ job "acme" {
           path     = "/healthz"
           interval = "10s"
           timeout  = "2s"
+        }
+
+        # With leader election only the instance that leads answers the
+        # challenges (review finding CON-6f): it alone answers /readyz with
+        # 204, a standby with 503. The check makes the standbys unhealthy
+        # in the catalog, so an edge router that looks up the healthy
+        # instances routes to the leader only. It does not count for the
+        # deployment (on_update): a standby fails it for as long as it is
+        # one, and its allocation would never become healthy.
+        dynamic "check" {
+          for_each = local.leader_election ? [1] : []
+
+          content {
+            name      = "leading"
+            type      = "http"
+            path      = "/readyz"
+            interval  = "5s"
+            timeout   = "2s"
+            on_update = "ignore"
+          }
         }
       }
     }

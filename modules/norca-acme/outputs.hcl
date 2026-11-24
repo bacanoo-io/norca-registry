@@ -13,7 +13,7 @@ output "controller" {
 
 output "notes" {
   value       = <<-EOT
-    norca-acme "${var.job_name}" in namespace ${rigger.namespace}: driver ${var.driver}, controller name "${var.controller}".
+    norca-acme "${var.job_name}" in namespace ${rigger.namespace}: driver ${var.driver}, controller name "${var.controller}"${local.leader_election ? ", instances: ${var.count}, leader election over the Variable ${local.lease_path} of the namespace ${local.lease}" : ""}.
 
     It is the controller of the issuers that name it:
       kind = "norca.io/CertificateIssuer"
@@ -36,6 +36,11 @@ output "notes" {
     acme_challenge = true and the namespace ${rigger.namespace} in catalog_namespaces, with the ACL
     policy the notes of the Traefik module print for a namespace other than its own).%{else}
     Route that path of every host on port 80 to the service.%{endif}
+    %{endif}%{if local.leader_election && var.http01_enabled}
+    Only the instance that leads answers the challenges and passes the check
+    "leading" (/readyz) of the service: the edge router must route to the healthy
+    instances only. The clients that run Traefik need
+      client { native_service_discovery { default_healthy_only = true } }
     %{endif}
     DNS-01: for the names of the norca.io/DNSZone objects norca-provider
     registers (always for a wildcard), with the token of a zone in the Variable

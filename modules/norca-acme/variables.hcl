@@ -16,7 +16,7 @@ variable "job_name" {
 }
 
 variable "datacenters" {
-  description = "Datacenters of the operator job. The operator is one instance: when its node or its datacenter is lost it is placed again in another, so name at least two, or a pattern."
+  description = "Datacenters of the operator job. The operator is one instance by default: when its node or its datacenter is lost it is placed again in another, so name at least two, or a pattern."
   type        = list(string)
   default     = ["*"]
 
@@ -35,6 +35,34 @@ variable "node_pool" {
 
   validation {
     min_length = 1
+  }
+}
+
+variable "count" {
+  description = "Instances of the operator. More than one run on different nodes with leader election: one of them works on the orders and answers the HTTP-01 challenges, the others are standbys that take over when it is lost. With HTTP-01 the edge router must then route to the healthy instance only (the README: Several instances)."
+  type        = number
+  default     = 1
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 5
+  }
+}
+
+variable "leader_election" {
+  description = "Run the operator with leader election (-leader-election): the instances share a lease, the Variable controller-lease/<controller> in lease_namespace, and only the one that holds it places orders, answers the HTTP-01 challenges and passes the check on /readyz of its service. Always on with more than one instance (count). Turn it on for one instance too where an allocation that was lost but still runs must not place a second order beside its replacement (review finding CON-6e). The ACL policy of the module then grants the lease."
+  type        = bool
+  default     = false
+}
+
+variable "lease_namespace" {
+  description = "Namespace of the lease of the leader election (-lease-namespace). Empty: the namespace of the operator job."
+  type        = string
+  default     = ""
+
+  validation {
+    pattern = "^([a-zA-Z0-9-]{1,128})?$"
   }
 }
 
@@ -185,6 +213,16 @@ variable "http01_entrypoints" {
   description = "The http entrypoints of the Traefik pack the challenge is routed on (the entrypoints of port 80). The service of the job carries the router as catalog tags; the Traefik pack must have acme_challenge = true and the namespace of this job in its catalog_namespaces (with the ACL policy for that namespace its output prints). Empty: no tags, route the path by other means."
   type        = list(string)
   default     = ["web"]
+}
+
+variable "http01_settle" {
+  description = "Time after an instance became ready (its start, or with leader election every time it gains the lead) before the certificate authority is told to check an HTTP-01 challenge (-http01-settle): the time the edge router takes to route to the instance, so the interval and the timeout of the check of the service plus the refresh of the edge router. 0s turns the wait off. Empty: the default of the operator, 30s, which covers the checks of this module and the defaults of Traefik."
+  type        = string
+  default     = ""
+
+  validation {
+    pattern = "^([0-9]+(ms|s|m))?$"
+  }
 }
 
 # ---------------------------------------------------------------------------

@@ -46,6 +46,8 @@ declare -A module_only=(
   # maintainer decided on 2026-11-24 that the modules get it and the packs,
   # which are being replaced, do not.
   [norca-dns/several-instances]="count and leader election are variables of the module (CON-6e)"
+  # The same, with the settle time and the check on /readyz (CON-6f, CON-6g).
+  [norca-acme/several-instances]="count, leader election and http01_settle are variables of the module (CON-6e, CON-6f, CON-6g)"
 )
 
 failed=0

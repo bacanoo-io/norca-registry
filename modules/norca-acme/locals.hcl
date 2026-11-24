@@ -7,8 +7,30 @@ locals {
 
   # The namespace of the tokens of the DNS zones: that of the job, the
   # namespace of the release, unless zone_token_namespace names another.
-  tokens      = var.zone_token_namespace != "" ? var.zone_token_namespace : rigger.namespace
-  tokens_here = local.tokens == rigger.namespace
+  tokens = var.zone_token_namespace != "" ? var.zone_token_namespace : rigger.namespace
+
+  # Leader election (review finding CON-6e): asked for, or there are several
+  # instances, which must not all place the orders. The lease is the
+  # Variable controller-lease/<controller>, in the namespace of the job, the
+  # namespace of the release, unless lease_namespace names another: the
+  # operator would keep it in norca-system whatever its own namespace, so
+  # the flag always names it.
+  leader_election = var.leader_election || var.count > 1
+  lease           = var.lease_namespace != "" ? var.lease_namespace : rigger.namespace
+  lease_path      = "controller-lease/${var.controller}"
+
+  # The Variables the ACL policy grants: the tokens of the DNS zones, which
+  # the operator reads, and with leader election the lease, which every
+  # instance reads, and writes with check-and-set to take, renew and release
+  # the lead; it is never listed or deleted. Those of the namespace of the
+  # job go into its block of the policy, the others into a block per
+  # namespace.
+  variable_grants = concat(
+    [{ namespace = local.tokens, path = var.zone_token_path, capabilities = ["read"] }],
+    local.leader_election ? [{ namespace = local.lease, path = local.lease_path, capabilities = ["read", "write"] }] : [],
+  )
+  variable_grants_here      = [for g in local.variable_grants : g if g.namespace == rigger.namespace]
+  variable_grants_elsewhere = { for g in local.variable_grants : g.namespace => g... if g.namespace != rigger.namespace }
 
   # The CA files of the task: the ACME directory's and the DNS providers'.
   ca_files = local.mock ? [] : concat(
@@ -28,6 +50,8 @@ locals {
       "-zone-ttl", var.zone_ttl,
       "-zone-allow-http=${var.zone_allow_http}",
     ],
+    local.leader_election ? ["-leader-election", "-lease-namespace", local.lease] : [],
+    var.http01_settle == "" ? [] : ["-http01-settle", var.http01_settle],
     var.zone_ca_cert == "" ? [] : ["-zone-ca-file", "${runtime_env("NORCA_TASK_DIR")}/zone-ca.pem"],
     var.dns_resolver == "" ? [] : ["-dns-resolver", var.dns_resolver],
     [

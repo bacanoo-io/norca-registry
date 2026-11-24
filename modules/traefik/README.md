@@ -115,11 +115,17 @@ service {
 }
 ```
 
-Only healthy instances are routed. Traefik reads the catalog through the task
-API socket of its allocation with its workload identity, which can read the
-services of its own namespace; for the other namespaces bind a policy with
-`read-job` to the job (the output of the module prints it). `nomad_address`
-points it at an agent address instead.
+Only healthy instances are routed where the clients that run Traefik have
+`client { native_service_discovery { default_healthy_only = true } }`: it is
+`false` by default, and a lookup then returns every instance of a service,
+the ones that fail their checks too (the standbys of several
+[norca-acme](../norca-acme/README.md#several-instances) instances among
+them). Traefik reads the catalog through the task API socket of its
+allocation with its workload identity, which can read the services of its
+own namespace; for the other namespaces bind a policy with `read-job` to the
+job (the output of the module prints it). `nomad_address` points it at an
+agent address instead; a lookup there returns every instance, whatever the
+setting of the client.
 
 **Static configuration** (`dynamic_config`, the **Routing** tab): routers,
 services and middlewares in Traefik's dynamic configuration (YAML of the file

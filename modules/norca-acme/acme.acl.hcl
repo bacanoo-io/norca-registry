@@ -29,8 +29,8 @@ policy "acme" {
 
     # The secrets of the operator: the keys of its accounts, the
     # certificates it issued (for a revocation), an external account
-    # binding; and the tokens of the DNS zones when they are in the same
-    # namespace.
+    # binding; and the tokens of the DNS zones and the lease of the leader
+    # election when they are in the same namespace (locals.hcl).
     dynamic "namespace" {
       for_each = [rigger.namespace]
       labels   = [namespace.value]
@@ -46,15 +46,15 @@ policy "acme" {
         }
 
         dynamic "variables" {
-          for_each = local.tokens_here ? [var.zone_token_path] : []
+          for_each = length(local.variable_grants_here) > 0 ? [local.variable_grants_here] : []
 
           content {
             dynamic "path" {
-              for_each = [variables.value]
-              labels   = [path.value]
+              for_each = variables.value
+              labels   = [path.value.path]
 
               content {
-                capabilities = ["read"]
+                capabilities = path.value.capabilities
               }
             }
           }
@@ -62,19 +62,20 @@ policy "acme" {
       }
     }
 
-    # The tokens of the DNS zones in a namespace of their own.
+    # The tokens of the DNS zones, or the lease, in a namespace of their
+    # own.
     dynamic "namespace" {
-      for_each = local.tokens_here ? [] : [local.tokens]
-      labels   = [namespace.value]
+      for_each = local.variable_grants_elsewhere
+      labels   = [namespace.key]
 
       content {
         variables {
           dynamic "path" {
-            for_each = [var.zone_token_path]
-            labels   = [path.value]
+            for_each = namespace.value
+            labels   = [path.value.path]
 
             content {
-              capabilities = ["read"]
+              capabilities = path.value.capabilities
             }
           }
         }
