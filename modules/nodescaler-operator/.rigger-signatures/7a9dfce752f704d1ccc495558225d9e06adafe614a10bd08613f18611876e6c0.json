@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/nodescaler-operator\"},\"image\":{\"docker-manifest-digest\":\"sha256:4b996f629bfe85c27249026bbd1bf5c6e5d2a0a8cb9826dd77553c56f24c5c3f\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"nodescaler-operator\",\"rigger.version\":\"0.11.0\"}}",
-  "signature": "MEYCIQD9/KNAstjUSrnCDbKl7Hr+RM+CT8zuIzsA4DtMrmSlHwIhAKrMIbbagcLBWt6ZAXe2JWiYnepQM605dpuR9KXbyccj"
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/nodescaler-operator\"},\"image\":{\"docker-manifest-digest\":\"sha256:eaf891ab31eff3cec3d2935340d32989543f9016c3afd5fe7c76535e6c685a39\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"nodescaler-operator\",\"rigger.version\":\"0.11.1\"}}",
+  "signature": "MEQCICvgMSdb73Ezm05tni5olMNGUxjWVPKk6wdM12nhNqMyAiA5m/nELbAZXi7lsOszVQLUjGRfXKGTmpVwrP8OmsAyTw=="
 }
