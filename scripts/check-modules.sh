@@ -13,6 +13,14 @@ cd "$root"
 
 "$rigger" fmt -check modules
 
+# A task of Norca has its environment as NORCA_*, so a NOMAD_ variable is
+# empty there: the redis module 0.4.0 wrote the port of its server from
+# NOMAD_PORT_db, and Redis refused its configuration.
+if grep -rnE --include='*.hcl' '(^|[^A-Za-z0-9_])NOMAD_[A-Z]' modules; then
+  echo "a module names a NOMAD_ variable: the environment of a task is NORCA_*" >&2
+  exit 1
+fi
+
 for dir in modules/*/ modules/lib/*/; do
   [ -f "$dir/metadata.hcl" ] || continue
   "$rigger" module validate "$dir"
