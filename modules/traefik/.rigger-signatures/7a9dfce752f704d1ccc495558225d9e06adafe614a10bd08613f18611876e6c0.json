@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/traefik\"},\"image\":{\"docker-manifest-digest\":\"sha256:1ed2fbd2fea7c0d3e562d4b0b75da5ff3f0c74768843cac5388e7973a3a3e030\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"traefik\",\"rigger.version\":\"0.3.1\"}}",
-  "signature": "MEUCIHvBbk7VEXD8bpeZJHfIyFTxitS3sAIZUPUP4VGbxP0VAiEAheaqlmELVZVGJ8kVzv9OTTylEv+jQHJ3CacmJf6iJmY="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/traefik\"},\"image\":{\"docker-manifest-digest\":\"sha256:8b030858242582cdc8518de2a4951fc15f327ca3afcc872cd87933bb76658f7e\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"traefik\",\"rigger.version\":\"0.3.2\"}}",
+  "signature": "MEUCIGAZ+Ke1/Km5eLBcEg6BiQOHmsEjg+hlDJKfja2hLW7kAiEA4NtpEFEP62VroMwzjp0ryaWNqDzUFec3q1yYEZoYZ/I="
 }
