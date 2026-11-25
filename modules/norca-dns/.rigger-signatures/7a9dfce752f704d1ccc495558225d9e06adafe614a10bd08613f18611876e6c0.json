@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/norca-dns\"},\"image\":{\"docker-manifest-digest\":\"sha256:603e5260bf486d23b25604c3f2fa1e30baf929962b992e8b5bd294050cf60e00\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"norca-dns\",\"rigger.version\":\"0.3.0\"}}",
-  "signature": "MEQCIDczoHaPxVHA/BlDZ6MoZ5zl33ug/RaWwMKuTR8iuQAoAiAGdyIqq4mGUXIiVH2699sbkeiRROvrIzLggyDwYUcI+Q=="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/norca-dns\"},\"image\":{\"docker-manifest-digest\":\"sha256:04aec95be89d813994cc467ac697df90e3d121d041274173718b639d836bcf86\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"norca-dns\",\"rigger.version\":\"0.3.1\"}}",
+  "signature": "MEUCIE65oAN8WmDDoMnfKbkX5IRt7zk+AkRjYF1h8uYpdj1SAiEAstq5H1gWFMk2Lv//D1KGhZQGaYXF1QFxd+MuCZbawKs="
 }
