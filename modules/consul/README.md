@@ -446,6 +446,7 @@ See `variables.hcl` for all of them; the most important:
 | `snapshot_enabled` | `false` | snapshot job |
 | `port_*` | Consul's defaults | static |
 | `metrics_enabled`, `metrics_retention_time`, `metrics_token_secret_path` | `false`, `120s`, `consul/metrics` | agent metrics for the otel-collector module, see [Metrics](#metrics) |
+| `server_extra_config`, `client_extra_config` | `{}` | Consul configuration of your own, as an object: written as `consul.d/extra.json` |
 
 ### Provisional defaults
 
@@ -508,3 +509,10 @@ answered nothing under the default deny policy, so a host that forwards the
 resolved no name. An existing install gets the token on its next server
 start. `acl.tokens.dns` needs Consul 1.17 or newer (`consul_version`,
 default 2.1.0).
+
+Version 0.3.0 takes `server_extra_config` and `client_extra_config` as
+objects of Consul configuration, written as the JSON file
+`consul.d/extra.json`, instead of HCL text appended to the configuration of
+the module: a values file writes them as HCL itself (for example
+`client_extra_config = { log_json = true }`) rather than as a heredoc. Text
+is refused (the rule `extra_config`).

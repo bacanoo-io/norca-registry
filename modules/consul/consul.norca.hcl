@@ -246,6 +246,20 @@ job "consul" {
         data        = local.join
       }
 
+      # The extra configuration of the user (server_extra_config), applied
+      # with a reload like the configuration.
+      dynamic "template" {
+        for_each = local.server_extra
+
+        content {
+          destination   = "secrets/consul.d/extra.json"
+          perms         = "0600"
+          change_mode   = "signal"
+          change_signal = "SIGHUP"
+          data          = template.value
+        }
+      }
+
       dynamic "template" {
         for_each = local.tls ? ["ca_cert", "server_cert", "server_key"] : []
 

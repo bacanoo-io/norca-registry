@@ -44,10 +44,11 @@ locals {
 
   join = "{\"retry_join\": [{{ range $i, $s := nomadService \"${local.job}-serf\" }}{{ if $i }}, {{ end }}\"{{ $s.Address }}:{{ $s.Port }}\"{{ end }}]}\n"
 
-  # extra configuration as the pack indented it into the heredoc of the job:
-  # a line with text as it is, a blank one (and the end) indented by 10.
-  server_extra = var.server_extra_config == "" ? [] : concat([""], [for l in split("\n", var.server_extra_config) : trimspace(l) == "" ? "          ${l}" : l])
-  client_extra = var.client_extra_config == "" ? [] : concat([""], [for l in split("\n", var.client_extra_config) : trimspace(l) == "" ? "          ${l}" : l])
+  # The extra configuration of the user: the file consul.d/extra.json, only
+  # when there is one. Consul reads the files of the directory in the order
+  # of their names, so it comes after consul.hcl.
+  server_extra = try(length(keys(var.server_extra_config)), 0) == 0 ? [] : ["${jsonencode(var.server_extra_config)}\n"]
+  client_extra = try(length(keys(var.client_extra_config)), 0) == 0 ? [] : ["${jsonencode(var.client_extra_config)}\n"]
 
   telemetry = var.metrics_enabled ? [
     "",
@@ -167,7 +168,6 @@ locals {
       "}",
     ] : [],
     ["{{- end }}"],
-    local.server_extra,
   ))
 
   # The configuration of a client agent.
@@ -233,7 +233,6 @@ locals {
       "}",
     ] : [],
     ["{{- end }}"],
-    local.client_extra,
   ))
 }
 

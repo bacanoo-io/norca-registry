@@ -12,16 +12,21 @@ host_network                 = "private"
 datacenter                   = "eu1"
 domain                       = "internal"
 ui_enabled                   = false
-server_extra_config          = <<EOT
-limits {
-  http_max_conns_per_client = 400
+
+# Consul configuration of your own, as objects: written as consul.d/extra.json.
+server_extra_config = {
+  limits = {
+    http_max_conns_per_client = 400
+  }
+
+  autopilot = {
+    cleanup_dead_servers = true
+  }
 }
 
-autopilot {
-  cleanup_dead_servers = true
+client_extra_config = {
+  log_json = true
 }
-EOT
-client_extra_config          = "log_json = true"
 
 # The installer's acceptance of the Consul license (BSL 1.1): read it first.
 consul_license_accepted = true

@@ -167,15 +167,15 @@ variable "dns_address" {
 }
 
 variable "server_extra_config" {
-  description = "Raw Consul HCL appended to the server configuration (e.g. connect, config_entries bootstrap). It is part of a Nomad template: escape {{ as {{\"{{\"}}."
-  type        = string
-  default     = ""
+  description = "Consul configuration added to the servers, as an object (e.g. { limits = { http_max_conns_per_client = 400 } }): written as the JSON file consul.d/extra.json, which Consul reads after the configuration of the module. It is part of a Norca template: escape {{ as {{\"{{\"}}."
+  type        = any
+  default     = {}
 }
 
 variable "client_extra_config" {
-  description = "Raw Consul HCL appended to the client configuration. It is part of a Nomad template: escape {{ as {{\"{{\"}}."
-  type        = string
-  default     = ""
+  description = "Consul configuration added to the clients, as an object (e.g. { log_json = true }): written as the JSON file consul.d/extra.json, which Consul reads after the configuration of the module. It is part of a Norca template: escape {{ as {{\"{{\"}}."
+  type        = any
+  default     = {}
 }
 
 # ---------------------------------------------------------------------------
@@ -409,6 +409,11 @@ variable "snapshot_upload_image" {
 rule "license" {
   condition     = var.consul_license_accepted
   error_message = "Consul is licensed by HashiCorp under the Business Source License 1.1 and is not distributed by Norca. Read the license at github.com/hashicorp/consul/blob/main/LICENSE and set consul_license_accepted = true to accept it for your use."
+}
+
+rule "extra_config" {
+  condition     = can(keys(var.server_extra_config)) && can(keys(var.client_extra_config))
+  error_message = "server_extra_config and client_extra_config are objects of Consul configuration, such as { log_json = true }, not text."
 }
 
 rule "driver" {

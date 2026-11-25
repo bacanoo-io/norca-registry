@@ -101,6 +101,20 @@ job "clients" {
         data        = local.join
       }
 
+      # The extra configuration of the user (client_extra_config), applied
+      # with a reload like the configuration.
+      dynamic "template" {
+        for_each = local.client_extra
+
+        content {
+          destination   = "secrets/consul.d/extra.json"
+          perms         = "0600"
+          change_mode   = "signal"
+          change_signal = "SIGHUP"
+          data          = template.value
+        }
+      }
+
       dynamic "template" {
         for_each = local.tls ? [local.client_var] : []
 
