@@ -119,8 +119,8 @@ the secrets come from Norca Variables. There is no circular dependency.
    ```
 
 4. **With Norca ACLs enabled**: the ACL policy of the bootstrap task (the
-   only manual step). `norca module render --render-output-template` and
-   `norca module run` print it with the right names:
+   only manual step). The output `notes` of the module has it with the
+   right names (`norca rigger module render` prints the outputs):
 
    ```
    norca acl policy apply -namespace default -job consul -group servers -task bootstrap \
@@ -130,12 +130,21 @@ the secrets come from Norca Variables. There is no circular dependency.
    It allows writing the Variables listed below; everything else the tasks
    read with their workload identity without any policy.
 
-Then:
+Then install the module of the global registry (synced once in the
+region), or the module of a checkout of this registry:
 
 ```
-norca module run consul --registry=norca --var consul_license_accepted=true
-norca module run ./modules/consul --var-file consul.hcl          # from a checkout
+norca rigger registry sync global
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "consul", "Registry": "global", "Module": "norca/consul", "Version": "~> 0.2",
+ "ValuesJSON": {"consul_license_accepted": true}}
+EOF
+
+norca rigger install <checkout>/modules/consul -name consul -f consul.vars.hcl   # from a checkout
 ```
+
+In a stack the module is `source = "norca/consul"`, with
+`consul_license_accepted = true` in its `values`.
 
 ## Bootstrap (no manual steps)
 
@@ -310,8 +319,10 @@ read the version-specific upgrade notes of the target release first.
 1. Take a snapshot (the snapshot job, or `consul snapshot save`).
 2. Upgrade the **servers**: change `consul_version` (and `image_digest`) and
    run only the server job, e.g.
-   `norca module render ./modules/consul --var-file consul.hcl --to-dir out` and
-   `norca job run out/consul/consul.nomad`. The deployment replaces one server
+   `norca rigger module render <checkout>/modules/consul -f consul.vars.hcl -release consul`
+   prints the resources as JSON; write the `spec` of the resource `consul`
+   (the server job) to `consul.json` and run `norca job run -json consul.json`.
+   The deployment replaces one server
    at a time (`max_parallel = 1`); a server keeps its Raft data on the host
    volume and does not leave the cluster when it stops
    (`skip_leave_on_interrupt`, no `leave_on_terminate`), so it rejoins as the
@@ -319,8 +330,10 @@ read the version-specific upgrade notes of the target release first.
    passed its checks for `min_healthy_time` (30s, longer than autopilot's
    server stabilization time). Between steps you can check
    `consul operator raft list-peers` and `consul operator autopilot state`.
-3. Upgrade the **clients**: `norca module run` with the same variables. The
-   system job replaces one client at a time.
+3. Upgrade the **clients**: upgrade the release with the same values
+   (`norca rigger install`, or the install request of the global registry);
+   the server job is then unchanged, and the system job replaces one client
+   at a time.
 
 Drains go one server at a time as well (`disruption`). Consul does not
 support downgrading the Raft state: roll back by restoring a snapshot taken
@@ -438,12 +451,11 @@ Reversible choices made without a user decision; change them with variables:
 
 ## Development and testing
 
-`norca module render ./modules/consul --var consul_license_accepted=true`
-renders the jobs without submitting them; `norca module plan` validates them
-against a cluster. The Norca repository tests a copy of the module
-(`norca/module/internal/cli/consul_pack_test.go`): they render several variable sets,
-parse and validate the jobs and plan them against a test agent; they never
-pull or run Consul.
+`norca rigger module render ./modules/consul -var consul_license_accepted=true`
+renders the jobs without submitting them. The checks of this registry
+render the defaults and every example: `scripts/check-modules.sh` through
+Norca's job decoder, `scripts/check-modules-server.sh consul` through the
+validation of a Norca server. They never pull or run Consul.
 
 On a single development node: `server_count = 1`, and remove the meta
 constraints with `server_node_meta = ""` (then do not run the clients there:
@@ -468,17 +480,13 @@ constraints with `server_node_meta = ""` (then do not run the clients there:
 - Consul 1.14 or newer (the `tls` stanza, `grpc_tls` port and
   `initial_management` token names).
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/consul -name consul -namespace consul -var consul_license_accepted=true
-```
+Outputs: `service`, `serf_service` and `notes`. The client agents are the job `clients` (`clients_enabled`), the snapshots the job `snapshot` (`snapshot_enabled`). `consul_license_accepted` is required and must be true (the rule `license`): the installer accepts the Consul license (BSL 1.1); the module references the official release and never ships it. `rigger module validate` warns that only a rule reads it, which is what such a variable is for. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
 
-Outputs: `service`, `serf_service` and `notes`. The client agents are the job `clients` (`clients_enabled`), the snapshots the job `snapshot` (`snapshot_enabled`). `consul_license_accepted` is required and must be true (the rule `license`, the `fail` of the pack): the installer accepts the Consul license (BSL 1.1); the module, like the pack, references the official release and never ships it. `rigger module validate` warns that only a rule reads it, as the design has it for a variable that only rules read.
+## History
 
-## From the pack
-
-Converted from the pack `consul` 0.2.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh consul`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
-the release's.
+The module was converted from the pack `consul` 0.2.0 of Norca's earlier
+package manager. Version 0.2.1 changes no resource: this README, the
+comments of the examples and the descriptions of the variables name Rigger's
+commands and modules instead of packs.

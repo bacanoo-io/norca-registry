@@ -66,10 +66,10 @@ name, defaults to the Norca region (`NORCA_REGION`).
 With `artifact_url`, e.g.
 
 ```
---var driver=exec \
---var artifact_url=https://github.com/nats-io/nats-server/releases/download/v2.15.0/nats-server-v2.15.0-linux-amd64.tar.gz \
---var artifact_checksum=sha256:<sha256 of the archive> \
---var binary=local/nats-server-v2.15.0-linux-amd64/nats-server
+-var driver=exec \
+-var artifact_url=https://github.com/nats-io/nats-server/releases/download/v2.15.0/nats-server-v2.15.0-linux-amd64.tar.gz \
+-var artifact_checksum=sha256:<sha256 of the archive> \
+-var binary=local/nats-server-v2.15.0-linux-amd64/nats-server
 ```
 
 ## Storage
@@ -164,12 +164,13 @@ users = [
 norca secret put nats/users/openobserve password=-
 norca secret put nats/users/orders password=-
 norca secret put nats/users/ops password='$2a$11$...'   # a bcrypt hash: the servers never see the password
-norca module run nats --registry=norca -f nats.hcl
+norca rigger install <checkout>/modules/nats -name nats -f nats.vars.hcl
 ```
 
-(`-namespace <ns>` with the namespace of the job; `norca module run` prints the
-commands for the configured users.) [`examples/nats/userpass.hcl`](../../examples/nats/userpass.hcl)
-is a complete variable file.
+(`-namespace <ns>` with the namespace of the release; the output `notes`,
+which `norca rigger module render` prints, has the commands for the
+configured users.) [`examples/userpass.vars.hcl`](examples/userpass.vars.hcl)
+is a complete file of values.
 
 - **Accounts.** Every user is in an account (`account`, default
   `users_default_account` = `APP`). Accounts are isolated: subjects,
@@ -248,8 +249,7 @@ client {
    remote cluster is enough, the others are discovered):
 
    ```hcl
-   # aws.hcl
-   region          = "aws"
+   # aws.vars.hcl
    host_network    = "wg"
    gateway_enabled = true
    tls_enabled     = true
@@ -261,20 +261,22 @@ client {
    ]
    ```
 
-   `gcp.hcl` and `hetzner.hcl` are the same with their own `region` and the
-   other two regions in `remote_gateways`. The gateway name of a region is its
+   `gcp.vars.hcl` and `hetzner.vars.hcl` are the same with the other two
+   regions in `remote_gateways`. The gateway name of a region is its
    `cluster_name`, by default the region name. The TLS certificates must be
    valid for the gateway URLs (here the VPN addresses).
 
-3. **Deploy the module in every region:**
+3. **Deploy the module in every region**, one release per region (the
+   region of a release is its own, `-region`):
 
    ```
-   norca module run nats --registry=norca --var-file aws.hcl
-   norca module run nats --registry=norca --var-file gcp.hcl
-   norca module run nats --registry=norca --var-file hetzner.hcl
+   norca rigger install <checkout>/modules/nats -name nats -region aws -f aws.vars.hcl
+   norca rigger install <checkout>/modules/nats -name nats -region gcp -f gcp.vars.hcl
+   norca rigger install <checkout>/modules/nats -name nats -region hetzner -f hetzner.vars.hcl
    ```
 
-   (or `norca module run ./modules/nats ...` from a checkout). The addresses of
+   (or the install request of the global registry in each region, with
+   `-region` of `norca operator api` and the values in `ValuesJSON`). The addresses of
    the gateways of a region are listed by
    `norca service info -region aws nats-gateway`.
 
@@ -402,12 +404,12 @@ On a development agent with `raw_exec` enabled, without Docker:
 
 ```
 go install github.com/nats-io/nats-server/v2@v2.15.0
-norca module run ./modules/nats --var driver=raw_exec --var binary=$(go env GOPATH)/bin/nats-server \
-  --var distinct_hosts=false --var client_port=0 --var cluster_port=0 --var monitor_port=0
+norca rigger install <checkout>/modules/nats -name nats -var driver=raw_exec -var binary=$(go env GOPATH)/bin/nats-server \
+  -var distinct_hosts=false -var client_port=0 -var cluster_port=0 -var monitor_port=0
 ```
 
-Dynamic ports let the three servers share one node. `norca module render`
-shows the jobs without submitting them.
+Dynamic ports let the three servers share one node. `norca rigger module render`
+prints the jobs without submitting them.
 
 ## Limitations
 
@@ -428,15 +430,34 @@ shows the jobs without submitting them.
 
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
-rigger install ./modules/nats -name nats -namespace messaging -f modules/nats/examples/userpass.vars.hcl
+norca rigger registry sync global
+norca operator api -namespace messaging -X PUT /v1/rigger/install <<'EOF'
+{"Release": "nats", "Registry": "global", "Module": "norca/nats", "Version": "~> 2.0",
+ "ValuesJSON": {"jetstream_enabled": true}}
+EOF
+norca rigger release status nats -namespace messaging
 ```
 
-Outputs: `service`, `client_port`, `accounts`, `jetstream_domain` and `notes`. The configuration of the server is built line by line (`locals.hcl`), so it is the text the pack wrote; the checks of the pack (`nats.validate`) are rules. The module is version 2.0.0: the tag nats/v1.0.0 is the demonstration module of the language, now `nats-demo`.
+In a stack the module is `source = "norca/nats"`. From a checkout of this
+registry:
 
-## From the pack
+```shell
+norca rigger install <checkout>/modules/nats -name nats -namespace messaging -f <checkout>/modules/nats/examples/userpass.vars.hcl
+```
 
-Converted from the pack `nats` 0.7.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh nats`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
-the release's.
+Example values are in [`examples/`](examples).
+
+## Outputs
+
+Outputs: `service`, `client_port`, `accounts`, `jetstream_domain` and `notes`. The configuration of the server is built line by line (`locals.hcl`); the checks of the values are rules. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
+
+## History
+
+The module was converted from the pack `nats` 0.7.0 of Norca's earlier
+package manager. It is version 2.0.0 because the tag nats/v1.0.0 is the
+demonstration module of the language, now `nats-demo`. Version 2.0.1 changes
+no resource: this README, the comments of the examples and the descriptions
+of the variables name Rigger's commands and modules instead of packs.

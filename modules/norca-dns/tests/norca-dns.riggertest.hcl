@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Norca contributors
 # SPDX-License-Identifier: MPL-2.0
 
-# The operator and the raw_exec driver (review finding JOG-19): what the
-# pack refuses with a fail in its job template is the rule raw_exec here.
+# The operator and the raw_exec driver (review finding JOG-19): the rule
+# raw_exec refuses driver = raw_exec without allow_raw_exec_nodes.
 
 test "the job keeps off nodes with the raw_exec driver" {
   assert {
@@ -46,12 +46,12 @@ test "allow_raw_exec_nodes takes raw_exec and leaves the constraint out" {
   }
 }
 
-# Several instances and leader election (review finding CON-6e): the pack
-# runs one instance without it and its policy does not grant the lease; the
-# module does the same by default, and more with count and leader_election.
+# Several instances and leader election (review finding CON-6e): by
+# default one instance runs without it and its policy does not grant the
+# lease; count and leader_election do more.
 # The rules of a policy read as the text the server gets.
 
-test "one instance runs without leader election by default, as the pack" {
+test "one instance runs without leader election by default" {
   namespace = "norca-system"
 
   assert {
@@ -72,7 +72,7 @@ test "one instance runs without leader election by default, as the pack" {
       "-zone-allow-http=false",
       "-log-level", "info",
     ]
-    error_message = "the flags are those of the pack: no -leader-election, no -lease-namespace"
+    error_message = "the flags are those of one instance: no -leader-election, no -lease-namespace"
   }
 
   assert {
@@ -98,7 +98,7 @@ test "one instance runs without leader election by default, as the pack" {
         }
       }
     EOT
-    error_message = "the policy is that of the pack: the tokens of the zones, no lease"
+    error_message = "the policy is that of one instance: the tokens of the zones, no lease"
   }
 }
 

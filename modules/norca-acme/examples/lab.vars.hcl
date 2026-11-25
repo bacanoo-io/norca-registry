@@ -6,7 +6,7 @@
 # DNS provider is called over http, and the name servers of the zone are
 # found through the name server itself.
 #
-#   norca pack run norca-acme --registry=norca -f examples/norca-acme/lab.hcl
+#   norca rigger install ./modules/norca-acme -name norca-acme -namespace norca-system -f modules/norca-acme/examples/lab.vars.hcl
 log_level               = "debug"
 interval                = "2s"
 retry_base              = "10s"

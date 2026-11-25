@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the NATS job. Empty uses the pack name (\"nats\"). It also prefixes the service names (<job>, <job>-cluster, <job>-gateway, <job>-monitor, <job>-leafnode) and sets the default Variable path nomad/jobs/<job>."
+  description = "Name of the NATS job. Empty uses the name of the release. It also prefixes the service names (<job>, <job>-cluster, <job>-gateway, <job>-monitor, <job>-leafnode) and sets the default Variable path nomad/jobs/<job>."
   type        = string
   default     = ""
 }
@@ -440,7 +440,7 @@ variable "extra_config" {
 # ---------------------------------------------------------------------------
 
 variable "metrics_enabled" {
-  description = "Run the NATS Prometheus exporter (prometheus-nats-exporter, Apache-2.0) next to every server: it polls the monitoring port and serves /metrics, registered as the service <job>-metrics (scraped by the otel-collector pack). nats-server itself has no Prometheus endpoint."
+  description = "Run the NATS Prometheus exporter (prometheus-nats-exporter, Apache-2.0) next to every server: it polls the monitoring port and serves /metrics, registered as the service <job>-metrics (scraped by the otel-collector module). nats-server itself has no Prometheus endpoint."
   type        = bool
   default     = false
 }
@@ -471,7 +471,7 @@ variable "metrics_resources" {
 
 # ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
-# checked before rendering by the CLI and by the servers that render the pack.
+# checked before rendering by rigger and by the servers that render the module.
 # ---------------------------------------------------------------------------
 
 rule "users" {

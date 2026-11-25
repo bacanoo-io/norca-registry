@@ -6,7 +6,7 @@
 # the backends, checked with the standard gRPC health protocol
 # (grpc.health.v1). For a backend with TLS use https:// in the url.
 #   norca secret put traefik/certs/grpc-example-com cert=@fullchain.pem key=@privkey.pem
-#   norca pack run traefik --registry=norca --name=traefik -f examples/traefik/grpc.hcl
+#   norca rigger install ./modules/traefik -name traefik -f modules/traefik/examples/grpc.vars.hcl
 #   grpcurl grpc.example.com:443 list
 entrypoints = [
   { name = "websecure", port = 443, protocol = "https" },

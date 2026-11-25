@@ -11,13 +11,13 @@ in the norca-platform repository) packaged as an **operator module**: one
 release installs, upgrades, rolls back and uninstalls everything the operator
 needs, in the fixed order of the extended module format.
 
-| Template | Resource |
+| File | Resource |
 | --- | --- |
-| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): in the watched namespace (`watch_namespace`) jobs, the proxy jobs' Variables and the `norca.io/LoadBalancer` objects (status, events, finalizers); the leases in the namespace of the job; read of the `norca.io/LoadBalancerClass` objects and of the tokens of the classes (`class_token_path`), and node read (an instance on a node marked `norca.lb.leaving` is not a target) |
-| `loadbalancer.kind.hcl.tpl` | Object kind `norca.io/LoadBalancer`: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits; optional (`loadbalancer_kind_enabled`) |
-| `loadbalancerclass.kind.hcl.tpl` | Object kind `norca.io/LoadBalancerClass`: the classes the providers register, with their heartbeat (`status.heartbeat`); optional (`class_kind_enabled`) |
-| `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
-| `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |
+| `controller.acl.hcl` | ACL policy bound to the controller job (`job_acl`): in the watched namespace (`watch_namespace`) jobs, the proxy jobs' Variables and the `norca.io/LoadBalancer` objects (status, events, finalizers); the leases in the namespace of the job; read of the `norca.io/LoadBalancerClass` objects and of the tokens of the classes (`class_token_path`), and node read (an instance on a node marked `norca.lb.leaving` is not a target) |
+| `load-balancer.kind.hcl` | Object kind `norca.io/LoadBalancer`: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits; optional (`loadbalancer_kind_enabled`) |
+| `load-balancer-class.kind.hcl` | Object kind `norca.io/LoadBalancerClass`: the classes the providers register, with their heartbeat (`status.heartbeat`); optional (`class_kind_enabled`) |
+| `service-marks.admission.hcl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
+| `controller.norca.hcl` | The controller job (two instances with leader election) and the optional webhook task |
 
 The values are checked against the `validation` blocks and rules of
 [`variables.hcl`](variables.hcl) before rendering; the servers check the
@@ -28,27 +28,35 @@ The values are checked against the `validation` blocks and rules of
 Build the binary in a norca-platform checkout and install it on the nodes (or
 build an image with it), create the namespace of the operators once (the
 module expects it and does not create it, see [Namespaces](#namespaces)), then
-install the module from the registry or from a checkout of the registry:
+install the module of the global registry (synced once in the region):
 
 ```shell
 cd norca-platform && go build -o /usr/local/bin/norca-loadbalancer ./cmd/norca-loadbalancer
 norca namespace apply -description "Norca operators" norca-system
-norca module plan ./modules/loadbalancer-operator
-norca module run  ./modules/loadbalancer-operator --name=lb
-norca module status lb
+norca rigger registry sync global
+norca operator api -namespace norca-system -X PUT /v1/rigger/install <<'EOF'
+{"Release": "lb", "Registry": "global", "Module": "norca/loadbalancer-operator", "Version": "~> 0.5"}
+EOF
+norca rigger release status lb -namespace norca-system
 ```
 
-On an agent without ACLs (a dev agent), policies can't be written: add
-`--var=acl_policy_enabled=false`.
+In a stack the module is `source = "norca/loadbalancer-operator"` with
+`namespace = "norca-system"`. From a checkout of this registry:
+`norca rigger install <checkout>/modules/loadbalancer-operator -name lb -namespace norca-system`;
+`norca rigger module render <checkout>/modules/loadbalancer-operator`
+prints the resources without a cluster.
+
+On an agent without ACLs (a dev agent), policies can't be written: set
+`acl_policy_enabled = false`.
 
 The controller keeps off nodes with the raw_exec driver unless
 `allow_raw_exec_nodes = true`, and its default driver is `exec`: see
-[operator packs](../../README.md#operator-packs) (review finding JOG-19).
+[operator modules](../../README.md#operator-modules) (review finding JOG-19).
 The proxy jobs it creates use `exec` by default too (`proxy_driver`), so a
 cluster whose nodes run without raw_exec needs no change for them.
-A dev agent usually enables raw_exec: add `-var allow_raw_exec_nodes=true`
-there. `driver = "raw_exec"` without it is refused by the rule `raw_exec`
-(the `fail` of the pack); `examples/raw-exec.vars.hcl` is the allowed way.
+A dev agent usually enables raw_exec: set `allow_raw_exec_nodes = true`
+there. `driver = "raw_exec"` without it is refused by the rule `raw_exec`;
+`examples/raw-exec.vars.hcl` is the allowed way.
 
 With a management token, the release can register the kind and bind the ACL
 policy at once. A token with less rights needs `operator` write (the kind),
@@ -123,24 +131,25 @@ accepts http endpoints in a lab.
 
 ## Webhooks
 
-`--var=webhook_enabled=true --var=webhook_url=https://<address>:8443` adds a
+`webhook_enabled = true` with `webhook_url = "https://<address>:8443"` adds a
 webhook task to the controller job and registers two webhooks in the kind:
 
 - `default` fills in the class of the region (`default_class`) when a spec names none (the
   schema's static default `nomad` is left out then);
 - `validate` rejects classes no provider of the region implements
-  (`--var='classes=["nomad","aws-nlb"]'`) and class changes.
+  (`classes = ["nomad", "aws-nlb"]`) and class changes.
 
 The servers call webhooks over https only. Put the certificate and key into
 the job's Variable and the CA into `webhook_ca_cert`:
 
 ```shell
 norca var put -namespace norca-system nomad/jobs/loadbalancer-controller webhook_cert=@lb.pem webhook_key=@lb-key.pem
-norca module upgrade ./modules/loadbalancer-operator --name=lb --var=webhook_enabled=true \
-  --var=webhook_url=https://lb-webhook.internal:8443 --var-file=ca.hcl
+norca rigger install <checkout>/modules/loadbalancer-operator -name lb -namespace norca-system \
+  -var webhook_enabled=true -var webhook_url=https://lb-webhook.internal:8443 -f ca.vars.hcl
 ```
 
-Webhooks of a kind written with a management token are approved at once;
+The same values in `ValuesJSON` of the install request upgrade a release of
+the global registry. Webhooks of a kind written with a management token are approved at once;
 otherwise an administrator approves them (`norca object-kind webhook approve
 norca.io/LoadBalancer validate`). Any change of a webhook's configuration
 needs a new approval. With `webhook_failure_policy = "fail"` (the default),
@@ -157,7 +166,7 @@ limit get `429 Too Many Requests`; the controller SDK backs off.
 ## Uninstall
 
 ```shell
-norca module uninstall lb
+norca rigger release uninstall lb -namespace norca-system
 ```
 
 deletes the job, the admission policy, the kinds and the policy in reverse
@@ -165,19 +174,16 @@ order. The kind can only be deleted when no LoadBalancer objects are left:
 delete them first (the controller removes their load balancers through the
 finalizer).
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/loadbalancer-operator -name loadbalancer -namespace norca-system
-```
+Outputs: `job`, `watch_namespace` and `notes`. The kinds are the resources `load-balancer` and `load-balancer-class`, the ACL policy `controller`, the admission policy `service-marks`. The rules of the ACL policy are built line by line (`locals.hcl`) for every placement of the watched namespace, the job and the tokens. The job ID is `job_name`; the namespace and the region are the release's.
 
-Outputs: `job`, `watch_namespace` and `notes`. The kinds are the resources `load-balancer` and `load-balancer-class`, the ACL policy `controller`, the admission policy `service-marks`. The rules of the ACL policy are built line by line (`locals.hcl`), so they are the text the pack wrote for every placement of the watched namespace, the job and the tokens.
+## History
 
-## From the pack
-
-Converted from the pack `loadbalancer-operator` 0.4.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh loadbalancer-operator`). The job ID is `job_name`, as in the pack. The namespace and the region are
-the release's.
-
-The module is version 0.5.0 and has nothing the pack has not: after the conversion the pack changed defaults without a new version (`driver` and `proxy_driver` are `exec`, the tokens of the classes are in the namespace of the job, `norca-system`), the module follows them, and by the rule of the registry a changed default raises the minor version.
+The module was converted from the pack `loadbalancer-operator` 0.4.0 of
+Norca's earlier package manager. Version 0.5.0 took the later defaults of
+that pack (`driver` and `proxy_driver` are `exec`, the tokens of the classes
+are in the namespace of the job). Version 0.5.1 changes no resource: this
+README, the comments of the examples, the wording of the tests and the
+descriptions of the variables name Rigger's commands and modules instead of
+packs.

@@ -7,11 +7,11 @@
 #   norca secret put nats/users/openobserve password=-
 #   norca secret put nats/users/orders password=-
 #   norca secret put nats/users/ops password=-
-#   norca pack run nats --registry=norca --name=nats -f examples/nats/userpass.hcl
+#   norca rigger install ./modules/nats -name nats -f modules/nats/examples/userpass.vars.hcl
 auth_mode = "userpass"
 
 users = [
-  # OpenObserve in cluster mode (openobserve pack): its own account with its
+  # OpenObserve in cluster mode (openobserve module): its own account with its
   # JetStream KV buckets and streams, invisible to the other accounts.
   { name = "openobserve", account = "OPENOBSERVE" },
   # An application in the shared account APP: its own subjects, JetStream

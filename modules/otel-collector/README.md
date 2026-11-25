@@ -80,14 +80,27 @@ digest with `image_digest`; mirror the image for air-gapped clusters.
 
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
-norca module registry add norca https://github.com/bacanoo-io/norca-registry --ref=<tag>
+norca rigger registry sync global
 norca secret put -namespace observability norca/agent-ca ca=@/etc/norca.d/tls/norca-agent-ca.pem
-norca module run otel-collector --registry=norca -f examples/otel-collector/observability.hcl
+norca operator api -namespace observability -X PUT /v1/rigger/install <<'EOF'
+{"Release": "otel-collector", "Registry": "global", "Module": "norca/otel-collector", "Version": "~> 0.1",
+ "ValuesJSON": {"nomad_address": "https://127.0.0.1:4646", "nomad_ca_secret_path": "norca/agent-ca"}}
+EOF
 norca job status -namespace observability otel-collector
 ```
 
-Example variable files are in [`examples/otel-collector`](../../examples/otel-collector).
+In a stack the module is `source = "norca/otel-collector"` with
+`namespace = "observability"`. From a checkout of this registry:
+
+```shell
+norca rigger install <checkout>/modules/otel-collector -name otel-collector -namespace observability \
+  -f <checkout>/modules/otel-collector/examples/observability.vars.hcl
+```
+
+Example values are in [`examples/`](examples).
 
 ## What it collects
 
@@ -184,7 +197,7 @@ exports fail until the collector restarted.
 
 | Variable | Default | |
 | --- | --- | --- |
-| `job_name`, `namespace`, `region` | `""` | empty: `otel-collector`, those of the release |
+| `job_name` | `""` | empty: the name of the release; the namespace and the region are those of the release |
 | `datacenters`, `node_pool`, `constraints` | `["*"]`, `""`, `[]` | which nodes get a collector |
 | `image`, `image_digest` | `docker.io/otel/opentelemetry-collector-contrib:0.162.0`, `""` | |
 | `resources` | `{cpu = 200, memory = 256}` | per node; `memory_limiter` at 80 % |
@@ -225,17 +238,13 @@ readiness check.
 - The OTLP receiver is unauthenticated plain text on the node address.
 - No per-process host metrics (they need root in the container).
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/otel-collector -name otel-collector -namespace observability -f modules/otel-collector/examples/observability.vars.hcl
-```
+Outputs: `otlp` and `notes`. The configuration of the collector is built line by line (`locals.hcl`); the checks of the values are rules. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
 
-Outputs: `otlp` and `notes`. The configuration of the collector is built line by line (`locals.hcl`), so it is the text the pack wrote; the three `fail` checks of the pack are rules.
+## History
 
-## From the pack
-
-Converted from the pack `otel-collector` 0.1.2 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh otel-collector`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
-the release's.
+The module was converted from the pack `otel-collector` 0.1.2 of Norca's
+earlier package manager. Version 0.1.3 changes no resource: this README, the
+comments of the examples and the descriptions of the variables name Rigger's
+commands and modules instead of packs.

@@ -5,7 +5,7 @@
 # the secret store, a static route sends www.example.com to two fixed
 # backends with an active health check and security headers.
 #   norca secret put traefik/certs/example-com cert=@fullchain.pem key=@privkey.pem
-#   norca pack run traefik --registry=norca --name=traefik -f examples/traefik/web.hcl
+#   norca rigger install ./modules/traefik -name traefik -f modules/traefik/examples/web.vars.hcl
 # Services of the catalog are routed by their tags as well, e.g.
 #   tags = ["traefik.enable=true", "traefik.http.routers.app.rule=Host(`app.example.com`)"]
 entrypoints = [

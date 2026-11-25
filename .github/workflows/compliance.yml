@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # License headers (reuse lint) and DCO sign-offs, like the Compliance workflow
-# of the Norca repository. The packs reference third-party images and never
+# of the Norca repository. The modules reference third-party images and never
 # ship their code, and no binary of the operators is released, so there are no
 # dependency license checks here.
 #

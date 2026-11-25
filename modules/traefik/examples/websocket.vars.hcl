@@ -7,7 +7,7 @@
 # health check takes a failed backend out of the rotation; open connections
 # stay on their backend until they close.
 #   norca secret put traefik/certs/ws-example-com cert=@fullchain.pem key=@privkey.pem
-#   norca pack run traefik --registry=norca --name=traefik -f examples/traefik/websocket.hcl
+#   norca rigger install ./modules/traefik -name traefik -f modules/traefik/examples/websocket.vars.hcl
 entrypoints = [
   { name = "web", port = 80, protocol = "http", redirect_to = "websecure" },
   { name = "websecure", port = 443, protocol = "https" },

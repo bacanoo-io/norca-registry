@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the job. Empty uses the pack name (\"postgres\"). It is also the name of the service in the native catalog (<job>) and names the dump job (<job>-dump)."
+  description = "Name of the job. Empty uses the name of the release. It is also the name of the service in the native catalog (<job>) and names the dump job (<job>-dump)."
   type        = string
   default     = ""
 
@@ -49,7 +49,7 @@ variable "constraints" {
 # ---------------------------------------------------------------------------
 
 variable "image" {
-  description = "PostgreSQL image (docker driver): the official image, pinned to a minor release. PostgreSQL 15 or newer (the setup task uses the getenv command of psql). A new major version needs a dump and restore (or pg_upgrade); the pack does not upgrade the data directory."
+  description = "PostgreSQL image (docker driver): the official image, pinned to a minor release. PostgreSQL 15 or newer (the setup task uses the getenv command of psql). A new major version needs a dump and restore (or pg_upgrade); the module does not upgrade the data directory."
   type        = string
   default     = "docker.io/library/postgres:18.6"
 
@@ -191,7 +191,7 @@ variable "databases" {
 }
 
 variable "monitoring_enabled" {
-  description = "Create a monitoring role with the pg_monitor role (read-only statistics, for the postgresql receiver of the otel-collector pack). Its password is the item password of monitoring_secret_path; while that secret does not exist the setup task skips the role."
+  description = "Create a monitoring role with the pg_monitor role (read-only statistics, for the postgresql receiver of the otel-collector module). Its password is the item password of monitoring_secret_path; while that secret does not exist the setup task skips the role."
   type        = bool
   default     = true
 }
@@ -207,7 +207,7 @@ variable "monitoring_user" {
 }
 
 variable "monitoring_secret_path" {
-  description = "Secret with the password of the monitoring role (item password). The otel-collector pack reads the same secret (postgres_secret_path)."
+  description = "Secret with the password of the monitoring role (item password). The otel-collector module reads the same secret (postgres_secret_path)."
   type        = string
   default     = "postgres/monitoring"
 
@@ -268,7 +268,7 @@ variable "dump_cron" {
 }
 
 variable "dump_bucket" {
-  description = "Bucket of the dumps (it must exist; e.g. buckets of the rustfs pack). Expire old dumps with a lifecycle rule."
+  description = "Bucket of the dumps (it must exist; e.g. buckets of the rustfs module). Expire old dumps with a lifecycle rule."
   type        = string
   default     = "postgres-dump"
 
@@ -288,7 +288,7 @@ variable "dump_prefix" {
 }
 
 variable "dump_storage_service" {
-  description = "Service of the S3 store in the native catalog, in the namespace of the job (the rustfs pack registers \"rustfs\"). Ignored when dump_storage_endpoint is set."
+  description = "Service of the S3 store in the native catalog, in the namespace of the job (the rustfs module registers \"rustfs\"). Ignored when dump_storage_endpoint is set."
   type        = string
   default     = "rustfs"
 }
@@ -310,7 +310,7 @@ variable "dump_storage_use_ssl" {
 }
 
 variable "dump_storage_region" {
-  description = "Region of the S3 store (the AWS SigV4 scope; s3_region of the rustfs pack)."
+  description = "Region of the S3 store (the AWS SigV4 scope; s3_region of the rustfs module)."
   type        = string
   default     = "us-east-1"
 
@@ -353,7 +353,7 @@ variable "dump_resources" {
 
 # ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
-# checked before rendering by the CLI and by the servers that render the pack.
+# checked before rendering by rigger and by the servers that render the module.
 # ---------------------------------------------------------------------------
 
 rule "constraints" {

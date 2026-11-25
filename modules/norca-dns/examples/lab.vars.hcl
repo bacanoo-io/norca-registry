@@ -5,7 +5,7 @@
 # norca-provider over http: the operator accepts the http endpoint and
 # compares the records with the zone every 20 seconds.
 #
-#   norca pack run norca-dns --registry=norca -f examples/norca-dns/lab.hcl
+#   norca rigger install ./modules/norca-dns -name norca-dns -namespace norca-system -f modules/norca-dns/examples/lab.vars.hcl
 log_level       = "debug"
 requeue         = "20s"
 zone_allow_http = true

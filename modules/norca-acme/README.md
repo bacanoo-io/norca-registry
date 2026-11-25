@@ -18,10 +18,10 @@ the certificate authority, proves the names, and writes the chain back.
 **It never sees a private key of a certificate and reads no secret of a
 namespace.**
 
-| Template | Resource |
+| File | Resource |
 | --- | --- |
-| `acme.acl.hcl.tpl` | ACL policy bound to the job (`job_acl`): `read` and `write-status` on `norca.io/CertificateIssuer` and `norca.io/CertificateOrder`, `read` on `norca.io/DNSZone` (cluster-scoped, so in the namespace `"*"`), the secrets below `secret_prefix`, the token Variables of the DNS zones; with leader election `read` and `write` on the lease, the Variable `controller-lease/<controller>` in `lease_namespace` |
-| `acme.nomad.tpl` | The job: one instance, or several on different nodes with leader election (`count`, `leader_election`), never on a node the node scaling operator created; a service that answers the HTTP-01 challenge, with the router of the Traefik module as catalog tags, and with leader election a check on `/readyz` that only the instance that leads passes |
+| `acme.acl.hcl` | ACL policy bound to the job (`job_acl`): `read` and `write-status` on `norca.io/CertificateIssuer` and `norca.io/CertificateOrder`, `read` on `norca.io/DNSZone` (cluster-scoped, so in the namespace `"*"`), the secrets below `secret_prefix`, the token Variables of the DNS zones; with leader election `read` and `write` on the lease, the Variable `controller-lease/<controller>` in `lease_namespace` |
+| `acme.norca.hcl` | The job: one instance, or several on different nodes with leader election (`count`, `leader_election`), never on a node the node scaling operator created; a service that answers the HTTP-01 challenge, with the router of the Traefik module as catalog tags, and with leader election a check on `/readyz` that only the instance that leads passes |
 
 ## Before
 
@@ -41,7 +41,7 @@ namespace.**
   or an image (`driver = "docker"`).
 - Nodes without the raw_exec driver: the job keeps off nodes with it unless
   `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
-  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
+  [operator modules](../../README.md#operator-modules) (review finding JOG-19).
 - **HTTP-01:** port 80 of the names must reach the edge router, and the
   [traefik](../traefik) module needs `acme_challenge = true` and the namespace
   of this job in `catalog_namespaces` (`["default", "norca-system"]`), with
@@ -122,13 +122,13 @@ spec {
 | `allow_raw_exec_nodes` | `false` | Allow nodes with the raw_exec driver and `driver = "raw_exec"` (JOG-19). |
 | `acl_policy_enabled` | `true` | Disable it on agents without ACLs. |
 
-`examples/norca-acme/` has Let's Encrypt staging with a DNS zone, and a lab
-with a test certificate authority.
+[`examples/`](examples) has Let's Encrypt staging with a DNS zone, a lab
+with a test certificate authority, and several instances.
 
 ## Several instances
 
-By default the operator is **one instance without leader election**, as the
-pack runs it. When its node is lost the instance is placed again, and it
+By default the operator is **one instance without leader election**. When
+its node is lost the instance is placed again, and it
 continues the open orders from their status.
 
 **`count = 2` (or more, up to 5) runs standbys**: the instances are placed
@@ -222,12 +222,21 @@ release: uninstalling the release leaves it
 
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
 norca namespace apply -description "Norca operators" norca-system   # once
-rigger install ./modules/norca-acme -name acme -namespace norca-system
+norca rigger registry sync global
+norca operator api -namespace norca-system -X PUT /v1/rigger/install <<'EOF'
+{"Release": "acme", "Registry": "global", "Module": "norca/norca-acme", "Version": "~> 0.3"}
+EOF
 norca object apply letsencrypt.hcl
 norca object list norca.io/CertificateIssuer
 ```
+
+In a stack the module is `source = "norca/norca-acme"` with
+`namespace = "norca-system"`. From a checkout of this registry:
+`norca rigger install <checkout>/modules/norca-acme -name acme -namespace norca-system`.
 
 ## Limitations
 
@@ -243,19 +252,17 @@ norca object list norca.io/CertificateIssuer
 - Certificate authorities limit the rate of orders and of failed
   validations. Try an issuer against the staging directory first.
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/norca-acme -name norca-acme -namespace norca-system
-```
+Outputs: `job`, `controller` and `notes`. The ACL policy is the resource `acme`; `acl_policy_enabled` leaves it out. `driver = "raw_exec"` without `allow_raw_exec_nodes = true` is refused by the rule `raw_exec`; `examples/raw-exec.vars.hcl` is the allowed way. The job ID is `job_name`; the namespace and the region are the release's.
 
-Outputs: `job`, `controller` and `notes`. The ACL policy is the resource `acme`; `acl_policy_enabled` leaves it out. `driver = "raw_exec"` without `allow_raw_exec_nodes = true` is refused by the rule `raw_exec` (the `fail` of the pack); `examples/raw-exec.vars.hcl` is the allowed way.
+## History
 
-## From the pack
-
-Converted from the pack `norca-acme` 0.2.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh norca-acme`). The job ID is `job_name`, as in the pack. The namespace and the region are
-the release's.
-
-The module is version 0.3.0: beyond the pack it has `count`, `leader_election`, `lease_namespace` and `http01_settle`, several instances with leader election, the lease in the ACL policy and the check on `/readyz` (review findings CON-6e, CON-6f, CON-6g), which `examples/several-instances.vars.hcl` shows and the comparison with the pack leaves out; with the defaults and the examples of the pack it renders what the pack renders.
+The module was converted from the pack `norca-acme` 0.2.0 of Norca's earlier
+package manager. Version 0.3.0 added `count`, `leader_election`,
+`lease_namespace` and `http01_settle`: several instances with leader
+election, the lease in the ACL policy and the check on `/readyz` (review
+findings CON-6e, CON-6f, CON-6g). Version 0.3.1 changes no resource: this
+README, the comments of the examples, the wording of the tests and the
+descriptions of the variables name Rigger's commands and modules instead of
+packs.

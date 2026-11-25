@@ -4,7 +4,7 @@
 # A minimal collector: host metrics, the Norca agent and OTLP of the
 # applications, exported to an OpenObserve outside the cluster with a public
 # certificate; no catalog discovery, no PostgreSQL.
-#   norca pack run otel-collector --registry=norca -f examples/otel-collector/external-openobserve.hcl
+#   norca rigger install ./modules/otel-collector -name otel-collector -f modules/otel-collector/examples/external-openobserve.vars.hcl
 openobserve_endpoint     = "https://observe.example.com"
 openobserve_tls          = "system"
 openobserve_server_name  = "observe.example.com"

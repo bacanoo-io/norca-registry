@@ -1,15 +1,14 @@
 # SPDX-FileCopyrightText: 2026 Norca contributors
 # SPDX-License-Identifier: MPL-2.0
 #
-# Checks the packs with scripts/check-packs.sh (pack fmt -check, render with
-# the defaults and the example variable files, local job validation), and
-# tests the operators against the database versions they support. The
-# license headers and DCO sign-offs are checked in compliance.yml; release.yml
-# calls this workflow before it creates a release.
+# Checks the modules with scripts/check-modules.sh (rigger fmt -check, module
+# validate with the example values, module tests), and tests the operators
+# against the database versions they support. The license headers and DCO
+# sign-offs are checked in compliance.yml.
 #
-# Norca has no published release yet, so the job builds the norca binary from
-# the Norca sources: NORCA_SOURCE and NORCA_REF name the repository and the
-# branch or tag. Switch to a release download once Norca publishes binaries.
+# Norca has no published release yet, so the job builds the rigger program
+# from the Norca sources: NORCA_SOURCE and NORCA_REF name the repository and
+# the branch or tag. Switch to a release download once Norca publishes binaries.
 #
 # Actions are pinned by commit, like in the Norca repository:
 #   actions/checkout v7.0.1, actions/setup-go v7.0.0.
@@ -37,8 +36,8 @@ env:
   NORCA_REF: main
 
 jobs:
-  packs:
-    name: Packs
+  modules:
+    name: Modules
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -51,21 +50,19 @@ jobs:
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: norca/norca/go.mod
-          cache-dependency-path: norca/norca/go.sum
+          go-version-file: norca/rigger/cli/go.mod
+          cache-dependency-path: norca/rigger/cli/go.sum
 
-      - name: Build norca
-        working-directory: norca/norca
+      - name: Build rigger
         run: |
-          go build -o "$RUNNER_TEMP/norca" .
-          "$RUNNER_TEMP/norca" version
+          go -C norca/rigger/cli build -o "$RUNNER_TEMP/rigger" ./cmd/rigger
+          "$RUNNER_TEMP/rigger" version
 
-      - name: Check the packs
+      - name: Check the modules
         working-directory: registry
         env:
-          NORCA: ${{ runner.temp }}/norca
-          OUT: ${{ runner.temp }}/rendered
-        run: scripts/check-packs.sh
+          RIGGER: ${{ runner.temp }}/rigger
+        run: scripts/check-modules.sh
 
   postgres-operator:
     name: PostgreSQL operator (${{ matrix.postgres }})

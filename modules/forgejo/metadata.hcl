@@ -3,7 +3,7 @@
 
 module {
   name        = "forgejo"
-  version     = "0.2.0"
+  version     = "0.2.1"
   description = "Forgejo (GPL-3.0-or-later, referenced, never shipped) as the internal git server and container (OCI) registry of a Norca cluster: SQLite and the repositories on a host volume, packages, LFS and attachments in RustFS, secrets from the built-in secret store, optional HTTPS, SSH, initial admin and periodic dumps."
   url         = "https://forgejo.org"
 

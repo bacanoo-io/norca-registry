@@ -15,11 +15,11 @@ operator keeps it in the zone of [norca-provider](../norca-provider) that
 holds the name. **It changes only the record sets it wrote**, writes only
 the names a namespace may write, and only in zones that allow it.
 
-| Template | Resource |
+| File | Resource |
 | --- | --- |
-| `dnsrecord.kind.hcl.tpl` | The `norca.io/DNSRecord` object kind (`record_kind_enabled`) |
-| `dns.acl.hcl.tpl` | ACL policy bound to the job (`job_acl`): `read`, `write-status`, `write-events` and `manage-finalizers` on `norca.io/DNSRecord`, `read` on `norca.io/LoadBalancer` and `norca.io/DNSZone`, `read-job` for the metadata of the namespaces (`list-jobs` in the namespace of the tokens, whose block stands in for the `*` block there), the token Variables of the DNS zones; with leader election `read` and `write` on the lease, the Variable `controller-lease/norca-dns` in the namespace of the job |
-| `dns.nomad.tpl` | The job: one instance, or several on different nodes with leader election (`count`, `leader_election`), never on a node the node scaling operator created |
+| `dns-record.kind.hcl` | The `norca.io/DNSRecord` object kind (`record_kind_enabled`) |
+| `dns.acl.hcl` | ACL policy bound to the job (`job_acl`): `read`, `write-status`, `write-events` and `manage-finalizers` on `norca.io/DNSRecord`, `read` on `norca.io/LoadBalancer` and `norca.io/DNSZone`, `read-job` for the metadata of the namespaces (`list-jobs` in the namespace of the tokens, whose block stands in for the `*` block there), the token Variables of the DNS zones; with leader election `read` and `write` on the lease, the Variable `controller-lease/norca-dns` in the namespace of the job |
+| `dns.norca.hcl` | The job: one instance, or several on different nodes with leader election (`count`, `leader_election`), never on a node the node scaling operator created |
 
 ## Before
 
@@ -38,7 +38,7 @@ the names a namespace may write, and only in zones that allow it.
   an image (`driver = "docker"`).
 - Nodes without the raw_exec driver: the job keeps off nodes with it unless
   `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
-  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
+  [operator modules](../../README.md#operator-modules) (review finding JOG-19).
 - A provider of the [norca-provider](../norca-provider) module (0.4.0 or
   later) with a `dns` section for the zone and **`"records": true`** on the
   zone, of a type that can write records (`rfc2136`, `mock`), and the token
@@ -101,8 +101,8 @@ See [Variables](variables.hcl) for the job settings.
 
 ## Several instances
 
-By default the operator is **one instance without leader election**, as the
-pack runs it. When its node is lost the instance is placed again, and the
+By default the operator is **one instance without leader election**. When
+its node is lost the instance is placed again, and the
 records that changed meanwhile are reconciled then.
 
 **`count = 2` (or more, up to 5) runs standbys**: the instances are placed
@@ -148,18 +148,35 @@ the lease: only one of them works.
 
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
 norca namespace apply -description "Norca operators" norca-system   # once
-rigger install ./modules/norca-dns -name norca-dns -namespace norca-system
+norca rigger registry sync global
+norca operator api -namespace norca-system -X PUT /v1/rigger/install <<'EOF'
+{"Release": "norca-dns", "Registry": "global", "Module": "norca/norca-dns", "Version": "~> 0.3"}
+EOF
+norca rigger release status norca-dns -namespace norca-system
 ```
 
-Outputs: `job` and `notes`. The kind `norca.io/DNSRecord` is the resource `dns-record`, the ACL policy `dns`; `record_kind_enabled` and `acl_policy_enabled` leave them out. `driver = "raw_exec"` without `allow_raw_exec_nodes = true` is refused by the rule `raw_exec` (the `fail` of the pack); `examples/raw-exec.vars.hcl` is the allowed way.
+In a stack the module is `source = "norca/norca-dns"` with
+`namespace = "norca-system"`. From a checkout of this registry:
 
-## From the pack
+```shell
+norca rigger install <checkout>/modules/norca-dns -name norca-dns -namespace norca-system
+```
 
-Converted from the pack `norca-dns` 0.2.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh norca-dns`). The job ID is `job_name`, as in the pack. The namespace and the region are
-the release's.
+Example values are in [`examples/`](examples).
 
-The module is version 0.3.0: beyond the pack it has `count` and `leader_election`, several instances with leader election and the lease in the ACL policy (review finding CON-6e), which `examples/several-instances.vars.hcl` shows and the comparison with the pack leaves out; with the defaults and the examples of the pack it renders what the pack renders.
+## Outputs
+
+Outputs: `job` and `notes`. The kind `norca.io/DNSRecord` is the resource `dns-record`, the ACL policy `dns`; `record_kind_enabled` and `acl_policy_enabled` leave them out. `driver = "raw_exec"` without `allow_raw_exec_nodes = true` is refused by the rule `raw_exec`; `examples/raw-exec.vars.hcl` is the allowed way. The job ID is `job_name`; the namespace and the region are the release's.
+
+## History
+
+The module was converted from the pack `norca-dns` 0.2.0 of Norca's earlier
+package manager. Version 0.3.0 added `count` and `leader_election`: several
+instances with leader election and the lease in the ACL policy (review
+finding CON-6e). Version 0.3.1 changes no resource: this README, the
+comments of the examples, the wording of the tests and the descriptions of
+the variables name Rigger's commands and modules instead of packs.

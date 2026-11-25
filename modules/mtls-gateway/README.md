@@ -26,18 +26,22 @@ servers inject none. Norca does not distribute Envoy; the nodes pull the image
 
 ## Install
 
+One release per region: there is no install into several regions in one
+request. Each region syncs the global registry and gets its own release:
+
 ```shell
-norca module registry add norca https://github.com/bacanoo-io/norca-registry --ref=<tag>
-norca module run mtls-gateway --registry=norca --region=eu-1
-norca module run mtls-gateway --registry=norca --region=eu-2
-# or every region in one release:
-norca module run mtls-gateway --registry=norca --name=mtls-gateway --regions=eu-1,eu-2
+gateway='{"Release": "mtls-gateway", "Registry": "global", "Module": "norca/mtls-gateway", "Version": "~> 0.2"}'
+norca rigger registry sync global -region eu-1
+echo "$gateway" | norca operator api -region eu-1 -X PUT /v1/rigger/install
+norca rigger registry sync global -region eu-2
+echo "$gateway" | norca operator api -region eu-2 -X PUT /v1/rigger/install
 ```
 
-From a checkout of this registry: `norca module run ./modules/mtls-gateway`.
-`norca module render mtls-gateway --registry=norca` shows the job without
-submitting it. Example variable files are in
-[`examples/mtls-gateway`](../../examples/mtls-gateway).
+In a stack the module is `source = "norca/mtls-gateway"`, in a stack per
+region. From a checkout of this registry:
+`norca rigger install <checkout>/modules/mtls-gateway -name mtls-gateway -region eu-1`.
+`norca rigger module render <checkout>/modules/mtls-gateway` prints the job
+without submitting it. Example values are in [`examples/`](examples).
 
 Requirements (see the [usage](https://github.com/bacanoo-io/norca/blob/main/docs/native-mtls.md)):
 
@@ -137,10 +141,10 @@ and `POST /quitquitquit` through the metrics listener.
   gateway node, with the task `mtls-gateway-mtls-gateway` (or `envoy`).
 - `norca service info -region <region> -verbose mtls-gateway`: the instances
   with the meta `norca-mtls = "gateway"`.
-- `norca module render` and `norca job validate` of the rendered job:
-  validation without an agent reports the missing task, as only the servers
-  inject it; `norca job plan` or `norca module plan` against a cluster
-  validates the complete job.
+- `norca rigger module render` prints the job without a cluster; the
+  validation of the servers (`PUT /v1/validate/job`, which
+  `scripts/check-modules-server.sh` of this registry calls) checks the
+  complete job, as only the servers inject the task.
 
 ## Limitations
 
@@ -150,17 +154,13 @@ and `POST /quitquitquit` through the metrics listener.
 - The port is static: two gateways of the same region can't share a node.
 - Changing the gateway service (`mtls` block) is a destructive update.
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/mtls-gateway -name mtls-gateway
-```
+Outputs: `service` and `notes`. The job is always in the `default` namespace, whatever the namespace of the release: upstreams of other regions look for gateways only there. The rules `raw_exec_on_host` and `metrics_need_the_task` refuse values that can't work. The job ID is `job_name`; the region is the release's.
 
-Outputs: `service` and `notes`. The job is always in the `default` namespace, whatever the namespace of the release, as in the pack: upstreams of other regions look for gateways only there. The two `fail` checks of the pack are the rules `raw_exec_on_host` and `metrics_need_the_task`.
+## History
 
-## From the pack
-
-Converted from the pack `mtls-gateway` 0.2.1 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh mtls-gateway`). The job ID is `job_name`, as in the pack. The namespace and the region are
-the release's.
+The module was converted from the pack `mtls-gateway` 0.2.1 of Norca's
+earlier package manager. Version 0.2.2 changes no resource: this README, the
+comments of the examples and the descriptions name Rigger's commands and
+modules instead of packs.

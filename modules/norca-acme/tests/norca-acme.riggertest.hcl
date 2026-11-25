@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Norca contributors
 # SPDX-License-Identifier: MPL-2.0
 
-# The operator and the raw_exec driver (review finding JOG-19): what the
-# pack refuses with a fail in its job template is the rule raw_exec here.
+# The operator and the raw_exec driver (review finding JOG-19): the rule
+# raw_exec refuses driver = raw_exec without allow_raw_exec_nodes.
 
 test "the job keeps off nodes with the raw_exec driver" {
   assert {
@@ -47,13 +47,12 @@ test "allow_raw_exec_nodes takes raw_exec and leaves the constraint out" {
 }
 
 # Several instances and leader election (review findings CON-6e, CON-6f,
-# CON-6g): the pack runs one instance without it, its policy does not grant
-# the lease and its service has the check on /healthz alone; the module
-# does the same by default, and more with count, leader_election,
-# lease_namespace and http01_settle. The rules of a policy read as the text
+# CON-6g): by default one instance runs without it, its policy does not
+# grant the lease and its service has the check on /healthz alone; count,
+# leader_election, lease_namespace and http01_settle do more. The rules of a policy read as the text
 # the server gets.
 
-test "one instance runs without leader election by default, as the pack" {
+test "one instance runs without leader election by default" {
   namespace = "norca-system"
 
   assert {
@@ -83,7 +82,7 @@ test "one instance runs without leader election by default, as the pack" {
       "-max-attempts", "8",
       "-log-level", "info",
     ]
-    error_message = "the flags are those of the pack: no -leader-election, no -lease-namespace, no -http01-settle"
+    error_message = "the flags are those of one instance: no -leader-election, no -lease-namespace, no -http01-settle"
   }
 
   # The dynamic block of the check on /readyz makes none: the one check
@@ -93,7 +92,7 @@ test "one instance runs without leader election by default, as the pack" {
       resource.job.acme.group.acme.service[0].check.path == "/healthz" &&
       resource.job.acme.group.acme.service[0].check.interval == "10s"
     )
-    error_message = "the service has the one check of the pack, on /healthz"
+    error_message = "the service has one check, on /healthz"
   }
 
   assert {
@@ -120,7 +119,7 @@ test "one instance runs without leader election by default, as the pack" {
         }
       }
     EOT
-    error_message = "the policy is that of the pack: the secrets and the tokens of the zones, no lease"
+    error_message = "the policy is that of one instance: the secrets and the tokens of the zones, no lease"
   }
 }
 
@@ -162,7 +161,7 @@ test "several instances run on different nodes with leader election" {
     error_message = "the operator gets -leader-election and the lease in the namespace of the job"
   }
 
-  # The check of the pack still counts for the deployment; the check on
+  # The check on /healthz still counts for the deployment; the check on
   # /readyz, which a standby fails, does not (review finding CON-6f).
   assert {
     condition = (

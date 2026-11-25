@@ -3,7 +3,7 @@
 
 module {
   name        = "traefik"
-  version     = "0.3.0"
+  version     = "0.3.1"
   description = "Traefik Proxy (MIT) as the edge router of a region: entrypoints for HTTP, HTTPS, TCP and UDP set from the install form, certificates from the secret store, routes from the tags of the services in Norca's native catalog and from static file configuration (web, WebSocket, gRPC, TCP)."
   url         = "https://traefik.io/traefik/"
 

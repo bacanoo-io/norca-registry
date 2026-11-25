@@ -15,7 +15,7 @@ variable "consul_license_accepted" {
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the server job. Empty uses the pack name (\"consul\"). The client job is <job>-clients, the snapshot job <job>-snapshot; it also prefixes the service names and the Variable paths nomad/jobs/<job>/..."
+  description = "Name of the server job. Empty uses the name of the release. The client job is <job>-clients, the snapshot job <job>-snapshot; it also prefixes the service names and the Variable paths nomad/jobs/<job>/..."
   type        = string
   default     = ""
 }
@@ -67,7 +67,7 @@ variable "host_network" {
 # ---------------------------------------------------------------------------
 
 variable "consul_version" {
-  description = "Consul release to run (image tag and download version). Provisional default: the current release when the pack was written; pin the release you validated."
+  description = "Consul release to run (image tag and download version). Provisional default: the current release when the module was written; pin the release you validated."
   type        = string
   default     = "2.1.0"
 }
@@ -325,7 +325,7 @@ variable "client_resources" {
 # ---------------------------------------------------------------------------
 
 variable "metrics_enabled" {
-  description = "Serve the agent metrics on /v1/agent/metrics?format=prometheus (telemetry prometheus_retention_time, disable_hostname), register the HTTP port of every agent as the service <job>-metrics for the otel-collector pack, and create the ACL policy norca-metrics (agent read) with a token whose secret ID is the item token of metrics_token_secret_path."
+  description = "Serve the agent metrics on /v1/agent/metrics?format=prometheus (telemetry prometheus_retention_time, disable_hostname), register the HTTP port of every agent as the service <job>-metrics for the otel-collector module, and create the ACL policy norca-metrics (agent read) with a token whose secret ID is the item token of metrics_token_secret_path."
   type        = bool
   default     = false
 }
@@ -337,7 +337,7 @@ variable "metrics_retention_time" {
 }
 
 variable "metrics_token_secret_path" {
-  description = "Secret in the built-in secret store with the secret ID (a UUID, item token) of the metrics token. The acl-setup task creates the token with it; the otel-collector pack reads the same secret."
+  description = "Secret in the built-in secret store with the secret ID (a UUID, item token) of the metrics token. The acl-setup task creates the token with it; the otel-collector module reads the same secret."
   type        = string
   default     = "consul/metrics"
 }

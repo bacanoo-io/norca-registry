@@ -3,7 +3,7 @@
 
 module {
   name        = "rustfs"
-  version     = "0.2.0"
+  version     = "0.2.1"
   description = "RustFS (Apache-2.0), an S3-compatible object store, as the backup store of Norca: single node or distributed, credentials from the built-in secret store, data on host volumes, health checks with roles, optional bucket creation."
   url         = "https://rustfs.com"
 

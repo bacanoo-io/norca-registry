@@ -3,7 +3,7 @@
 
 # Load balancers from providers (norca-provider) whose tokens are in the
 # namespace ops and whose https certificates come from the CA of the cluster.
-#   norca pack run loadbalancer-operator --registry=norca -f examples/loadbalancer-operator/providers.hcl
+#   norca rigger install ./modules/loadbalancer-operator -name loadbalancer-operator -namespace norca-system -f modules/loadbalancer-operator/examples/providers.vars.hcl
 class_token_namespace = "ops"
 class_token_path      = "providers/*"
 class_ttl             = "2m"

@@ -33,11 +33,11 @@ type of `norca-provider` (`hcloud`, `aws`, `gcp`, `digitalocean`, `vultr`,
 All of these objects carry the same heartbeat (`status.heartbeat`) and are
 removed when the provider stops (`deregister_on_exit`).
 
-| Template | Resource |
+| File | Resource |
 | --- | --- |
-| `provider.acl.hcl.tpl` | ACL policy bound to the job (`job_acl`): `read`, `write` and `write-status` on the `norca.io/NodeProvider`, `norca.io/LoadBalancerClass` and `norca.io/DNSZone` objects (cluster-scoped, so in the namespace `"*"`), nothing else |
-| `dnszone.kind.hcl.tpl` | The `norca.io/DNSZone` object kind (`zone_kind_enabled`) |
-| `provider.nomad.tpl` | The job: one instance on a static port, never on a node the node scaling operator created, the configuration file rendered from the variables, the secrets of the job's Variable as environment variables, a service with an http check on `/healthz` |
+| `provider.acl.hcl` | ACL policy bound to the job (`job_acl`): `read`, `write` and `write-status` on the `norca.io/NodeProvider`, `norca.io/LoadBalancerClass` and `norca.io/DNSZone` objects (cluster-scoped, so in the namespace `"*"`), nothing else |
+| `dns-zone.kind.hcl` | The `norca.io/DNSZone` object kind (`zone_kind_enabled`) |
+| `provider.norca.hcl` | The job: one instance on a static port, never on a node the node scaling operator created, the configuration file rendered from the variables, the secrets of the job's Variable as environment variables, a service with an http check on `/healthz` |
 
 ## Before
 
@@ -58,7 +58,7 @@ removed when the provider stops (`deregister_on_exit`).
   with `allow_raw_exec_nodes = true`.
 - Nodes without the raw_exec driver: the job keeps off nodes with it unless
   `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
-  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
+  [operator modules](../../README.md#operator-modules) (review finding JOG-19).
 - The kinds: `NodeProvider` is registered by the core, `LoadBalancerClass`
   by the loadbalancer-operator module (`class_kind_enabled`), `DNSZone` by
   this module (`zone_kind_enabled`).
@@ -91,7 +91,7 @@ removed when the provider stops (`deregister_on_exit`).
 | `zone_kind_enabled` | `true` | Register the `norca.io/DNSZone` kind. |
 | `acl_policy_enabled` | `true` | Disable it on agents without ACLs. |
 
-`examples/norca-provider/` has a Hetzner Cloud setup on https and a lab with
+[`examples/`](examples) has a Hetzner Cloud setup on https and a lab with
 the docker platform and a mock class.
 
 ## Install
@@ -103,6 +103,13 @@ norca var put -namespace norca-system providers/hetzner-eu token=...
 rigger install ./modules/norca-provider -name provider -namespace norca-system -f modules/norca-provider/examples/hetzner.vars.hcl
 norca object list norca.io/LoadBalancerClass
 ```
+
+The install above runs in the root of a checkout of this registry. From the
+global registry, synced once in the region (`norca rigger registry sync
+global`), the same values go into `ValuesJSON` of the install request
+(`norca operator api -namespace norca-system -X PUT /v1/rigger/install` with
+`"Module": "norca/norca-provider", "Version": "~> 0.5"`), or into `values`
+of a module with `source = "norca/norca-provider"` in a stack.
 
 ## Limitations
 
@@ -122,17 +129,13 @@ norca object list norca.io/LoadBalancerClass
   the task starts (a wrong type, a missing parameter, a section the type does
   not implement), not by the module.
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/norca-provider -name norca-provider -namespace norca-system -f providers.vars.hcl
-```
+Outputs: `job` and `notes`. The kind `norca.io/DNSZone` is the resource `dns-zone`, the ACL policy `provider`; `zone_kind_enabled` and `acl_policy_enabled` leave them out. A single datacenter is refused by the rule `datacenters`, and `driver = "raw_exec"` without `allow_raw_exec_nodes = true` by the rule `raw_exec`; `examples/lab.vars.hcl` is the allowed way of the second. The job ID is `job_name`; the namespace and the region are the release's.
 
-Outputs: `job` and `notes`. The kind `norca.io/DNSZone` is the resource `dns-zone`, the ACL policy `provider`; `zone_kind_enabled` and `acl_policy_enabled` leave them out. A single datacenter is refused by the rule `datacenters`, and `driver = "raw_exec"` without `allow_raw_exec_nodes = true` by the rule `raw_exec` (the `fail` calls of the pack); `examples/lab.vars.hcl` is the allowed way of the second.
+## History
 
-## From the pack
-
-Converted from the pack `norca-provider` 0.5.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh norca-provider`). The job ID is `job_name`, as in the pack. The namespace and the region are
-the release's.
+The module was converted from the pack `norca-provider` 0.5.0 of Norca's
+earlier package manager. Version 0.5.1 changes no resource: this README, the
+wording of the tests and the descriptions of the variables name Rigger's
+commands and modules instead of packs.

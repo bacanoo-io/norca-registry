@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Norca contributors
 # SPDX-License-Identifier: MPL-2.0
 
-# The provider and the raw_exec driver (review finding JOG-19): what the
-# pack refuses with a fail in its job template is the rule raw_exec here.
+# The provider and the raw_exec driver (review finding JOG-19): the rule
+# raw_exec refuses driver = raw_exec without allow_raw_exec_nodes.
 
 test "the job keeps off nodes with the raw_exec driver" {
   assert {

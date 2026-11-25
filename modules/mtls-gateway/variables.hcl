@@ -143,13 +143,13 @@ variable "network_mode" {
 # ---------------------------------------------------------------------------
 
 variable "envoy_task_enabled" {
-  description = "false (default): the servers inject the Envoy task (official image from the node meta norca.mtls.envoy_*, 100 MHz / 128 MB). true: the pack defines the task itself (kind mtls-gateway:<service>) with the envoy_* variables below; the servers then inject none."
+  description = "false (default): the servers inject the Envoy task (official image from the node meta norca.mtls.envoy_*, 100 MHz / 128 MB). true: the module defines the task itself (kind mtls-gateway:<service>) with the envoy_* variables below; the servers then inject none."
   type        = bool
   default     = false
 }
 
 variable "envoy_driver" {
-  description = "Driver of the Envoy task defined by the pack: docker, podman, exec or raw_exec (an Envoy binary on the nodes)."
+  description = "Driver of the Envoy task defined by the module: docker, podman, exec or raw_exec (an Envoy binary on the nodes)."
   type        = string
   default     = "docker"
 
@@ -160,7 +160,7 @@ variable "envoy_driver" {
 }
 
 variable "envoy_image" {
-  description = "Envoy image of the task defined by the pack (docker, podman), e.g. docker.io/envoyproxy/envoy:v1.40.1. Empty uses the image of the node meta (norca.mtls.envoy_image, or registry, repository, tag and digest with the client defaults)."
+  description = "Envoy image of the task defined by the module (docker, podman), e.g. docker.io/envoyproxy/envoy:v1.40.1. Empty uses the image of the node meta (norca.mtls.envoy_image, or registry, repository, tag and digest with the client defaults)."
   type        = string
   default     = ""
 }
@@ -172,7 +172,7 @@ variable "envoy_binary" {
 }
 
 variable "envoy_log_level" {
-  description = "Envoy log level of the task defined by the pack (trace, debug, info, warning, error, critical, off). Empty uses the node meta norca.mtls.envoy_log_level (default info)."
+  description = "Envoy log level of the task defined by the module (trace, debug, info, warning, error, critical, off). Empty uses the node meta norca.mtls.envoy_log_level (default info)."
   type        = string
   default     = ""
 
@@ -183,7 +183,7 @@ variable "envoy_log_level" {
 }
 
 variable "envoy_resources" {
-  description = "Resources of the Envoy task defined by the pack: cpu in MHz, memory in MB."
+  description = "Resources of the Envoy task defined by the module: cpu in MHz, memory in MB."
   type = object({
     cpu    = number
     memory = number
@@ -199,7 +199,7 @@ variable "envoy_resources" {
 # ---------------------------------------------------------------------------
 
 variable "metrics_enabled" {
-  description = "Expose the Prometheus statistics of Envoy (/stats/prometheus only) on the port metrics, registered as <service_name>-metrics for the otel-collector pack. Needs envoy_task_enabled: the injected task has no admin interface. The admin interface listens on 127.0.0.1 only; a separate listener forwards GET /stats/prometheus to it and answers 404 for every other path."
+  description = "Expose the Prometheus statistics of Envoy (/stats/prometheus only) on the port metrics, registered as <service_name>-metrics for the otel-collector module. Needs envoy_task_enabled: the injected task has no admin interface. The admin interface listens on 127.0.0.1 only; a separate listener forwards GET /stats/prometheus to it and answers 404 for every other path."
   type        = bool
   default     = false
 }
@@ -218,7 +218,7 @@ variable "metrics_port" {
 
 # ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
-# checked before rendering by the CLI and by the servers that render the pack.
+# checked before rendering by rigger and by the servers that render the module.
 # ---------------------------------------------------------------------------
 
 rule "constraints" {

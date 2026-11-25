@@ -3,10 +3,10 @@
 
 # Forgejo as the git server and container registry of the cluster, serving
 # HTTPS itself on port 443 with the certificate in the secret forgejo/tls,
-# its objects in the RustFS of the rustfs pack (service "rustfs" in the same
+# its objects in the RustFS of the rustfs module (service "rustfs" in the same
 # namespace), a nightly dump into the bucket forgejo-dump, and /metrics with
-# the token of the secret forgejo/metrics for the otel-collector pack.
-#   norca pack run forgejo --registry=norca --name=forgejo -f examples/forgejo/registry-https.hcl
+# the token of the secret forgejo/metrics for the otel-collector module.
+#   norca rigger install ./modules/forgejo -name forgejo -f modules/forgejo/examples/registry-https.vars.hcl
 domain        = "forgejo.internal"
 http_port     = 443
 https_enabled = true

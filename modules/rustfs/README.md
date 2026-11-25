@@ -61,14 +61,21 @@ norca secret put rustfs/root access_key=norca-backup secret_key=-   # type the s
 
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
-norca module registry add norca https://github.com/bacanoo-io/norca-registry --ref=<tag>
-norca module run rustfs --registry=norca --var='buckets=["norca-backup"]'
+norca rigger registry sync global
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "rustfs", "Registry": "global", "Module": "norca/rustfs", "Version": "~> 0.2",
+ "ValuesJSON": {"buckets": ["norca-backup"]}}
+EOF
 norca service info -verbose rustfs
 ```
 
-From a checkout of this registry: `norca module run ./modules/rustfs -f examples/rustfs/single-node.hcl`.
-Example variable files are in [`examples/rustfs`](../../examples/rustfs).
+In a stack the module is `source = "norca/rustfs"`. From a checkout of this
+registry:
+`norca rigger install <checkout>/modules/rustfs -name rustfs -f <checkout>/modules/rustfs/examples/single-node.vars.hcl`.
+Example values are in [`examples/`](examples).
 
 ### The backup bucket
 
@@ -140,8 +147,7 @@ behind a load balancer) as the backup endpoint.
 
 | Variable | Default | |
 | --- | --- | --- |
-| `job_name` | `""` | empty: `rustfs`; also the name of the service (`<job>`, `<job>-console`) |
-| `namespace`, `region` | `""` | empty: those of the release |
+| `job_name` | `""` | empty: the name of the release; also the name of the service (`<job>`, `<job>-console`). The namespace and the region are those of the release |
 | `datacenters`, `node_pool`, `constraints` | `["*"]`, `""`, `[]` | placement |
 | `mode` | `single` | `single` or `distributed` |
 | `nodes`, `node_address_attribute` | `[]`, `${attr.unique.network.ip-address}` | distributed mode |
@@ -207,17 +213,13 @@ keep their jobs unchanged.
   module has not been run against a live cluster yet (the distributed mode in
   particular).
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/rustfs -name rustfs -namespace storage -f modules/rustfs/examples/single-node.vars.hcl
-```
+Outputs: `service`, `s3_port` and `notes`. The checks of the values are rules. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
 
-Outputs: `service`, `s3_port` and `notes`. The four `fail` checks of the pack are rules.
+## History
 
-## From the pack
-
-Converted from the pack `rustfs` 0.2.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh rustfs`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
-the release's.
+The module was converted from the pack `rustfs` 0.2.0 of Norca's earlier
+package manager. Version 0.2.1 changes no resource: this README, the
+comments of the examples and the descriptions of the variables name Rigger's
+commands and modules instead of packs.

@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the system job. Empty uses the pack name (\"otel-collector\"). It also names the services (<job>: health, <job>-otlp-grpc, <job>-otlp-http)."
+  description = "Name of the system job. Empty uses the name of the release. It also names the services (<job>: health, <job>-otlp-grpc, <job>-otlp-http)."
   type        = string
   default     = ""
 
@@ -49,7 +49,7 @@ variable "constraints" {
 # ---------------------------------------------------------------------------
 
 variable "image" {
-  description = "Image of the collector (docker driver): the contrib distribution of the OpenTelemetry Collector (Apache-2.0), which has every receiver the pack uses."
+  description = "Image of the collector (docker driver): the contrib distribution of the OpenTelemetry Collector (Apache-2.0), which has every receiver the module uses."
   type        = string
   default     = "docker.io/otel/opentelemetry-collector-contrib:0.162.0"
 
@@ -146,7 +146,7 @@ variable "host_network" {
 # ---------------------------------------------------------------------------
 
 variable "openobserve_service" {
-  description = "HTTP service of OpenObserve in the native catalog, in the namespace of the job (the openobserve pack registers \"openobserve\": the instance or the routers). The first instance is the endpoint. Ignored when openobserve_endpoint is set."
+  description = "HTTP service of OpenObserve in the native catalog, in the namespace of the job (the openobserve module registers \"openobserve\": the instance or the routers). The first instance is the endpoint. Ignored when openobserve_endpoint is set."
   type        = string
   default     = "openobserve"
 
@@ -203,7 +203,7 @@ variable "openobserve_organization" {
 }
 
 variable "ingest_secret_path" {
-  description = "Secret with the ingest credentials (items username, password, organization), written by the bootstrap task of the openobserve pack."
+  description = "Secret with the ingest credentials (items username, password, organization), written by the bootstrap task of the openobserve module."
   type        = string
   default     = "openobserve/ingest"
 
@@ -264,13 +264,13 @@ variable "discovery_namespaces" {
 }
 
 variable "nats_metrics_enabled" {
-  description = "Scrape the NATS exporters of the nats pack (metrics_enabled there) on the node: service nats_metrics_service."
+  description = "Scrape the NATS exporters of the nats module (metrics_enabled there) on the node: service nats_metrics_service."
   type        = bool
   default     = true
 }
 
 variable "nats_metrics_service" {
-  description = "Service of the NATS exporters (<job>-metrics of the nats pack)."
+  description = "Service of the NATS exporters (<job>-metrics of the nats module)."
   type        = string
   default     = "nats-metrics"
 
@@ -280,7 +280,7 @@ variable "nats_metrics_service" {
 }
 
 variable "forgejo_metrics_enabled" {
-  description = "Scrape /metrics of Forgejo (metrics_enabled of the forgejo pack: its HTTP service carries the tag metrics) on the node, with the bearer token of forgejo_metrics_secret_path."
+  description = "Scrape /metrics of Forgejo (metrics_enabled of the forgejo module: its HTTP service carries the tag metrics) on the node, with the bearer token of forgejo_metrics_secret_path."
   type        = bool
   default     = true
 }
@@ -296,7 +296,7 @@ variable "forgejo_service" {
 }
 
 variable "forgejo_metrics_secret_path" {
-  description = "Secret with the bearer token of Forgejo's /metrics (item token; the same secret as in the forgejo pack). Optional: without it no token is sent."
+  description = "Secret with the bearer token of Forgejo's /metrics (item token; the same secret as in the forgejo module). Optional: without it no token is sent."
   type        = string
   default     = "forgejo/metrics"
 
@@ -306,7 +306,7 @@ variable "forgejo_metrics_secret_path" {
 }
 
 variable "forgejo_tls_server_name" {
-  description = "Name the certificate of Forgejo carries (HTTPS instances are scraped by address): domain of the forgejo pack."
+  description = "Name the certificate of Forgejo carries (HTTPS instances are scraped by address): domain of the forgejo module."
   type        = string
   default     = "forgejo.internal"
 
@@ -316,13 +316,13 @@ variable "forgejo_tls_server_name" {
 }
 
 variable "mtls_gateway_metrics_enabled" {
-  description = "Scrape the Envoy statistics of the mTLS gateways (metrics_enabled of the mtls-gateway pack) on the node: service mtls_gateway_metrics_service."
+  description = "Scrape the Envoy statistics of the mTLS gateways (metrics_enabled of the mtls-gateway module) on the node: service mtls_gateway_metrics_service."
   type        = bool
   default     = true
 }
 
 variable "mtls_gateway_metrics_service" {
-  description = "Service of the gateway statistics (<service_name>-metrics of the mtls-gateway pack)."
+  description = "Service of the gateway statistics (<service_name>-metrics of the mtls-gateway module)."
   type        = string
   default     = "mtls-gateway-metrics"
 
@@ -332,13 +332,13 @@ variable "mtls_gateway_metrics_service" {
 }
 
 variable "consul_metrics_enabled" {
-  description = "Scrape the Consul agent of the node (metrics_enabled of the consul pack registers its HTTP port as consul_metrics_service) on 127.0.0.1, with the token of consul_metrics_secret_path."
+  description = "Scrape the Consul agent of the node (metrics_enabled of the consul module registers its HTTP port as consul_metrics_service) on 127.0.0.1, with the token of consul_metrics_secret_path."
   type        = bool
   default     = true
 }
 
 variable "consul_metrics_service" {
-  description = "Service of the Consul agents' HTTP ports (<job>-metrics of the consul pack)."
+  description = "Service of the Consul agents' HTTP ports (<job>-metrics of the consul module)."
   type        = string
   default     = "consul-metrics"
 
@@ -348,7 +348,7 @@ variable "consul_metrics_service" {
 }
 
 variable "consul_metrics_secret_path" {
-  description = "Secret with the Consul ACL token of the metrics (item token; the same secret as metrics_token_secret_path of the consul pack). Optional."
+  description = "Secret with the Consul ACL token of the metrics (item token; the same secret as metrics_token_secret_path of the consul module). Optional."
   type        = string
   default     = "consul/metrics"
 
@@ -358,7 +358,7 @@ variable "consul_metrics_secret_path" {
 }
 
 variable "postgres_metrics_enabled" {
-  description = "PostgreSQL statistics with the postgresql receiver for the instances of postgres_service on the node (the postgres pack, in the namespace of this job), as the monitoring role of postgres_secret_path."
+  description = "PostgreSQL statistics with the postgresql receiver for the instances of postgres_service on the node (the postgres module, in the namespace of this job), as the monitoring role of postgres_secret_path."
   type        = bool
   default     = true
 }
@@ -374,7 +374,7 @@ variable "postgres_service" {
 }
 
 variable "postgres_user" {
-  description = "Monitoring role (monitoring_user of the postgres pack, with pg_monitor)."
+  description = "Monitoring role (monitoring_user of the postgres module, with pg_monitor)."
   type        = string
   default     = "monitoring"
 
@@ -384,7 +384,7 @@ variable "postgres_user" {
 }
 
 variable "postgres_secret_path" {
-  description = "Secret with the password of the monitoring role (item password; monitoring_secret_path of the postgres pack). Optional."
+  description = "Secret with the password of the monitoring role (item password; monitoring_secret_path of the postgres module). Optional."
   type        = string
   default     = "postgres/monitoring"
 
@@ -394,7 +394,7 @@ variable "postgres_secret_path" {
 }
 
 variable "postgres_tls" {
-  description = "TLS of the PostgreSQL connections, matching tls_mode of the postgres pack: \"none\" (plain; the receiver's own default would require TLS), \"require\" (encrypted, not verified) or \"verify-ca\" (encrypted, the server certificate checked against the trust bundle of the region; for tls_mode = \"mtls\" of the postgres pack, needs openobserve_tls = \"mtls\")."
+  description = "TLS of the PostgreSQL connections, matching tls_mode of the postgres module: \"none\" (plain; the receiver's own default would require TLS), \"require\" (encrypted, not verified) or \"verify-ca\" (encrypted, the server certificate checked against the trust bundle of the region; for tls_mode = \"mtls\" of the postgres module, needs openobserve_tls = \"mtls\")."
   type        = string
   default     = "none"
 
@@ -412,7 +412,7 @@ variable "self_metrics_enabled" {
 
 # ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
-# checked before rendering by the CLI and by the servers that render the pack.
+# checked before rendering by rigger and by the servers that render the module.
 # ---------------------------------------------------------------------------
 
 rule "constraints" {

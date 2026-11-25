@@ -62,7 +62,7 @@ variable "driver" {
 }
 
 variable "allow_raw_exec_nodes" {
-  description = "Let the job run on nodes where the raw_exec driver is enabled, and with driver = raw_exec. Off by default (review finding JOG-19): a raw_exec task, or alloc-node-exec, on such a node runs as the user of the agent and reads the secrets directory of every allocation of the node, so the workload identity token of this job and the ACL policies bound to it. Without it the job keeps off nodes whose attribute driver.raw_exec is set, and the pack refuses to render with driver = raw_exec. Turn it on only where every token that may place raw_exec work or use alloc-node-exec on those nodes may hold the policies of the operator anyway (a lab, a single-tenant cluster)."
+  description = "Let the job run on nodes where the raw_exec driver is enabled, and with driver = raw_exec. Off by default (review finding JOG-19): a raw_exec task, or alloc-node-exec, on such a node runs as the user of the agent and reads the secrets directory of every allocation of the node, so the workload identity token of this job and the ACL policies bound to it. Without it the job keeps off nodes whose attribute driver.raw_exec is set, and the module refuses driver = raw_exec (the rule raw_exec). Turn it on only where every token that may place raw_exec work or use alloc-node-exec on those nodes may hold the policies of the operator anyway (a lab, a single-tenant cluster)."
   type        = bool
   default     = false
 }
@@ -144,7 +144,7 @@ variable "discover_services" {
 # ---------------------------------------------------------------------------
 
 variable "loadbalancer_kind_enabled" {
-  description = "Install the norca.io/LoadBalancer kind. Disable it when another release of this pack installs the kind (a second controller for another namespace or region)."
+  description = "Install the norca.io/LoadBalancer kind. Disable it when another release of this module installs the kind (a second controller for another namespace or region)."
   type        = bool
   default     = true
 }
@@ -340,7 +340,7 @@ variable "max_watches_per_identity" {
 
 # ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
-# checked before rendering by the CLI and by the servers that render the pack.
+# checked before rendering by rigger and by the servers that render the module.
 # ---------------------------------------------------------------------------
 
 rule "image" {

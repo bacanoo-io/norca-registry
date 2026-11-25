@@ -176,20 +176,20 @@ own TLS settings. Turning `mtls` on or off replaces the allocations.
 
 ## Examples
 
-`examples/traefik/` of the registry, each with the static configuration of a
-common case:
+[`examples/`](examples) of the module, each with the static configuration
+of a common case:
 
 | File | Case |
 | --- | --- |
-| `web.hcl` | a website over HTTPS: 80 redirects to 443, a certificate of the secret store, two backends with an active health check, security headers, compression |
-| `websocket.hcl` | WebSocket (`wss://`): the Upgrade passes through by itself; a sticky cookie keeps a client on its backend |
-| `grpc.hcl` | gRPC: TLS (HTTP/2 by ALPN) at Traefik, plaintext HTTP/2 (`h2c://`) to the backends, gRPC health checks |
-| `tcp.hcl` | raw TCP: PostgreSQL on its own entrypoint, TLS passthrough by SNI on 443, a UDP entrypoint (DNS) |
-| `mtls.hcl` | native mTLS to a backend: Traefik's workload certificate, a servers transport, the backend's tags and intention |
+| `web.vars.hcl` | a website over HTTPS: 80 redirects to 443, a certificate of the secret store, two backends with an active health check, security headers, compression |
+| `websocket.vars.hcl` | WebSocket (`wss://`): the Upgrade passes through by itself; a sticky cookie keeps a client on its backend |
+| `grpc.vars.hcl` | gRPC: TLS (HTTP/2 by ALPN) at Traefik, plaintext HTTP/2 (`h2c://`) to the backends, gRPC health checks |
+| `tcp.vars.hcl` | raw TCP: PostgreSQL on its own entrypoint, TLS passthrough by SNI on 443, a UDP entrypoint (DNS) |
+| `mtls.vars.hcl` | native mTLS to a backend: Traefik's workload certificate, a servers transport, the backend's tags and intention |
 
 ```shell
 norca secret put traefik/certs/example-com cert=@fullchain.pem key=@privkey.pem
-norca module run traefik --registry=norca --name=traefik -f examples/traefik/web.hcl
+norca rigger install <checkout>/modules/traefik -name traefik -f <checkout>/modules/traefik/examples/web.vars.hcl
 ```
 
 ## Variables
@@ -213,15 +213,25 @@ norca module run traefik --registry=norca --name=traefik -f examples/traefik/web
 
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
-rigger install ./modules/traefik -name traefik -namespace edge -f modules/traefik/examples/web.vars.hcl
+norca rigger registry sync global
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "traefik", "Registry": "global", "Module": "norca/traefik", "Version": "~> 0.3",
+ "ValuesJSON": {"tls_certificates": ["traefik/certs/example-com"]}}
+EOF
+norca rigger release status traefik
 ```
 
-Outputs: `service`, `entrypoints` and `notes`. The checks of the entrypoints and mTLS backends (the `traefik.validate` helper of the pack) are rules. The configuration files are built from lists of lines, so they are the text the pack wrote, line for line.
+In a stack the module is `source = "norca/traefik"`. From a checkout of this
+registry, with the values of an example, as in [Examples](#examples).
 
-## From the pack
+Outputs: `service`, `entrypoints` and `notes`. The checks of the entrypoints and mTLS backends are rules. The configuration files are built from lists of lines. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
 
-Converted from the pack `traefik` 0.3.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh traefik`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
-the release's.
+## History
+
+The module was converted from the pack `traefik` 0.3.0 of Norca's earlier
+package manager. Version 0.3.1 changes no resource: this README, the
+comments of the examples and the descriptions of the variables name Rigger's
+commands and modules instead of packs.

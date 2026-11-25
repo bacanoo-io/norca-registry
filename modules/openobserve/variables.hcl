@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the job. Empty uses the pack name (\"openobserve\"). It is also the name of the HTTP service (<job>: the UI, the API and OTLP/HTTP) and prefixes the gRPC service (<job>-grpc)."
+  description = "Name of the job. Empty uses the name of the release. It is also the name of the HTTP service (<job>: the UI, the API and OTLP/HTTP) and prefixes the gRPC service (<job>-grpc)."
   type        = string
   default     = ""
 
@@ -243,7 +243,7 @@ variable "ingester_host_volume" {
 # ---------------------------------------------------------------------------
 
 variable "postgres_service" {
-  description = "Cluster mode: service of PostgreSQL in the native catalog, in the namespace of the job (the postgres pack registers \"postgres\"). Ignored when postgres_endpoint or postgres_dsn_secret_path is set."
+  description = "Cluster mode: service of PostgreSQL in the native catalog, in the namespace of the job (the postgres module registers \"postgres\"). Ignored when postgres_endpoint or postgres_dsn_secret_path is set."
   type        = string
   default     = "postgres"
 }
@@ -279,7 +279,7 @@ variable "postgres_user" {
 }
 
 variable "postgres_secret_path" {
-  description = "Cluster mode: secret with the password of postgres_user (item password), e.g. the secret of the database entry of the postgres pack."
+  description = "Cluster mode: secret with the password of postgres_user (item password), e.g. the secret of the database entry of the postgres module."
   type        = string
   default     = "postgres/openobserve"
 
@@ -295,7 +295,7 @@ variable "postgres_dsn_secret_path" {
 }
 
 variable "nats_service" {
-  description = "Cluster mode: client service of NATS in the native catalog, in the namespace of the job (the nats pack registers \"nats\"). Every instance becomes an entry of ZO_NATS_ADDR. JetStream must be enabled. Ignored when nats_endpoints is set."
+  description = "Cluster mode: client service of NATS in the native catalog, in the namespace of the job (the nats module registers \"nats\"). Every instance becomes an entry of ZO_NATS_ADDR. JetStream must be enabled. Ignored when nats_endpoints is set."
   type        = string
   default     = "nats"
 }
@@ -313,7 +313,7 @@ variable "nats_endpoints" {
 }
 
 variable "nats_secret_path" {
-  description = "Cluster mode: secret with the NATS user name and password of OpenObserve (items username, password): its user of the nats pack with auth_mode = \"userpass\", e.g. users = [{name = \"openobserve\", account = \"OPENOBSERVE\"}] (a dedicated account). OpenObserve supports user/password authentication only (no token, NKey or TLS settings). Empty connects without authentication (NATS with auth_mode = \"none\")."
+  description = "Cluster mode: secret with the NATS user name and password of OpenObserve (items username, password): its user of the nats module with auth_mode = \"userpass\", e.g. users = [{name = \"openobserve\", account = \"OPENOBSERVE\"}] (a dedicated account). OpenObserve supports user/password authentication only (no token, NKey or TLS settings). Empty connects without authentication (NATS with auth_mode = \"none\")."
   type        = string
   default     = "openobserve/nats"
 }
@@ -341,7 +341,7 @@ variable "nats_prefix" {
 }
 
 variable "s3_service" {
-  description = "Cluster mode: service of the S3 store in the native catalog, in the namespace of the job (the rustfs pack registers \"rustfs\"). The address of its first instance becomes ZO_S3_SERVER_URL. Ignored when s3_endpoint is set."
+  description = "Cluster mode: service of the S3 store in the native catalog, in the namespace of the job (the rustfs module registers \"rustfs\"). The address of its first instance becomes ZO_S3_SERVER_URL. Ignored when s3_endpoint is set."
   type        = string
   default     = "rustfs"
 }
@@ -363,7 +363,7 @@ variable "s3_use_ssl" {
 }
 
 variable "s3_bucket" {
-  description = "Cluster mode: bucket of the data (ZO_S3_BUCKET_NAME). OpenObserve does not create it; the bootstrap task does (s3_create_bucket), or the buckets variable of the rustfs pack."
+  description = "Cluster mode: bucket of the data (ZO_S3_BUCKET_NAME). OpenObserve does not create it; the bootstrap task does (s3_create_bucket), or the buckets variable of the rustfs module."
   type        = string
   default     = "openobserve"
 
@@ -373,7 +373,7 @@ variable "s3_bucket" {
 }
 
 variable "s3_region" {
-  description = "Cluster mode: region of the S3 store (ZO_S3_REGION_NAME; s3_region of the rustfs pack)."
+  description = "Cluster mode: region of the S3 store (ZO_S3_REGION_NAME; s3_region of the rustfs module)."
   type        = string
   default     = "us-east-1"
 
@@ -508,7 +508,7 @@ variable "ingest_service_account" {
 }
 
 variable "ingest_secret_path" {
-  description = "Secret the bootstrap task writes the ingest credentials into (items username, password: the token of the service account, organization) and the otel-collector pack reads. Writing needs the ACL policy of the pack (acl_policy_enabled) when ACLs are enabled."
+  description = "Secret the bootstrap task writes the ingest credentials into (items username, password: the token of the service account, organization) and the otel-collector module reads. Writing needs the ACL policy of the module (acl_policy_enabled) when ACLs are enabled."
   type        = string
   default     = "openobserve/ingest"
 
@@ -518,14 +518,14 @@ variable "ingest_secret_path" {
 }
 
 variable "acl_policy_enabled" {
-  description = "Install the ACL policy of the pack, bound to its job: the bootstrap task writes the ingest secret. Disable it on agents without ACLs (dev agents), where policies can't be written."
+  description = "Install the ACL policy of the module, bound to its job: the bootstrap task writes the ingest secret. Disable it on agents without ACLs (dev agents), where policies can't be written."
   type        = bool
   default     = true
 }
 
 # ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
-# checked before rendering by the CLI and by the servers that render the pack.
+# checked before rendering by rigger and by the servers that render the module.
 # ---------------------------------------------------------------------------
 
 rule "constraints" {

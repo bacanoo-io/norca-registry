@@ -5,7 +5,7 @@
 # workload certificate (mtls) and presents it to the backend api through the
 # servers transport mtls-api; the client renews the certificate and Traefik
 # applies it without a restart.
-#   norca pack run traefik --registry=norca --name=traefik -f examples/traefik/mtls.hcl
+#   norca rigger install ./modules/traefik -name traefik -f modules/traefik/examples/mtls.vars.hcl
 # The backend: a service in app mode that serves TLS with its own workload
 # certificate and requires a client certificate, routed by its tags:
 #   service {

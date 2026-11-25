@@ -3,7 +3,7 @@
 
 module {
   name        = "postgres"
-  version     = "0.4.0"
+  version     = "0.4.1"
   description = "A single PostgreSQL server (PostgreSQL License, official image, referenced, never shipped): data on a host volume, superuser, application databases and a pg_monitor user from the built-in secret store, health checks with roles, optional TLS with Norca's workload certificates, optional periodic pg_dumpall to S3 (RustFS)."
   url         = "https://www.postgresql.org"
 

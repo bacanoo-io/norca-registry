@@ -18,8 +18,6 @@
 #     }
 #   }
 #
-# An example of the module alone: the pack has no such variables
-# (scripts/compare-packs.sh does not compare it).
 count = 2
 
 # The settle time of the operator, written out: the check on /readyz (5s

@@ -4,7 +4,7 @@
 # A lab: one instance from an image, in the system pool, providers on http
 # (the token of a provider travels in the clear, never in production).
 # The image is yours: the norca-nodescaler binary as its entrypoint.
-#   norca pack run nodescaler-operator --registry=norca -f examples/nodescaler-operator/lab.hcl
+#   norca rigger install ./modules/nodescaler-operator -name nodescaler-operator -namespace norca-system -f modules/nodescaler-operator/examples/lab.vars.hcl
 #   norca object get norca.io/NodeGroup workers-dc-a
 node_pool           = "system"
 count               = 1

@@ -3,10 +3,10 @@
 
 # TLS with the workload certificate of Norca's native mTLS (app mode), only
 # TLS connections over TCP, and a nightly pg_dumpall into the bucket
-# postgres-dump of the RustFS of the rustfs pack (service "rustfs" in the
+# postgres-dump of the RustFS of the rustfs module (service "rustfs" in the
 # same namespace; create the bucket with its buckets variable).
 #   norca secret put postgres/dump-storage access_key=<access key> secret_key=-
-#   norca pack run postgres --registry=norca -f examples/postgres/tls-dump.hcl
+#   norca rigger install ./modules/postgres -name postgres -f modules/postgres/examples/tls-dump.vars.hcl
 tls_mode     = "mtls"
 tls_required = true
 

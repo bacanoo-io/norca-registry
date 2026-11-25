@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the job. Empty uses the pack name (\"forgejo\"). It also names the services (<job>, <job>-ssh) and the dump job (<job>-dump)."
+  description = "Name of the job. Empty uses the name of the release. It also names the services (<job>, <job>-ssh) and the dump job (<job>-dump)."
   type        = string
   default     = ""
 
@@ -69,7 +69,7 @@ variable "image_digest" {
 }
 
 variable "uid" {
-  description = "User id the container runs as (1000, user git of the rootless image). It owns the host volume directory and the secret files the pack renders."
+  description = "User id the container runs as (1000, user git of the rootless image). It owns the host volume directory and the secret files the module renders."
   type        = number
   default     = 1000
 
@@ -295,13 +295,13 @@ variable "admin_secret_path" {
 # ---------------------------------------------------------------------------
 
 variable "storage_enabled" {
-  description = "Keep packages (container images), LFS objects, attachments, avatars, repository archives and Actions data in S3 ([storage] STORAGE_TYPE = minio), e.g. the RustFS of the rustfs pack. Git repositories and SQLite stay on the host volume. false keeps everything on the host volume."
+  description = "Keep packages (container images), LFS objects, attachments, avatars, repository archives and Actions data in S3 ([storage] STORAGE_TYPE = minio), e.g. the RustFS of the rustfs module. Git repositories and SQLite stay on the host volume. false keeps everything on the host volume."
   type        = bool
   default     = true
 }
 
 variable "storage_service" {
-  description = "Service of the S3 store in the native catalog, in the namespace of the job (the rustfs pack registers \"rustfs\"). The address of its first instance becomes MINIO_ENDPOINT. Ignored when storage_endpoint is set."
+  description = "Service of the S3 store in the native catalog, in the namespace of the job (the rustfs module registers \"rustfs\"). The address of its first instance becomes MINIO_ENDPOINT. Ignored when storage_endpoint is set."
   type        = string
   default     = "rustfs"
 }
@@ -323,7 +323,7 @@ variable "storage_use_ssl" {
 }
 
 variable "storage_bucket" {
-  description = "Bucket of the Forgejo objects (MINIO_BUCKET), one directory per kind (packages/, lfs/, attachments/, ...). Forgejo creates it at its start if its key may, or create it with the rustfs pack (buckets)."
+  description = "Bucket of the Forgejo objects (MINIO_BUCKET), one directory per kind (packages/, lfs/, attachments/, ...). Forgejo creates it at its start if its key may, or create it with the rustfs module (buckets)."
   type        = string
   default     = "forgejo"
 
@@ -333,7 +333,7 @@ variable "storage_bucket" {
 }
 
 variable "storage_region" {
-  description = "Region of the S3 store (MINIO_LOCATION); s3_region of the rustfs pack."
+  description = "Region of the S3 store (MINIO_LOCATION); s3_region of the rustfs module."
   type        = string
   default     = "us-east-1"
 
@@ -357,13 +357,13 @@ variable "storage_secret_path" {
 # ---------------------------------------------------------------------------
 
 variable "metrics_enabled" {
-  description = "Serve Prometheus metrics on /metrics ([metrics] ENABLED) and tag the HTTP service with \"metrics\", so that the otel-collector pack scrapes it."
+  description = "Serve Prometheus metrics on /metrics ([metrics] ENABLED) and tag the HTTP service with \"metrics\", so that the otel-collector module scrapes it."
   type        = bool
   default     = false
 }
 
 variable "metrics_token_secret_path" {
-  description = "Secret with the bearer token of /metrics (item token), passed as [metrics] TOKEN through FORGEJO__metrics__TOKEN__FILE. The otel-collector pack reads the same secret. Empty serves /metrics without a token."
+  description = "Secret with the bearer token of /metrics (item token), passed as [metrics] TOKEN through FORGEJO__metrics__TOKEN__FILE. The otel-collector module reads the same secret. Empty serves /metrics without a token."
   type        = string
   default     = "forgejo/metrics"
 }
@@ -389,7 +389,7 @@ variable "dump_cron" {
 }
 
 variable "dump_bucket" {
-  description = "Bucket of the dumps (it must exist; e.g. buckets of the rustfs pack). Keep it apart from storage_bucket and expire old dumps with a lifecycle rule."
+  description = "Bucket of the dumps (it must exist; e.g. buckets of the rustfs module). Keep it apart from storage_bucket and expire old dumps with a lifecycle rule."
   type        = string
   default     = "forgejo-dump"
 
@@ -422,7 +422,7 @@ variable "dump_resources" {
 
 # ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
-# checked before rendering by the CLI and by the servers that render the pack.
+# checked before rendering by rigger and by the servers that render the module.
 # ---------------------------------------------------------------------------
 
 rule "constraints" {

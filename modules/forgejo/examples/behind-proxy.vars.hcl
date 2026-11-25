@@ -4,7 +4,7 @@
 # Forgejo behind a TLS-terminating proxy (the proxy serves
 # https://forgejo.internal/ and forwards to port 3000), RustFS reached at a
 # fixed address in another namespace, no SSH.
-#   norca pack run forgejo --registry=norca --name=forgejo -f examples/forgejo/behind-proxy.hcl
+#   norca rigger install ./modules/forgejo -name forgejo -f modules/forgejo/examples/behind-proxy.vars.hcl
 domain      = "forgejo.internal"
 root_url    = "https://forgejo.internal/"
 ssh_enabled = false

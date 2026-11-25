@@ -102,14 +102,21 @@ norca secret put -namespace observability openobserve/root password=-
 
 ## Install: single mode
 
+From the global registry, synced once in the region:
+
 ```shell
-norca module registry add norca https://github.com/bacanoo-io/norca-registry --ref=<tag>
-norca module run openobserve --registry=norca --namespace=observability -f openobserve.hcl
+norca rigger registry sync global
+norca operator api -namespace observability -X PUT /v1/rigger/install <<'EOF'
+{"Release": "openobserve", "Registry": "global", "Module": "norca/openobserve", "Version": "~> 0.2"}
+EOF
 norca service info -namespace observability -verbose openobserve
 norca alloc logs -namespace observability -task bootstrap <alloc ID>
 ```
 
-with e.g. [`examples/openobserve/single.hcl`](../../examples/openobserve/single.hcl).
+In a stack the module is `source = "norca/openobserve"` with
+`namespace = "observability"`. From a checkout of this registry, with e.g.
+[`examples/single.vars.hcl`](examples/single.vars.hcl):
+`norca rigger install <checkout>/modules/openobserve -name openobserve -namespace observability -f <checkout>/modules/openobserve/examples/single.vars.hcl`.
 Then install the [otel-collector module](../otel-collector/README.md) in the same
 namespace.
 
@@ -148,15 +155,14 @@ the password of `postgres_secret_path`. Create the database and its owner with
 the postgres module, in the same namespace:
 
 ```hcl
-# postgres.hcl
-namespace = "observability"
+# postgres.vars.hcl, installed with -namespace observability
 databases = [{ name = "openobserve", user = "openobserve", secret_path = "postgres/openobserve" }]
 ```
 
 ```shell
 norca secret put -namespace observability postgres/superuser password=-
 norca secret put -namespace observability postgres/openobserve password=-
-norca module run postgres --registry=norca -f postgres.hcl
+norca rigger install <checkout>/modules/postgres -name postgres -namespace observability -f postgres.vars.hcl
 ```
 
 `postgres_endpoint` names a fixed `host:port`, and `postgres_dsn_secret_path`
@@ -178,8 +184,7 @@ default the module expects a dedicated NATS user for it from the
 namespace (the catalog lookup of `nats_service` is per namespace):
 
 ```hcl
-# nats.hcl (nats module)
-namespace = "observability"
+# nats.vars.hcl (nats module), installed with -namespace observability
 auth_mode = "userpass"
 users = [
   { name = "openobserve", account = "OPENOBSERVE" },
@@ -192,7 +197,7 @@ users = [
 norca secret put -namespace observability nats/users/openobserve password=-
 # the same password for OpenObserve (nats_secret_path)
 norca secret put -namespace observability openobserve/nats username=openobserve password=-
-norca module run nats --registry=norca -f nats.hcl
+norca rigger install <checkout>/modules/nats -name nats -namespace observability -f nats.vars.hcl
 ```
 
 **Permissions: the account is the boundary.** The user gets no subject
@@ -247,8 +252,12 @@ OpenObserve a RustFS user limited to its bucket.
 ### Install
 
 ```shell
-norca module run openobserve --registry=norca -f examples/openobserve/cluster.hcl
+norca rigger install <checkout>/modules/openobserve -name openobserve -namespace observability \
+  -f <checkout>/modules/openobserve/examples/cluster.vars.hcl
 ```
+
+or `"ValuesJSON": {"mode": "cluster"}` in the install request of the global
+registry.
 
 A change of the PostgreSQL, NATS or S3 instances in the catalog restarts the
 nodes (with up to a minute of splay).
@@ -370,9 +379,8 @@ every user is an admin of its organizations; there are no ingest-only roles.
 
 ## ACL policy
 
-`openobserve.acl.hcl.tpl` installs the policy `<job>`, bound to the job
-(`job_acl`), in the namespace `namespace` (`default` when empty: set
-`namespace` when the release goes to another namespace):
+`openobserve.acl.hcl` installs the policy `<job>`, bound to the job
+(`job_acl`), in the namespace of the release:
 
 ```hcl
 namespace "observability" {
@@ -386,32 +394,11 @@ Bound to the job, it applies to every task of it. It is installed only with
 `bootstrap_enabled`; since module version 0.2.0 it no longer grants
 `alloc-lifecycle` (the certificate restarts are done by the client).
 
-## Upgrading from 0.1.x
-
-Pack version 0.2.0 replaces the `tls-restart` sidecar, which restarted the
-`openobserve` task every `tls_restart_interval` (6h), with
-`mtls { change_mode = "restart" }` (see [TLS](#tls)):
-
-- The upgrade removes a task from every group: a destructive update that
-  replaces the allocations one at a time (the `update` block of the groups);
-  in single mode a short interruption of the instance.
-- Servers and clients must be Norca builds with the change modes of the
-  `mtls` block (`change_mode`, `change_signal`, `change_on`): a client
-  without them ignores the setting, and OpenObserve would keep its
-  certificate until it expires.
-- `tls_restart_interval` is still accepted and ignored, so existing variable
-  files keep working; the module output points it out. Remove it from your
-  variable files: version 0.3.0 removes the variable.
-- The ACL policy of the module no longer grants `alloc-lifecycle`, and is
-  installed only with `bootstrap_enabled`.
-- Cluster mode also connects to NATS as its own user by default since 0.2.0
-  (`nats_secret_path`, see [NATS](#nats)).
-
 ## Variables
 
 | Variable | Default | |
 | --- | --- | --- |
-| `job_name`, `namespace`, `region` | `""` | empty: `openobserve`, those of the release |
+| `job_name` | `""` | empty: the name of the release; the namespace and the region are those of the release |
 | `datacenters`, `node_pool`, `constraints` | `["*"]`, `""`, `[]` | placement |
 | `image`, `image_digest` | `docker.io/openobserve/openobserve:v1.0.4`, `""` | |
 | `extra_env` | `{}` | further `ZO_*` settings (no secrets, addresses, roles or TLS; the schema rejects them) |
@@ -424,7 +411,6 @@ Pack version 0.2.0 replaces the `tls-restart` sidecar, which restarted the
 | `nats_service`, `nats_endpoints`, `nats_secret_path`, `nats_replicas`, `nats_prefix` | `nats`, `[]`, `openobserve/nats`, `3`, `o2_` | cluster: coordinator |
 | `s3_service`, `s3_endpoint`, `s3_use_ssl`, `s3_bucket`, `s3_region`, `s3_secret_path`, `s3_create_bucket` | `rustfs`, `""`, `false`, `openobserve`, `us-east-1`, `openobserve/s3`, `true` | cluster: data |
 | `tls_mode`, `tls_secret_path`, `tls_cert_domain` | `mtls`, `openobserve/tls`, `""` | |
-| `tls_restart_interval` | `""` | deprecated and ignored since 0.2.0, removed in 0.3.0 (see [upgrading](#upgrading-from-01x)) |
 | `root_email`, `root_secret_path` | `root@openobserve.internal`, `openobserve/root` | |
 | `bootstrap_enabled`, `bootstrap_image` | `true`, `docker.io/curlimages/curl:8.22.0` | |
 | `organizations`, `ingest_organization`, `ingest_service_account`, `ingest_secret_path` | `["default"]`, `default`, `otel-collector@openobserve.internal`, `openobserve/ingest` | |
@@ -466,17 +452,14 @@ role has its own HTTP service with the checks: `<job>` for the routers,
 - The organizations are created by an ingestion of one record into the stream
   `norca_bootstrap`; delete the stream in the UI if it bothers you.
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/openobserve -name openobserve -namespace observability -f modules/openobserve/examples/single.vars.hcl
-```
+Outputs: `service`, `ingest` and `notes`. The groups (one in single mode, one per node role in cluster mode) are one dynamic group; the bootstrap script is assembled from heredocs (`locals.hcl`); the checks of the values are rules. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
 
-Outputs: `service`, `ingest` and `notes`. The groups (one in single mode, one per node role in cluster mode) are one dynamic group; the bootstrap script is assembled from heredocs (`locals.hcl`), so it is the text the pack wrote. The deprecated `tls_restart_interval` of the pack, ignored since 0.2.0, is not a variable of the module; the `fail` checks are rules.
+## History
 
-## From the pack
-
-Converted from the pack `openobserve` 0.2.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh openobserve`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
-the release's.
+The module was converted from the pack `openobserve` 0.2.0 of Norca's
+earlier package manager; the variable `tls_restart_interval`, which that
+pack ignored, is gone. Version 0.2.2 changes no resource: this README and
+the descriptions of the variables name Rigger's commands and modules instead
+of packs.

@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the system job. Empty uses the pack name (\"seaweedfs-csi\")."
+  description = "Name of the system job. Empty uses the name of the release."
   type        = string
   default     = ""
 
@@ -75,7 +75,7 @@ variable "filer" {
 }
 
 variable "filer_service" {
-  description = "Service of the filer in the native catalog, when filer is empty: the seaweedfs pack registers <job>-filer."
+  description = "Service of the filer in the native catalog, when filer is empty: the seaweedfs module registers <job>-filer."
   type        = string
   default     = "seaweedfs-filer"
 }

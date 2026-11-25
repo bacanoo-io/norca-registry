@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the job. Empty uses the pack name (\"traefik\"). It also names the services (<job>: the admin port with /ping, <job>-<entrypoint>: the entrypoints)."
+  description = "Name of the job. Empty uses the name of the release. It also names the services (<job>: the admin port with /ping, <job>-<entrypoint>: the entrypoints)."
   type        = string
   default     = ""
 
@@ -381,7 +381,7 @@ variable "catalog_enabled" {
 }
 
 variable "catalog_namespaces" {
-  description = "Namespaces whose services Traefik routes to. Other namespaces than the job's need the ACL policy that the output of the pack prints."
+  description = "Namespaces whose services Traefik routes to. Other namespaces than the job's need the ACL policy that the notes of the module print."
   type        = list(string)
   default     = ["default"]
 
@@ -424,7 +424,7 @@ variable "nomad_address" {
 }
 
 variable "acme_challenge" {
-  description = "Leave the path of the ACME HTTP-01 challenge (/.well-known/acme-challenge/) out of the redirect of the http entrypoints with redirect_to, so that the service that answers it (the norca-acme pack) can route it by its catalog tags. The redirect is then a router of the dynamic configuration with a priority above every other router, instead of the redirection of the entrypoint. Needs the catalog (catalog_enabled) with the namespace of that service."
+  description = "Leave the path of the ACME HTTP-01 challenge (/.well-known/acme-challenge/) out of the redirect of the http entrypoints with redirect_to, so that the service that answers it (the norca-acme module) can route it by its catalog tags. The redirect is then a router of the dynamic configuration with a priority above every other router, instead of the redirection of the entrypoint. Needs the catalog (catalog_enabled) with the namespace of that service."
   type        = bool
   default     = false
 
@@ -435,7 +435,7 @@ variable "acme_challenge" {
 }
 
 variable "dynamic_config" {
-  description = "Static routes in Traefik's dynamic configuration (YAML of the file provider): routers, services and middlewares to fixed backends, for HTTP, WebSocket, gRPC (h2c://), TCP and UDP. Applied without a restart. See the examples of the pack registry."
+  description = "Static routes in Traefik's dynamic configuration (YAML of the file provider): routers, services and middlewares to fixed backends, for HTTP, WebSocket, gRPC (h2c://), TCP and UDP. Applied without a restart. See the examples of the module."
   type        = string
   default     = ""
 

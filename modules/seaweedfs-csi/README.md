@@ -123,16 +123,27 @@ norca volume status data          # after a task mounts it: Node Usage
 
 ## Install
 
+From the global registry, synced once in the region
+(`norca rigger registry sync global`):
+
+```shell
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "seaweedfs-csi", "Registry": "global", "Module": "norca/seaweedfs-csi", "Version": "~> 0.1"}
+EOF
+```
+
+In a stack the module is `source = "norca/seaweedfs-csi"`. From the root of
+a checkout of this registry:
+
 ```shell
 rigger install ./modules/seaweedfs-csi -name seaweedfs-csi
 ```
 
-Outputs: `plugin_id` and `notes`.
+Outputs: `plugin_id` and `notes`. The job ID is `job_name`, or the release's
+name when empty; the namespace and the region are the release's.
 
-## From the pack
+## History
 
-Converted from the pack `seaweedfs-csi` 0.1.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs of the pack
-(`scripts/compare-packs.sh seaweedfs-csi`). The job ID is `job_name`, or the
-release's name when empty (the pack took the pack's name); the
-namespace and the region are the release's.
+The module was converted from the pack `seaweedfs-csi` 0.1.0 of Norca's
+earlier package manager. Version 0.1.1 changes no resource: this README and
+the descriptions of the variables name Rigger's modules instead of packs.

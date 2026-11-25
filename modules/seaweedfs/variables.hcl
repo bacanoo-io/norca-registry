@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the job. Empty uses the pack name (\"seaweedfs\"). The services in the native catalog are <job>-master, <job>-volume and <job>-filer."
+  description = "Name of the job. Empty uses the name of the release. The services in the native catalog are <job>-master, <job>-volume and <job>-filer."
   type        = string
   default     = ""
 

@@ -87,15 +87,22 @@ start, so for them a new secret version plus a restart of the job is enough.
 
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
-norca module registry add norca https://github.com/bacanoo-io/norca-registry --ref=<tag>
-norca module run postgres --registry=norca -f postgres.hcl
+norca rigger registry sync global
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "postgres", "Registry": "global", "Module": "norca/postgres", "Version": "~> 0.4",
+ "ValuesJSON": {"databases": [{"name": "openobserve", "user": "openobserve", "secret_path": "postgres/openobserve"}]}}
+EOF
 norca service info -verbose postgres
 norca alloc logs -task setup <alloc ID>     # "role openobserve and database openobserve ready"
 ```
 
-From a checkout of this registry: `norca module run ./modules/postgres -f examples/postgres/openobserve.hcl`.
-Example variable files are in [`examples/postgres`](../../examples/postgres).
+In a stack the module is `source = "norca/postgres"`. From a checkout of
+this registry:
+`norca rigger install <checkout>/modules/postgres -name postgres -f <checkout>/modules/postgres/examples/openobserve.vars.hcl`.
+Example values are in [`examples/`](examples).
 
 ### Databases and roles
 
@@ -187,7 +194,7 @@ gunzip -c postgres-<time>.sql.gz | norca alloc exec -i -task postgres <alloc ID>
 
 | Variable | Default | |
 | --- | --- | --- |
-| `job_name`, `namespace`, `region` | `""` | empty: `postgres`, those of the release |
+| `job_name` | `""` | empty: the name of the release; the namespace and the region are those of the release |
 | `datacenters`, `node_pool`, `constraints` | `["*"]`, `""`, `[]` | placement (the host volume decides the node) |
 | `image`, `image_digest` | `docker.io/library/postgres:18.6`, `""` | |
 | `uid`, `gid` | `999`, `999` | container user, owner of the volume |
@@ -234,17 +241,15 @@ The setup task waits with `pg_isready` before it connects.
   not run against a live cluster yet (the setup, TLS reload and dump tasks in
   particular).
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/postgres -name postgres -namespace data -f modules/postgres/examples/openobserve.vars.hcl
-```
+Outputs: `service`, `databases` and `notes`. The dump is the job `dump` (`dump_enabled`); the checks of the values are rules. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
 
-Outputs: `service`, `databases` and `notes`. The dump is the job `dump` (`dump_enabled`); the `fail` checks of the pack are rules. The module is version 0.4.0: the tag postgres/v0.3.0 is the demonstration module of the language, now `postgres-demo`.
+## History
 
-## From the pack
-
-Converted from the pack `postgres` 0.1.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh postgres`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
-the release's.
+The module was converted from the pack `postgres` 0.1.0 of Norca's earlier
+package manager. It is version 0.4.0 because the tag postgres/v0.3.0 is the
+demonstration module of the language, now `postgres-demo`. Version 0.4.1
+changes no resource: this README, the comments of the examples and the
+descriptions of the variables name Rigger's commands and modules instead of
+packs.

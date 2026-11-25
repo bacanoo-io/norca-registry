@@ -62,7 +62,7 @@ providers are applications of their own and register themselves, for example
   an image (`driver = "docker"`).
 - Nodes without the raw_exec driver: the job keeps off nodes with it unless
   `allow_raw_exec_nodes = true`, and its default driver is `exec`; see
-  [operator packs](../../README.md#operator-packs) (review finding JOG-19).
+  [operator modules](../../README.md#operator-modules) (review finding JOG-19).
 
 ## Variables
 
@@ -90,22 +90,36 @@ providers are applications of their own and register themselves, for example
 | `join_check_address` | `true` | Accept a join or a renewal only from an address the provider reports for the instance; a request from another one is refused and is a `JoinAddressRefused` warning in the log of the group. Set `false` where a proxy, a load balancer or NAT in front of the endpoint changes the source address (`join_urls` behind such a load balancer). A provider that reports no addresses has no binding. |
 | `join_key_store` | `file` | Where the nodes keep their keys, unless their group sets `spec.join.key_store`: `file` (a key file), `tpm` (made in the TPM 2.0 of the machine, which must have `/dev/tpmrm0`; the key never leaves it and the key file is useless elsewhere; Linux) or `auto` (the TPM where the machine has one, else a file). On clouds: a vTPM (Shielded VM, Trusted Launch, NitroTPM). |
 
-```shell
-norca module plan nodescaler-operator --registry=norca
-norca module run  nodescaler-operator --registry=norca --var=node_pool=system
-```
-
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
-rigger install ./modules/nodescaler-operator -name nodescaler -namespace norca-system
+norca rigger registry sync global
+norca operator api -namespace norca-system -X PUT /v1/rigger/install <<'EOF'
+{"Release": "nodescaler", "Registry": "global", "Module": "norca/nodescaler-operator", "Version": "~> 0.11",
+ "ValuesJSON": {"node_pool": "system"}}
+EOF
+norca rigger release status nodescaler -namespace norca-system
 ```
 
-Outputs: `job`, `join_service` and `notes`. The ACL policy is the resource `operator`. `driver = "raw_exec"` without `allow_raw_exec_nodes = true` is refused by the rule `raw_exec` (the `fail` of the pack); `examples/raw-exec.vars.hcl` is the allowed way.
+In a stack the module is `source = "norca/nodescaler-operator"` with
+`namespace = "norca-system"`. From a checkout of this registry:
 
-## From the pack
+```shell
+norca rigger install <checkout>/modules/nodescaler-operator -name nodescaler -namespace norca-system -var node_pool=system
+```
 
-Converted from the pack `nodescaler-operator` 0.11.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh nodescaler-operator`). The job ID is `job_name`, as in the pack. The namespace and the region are
-the release's.
+Example values are in [`examples/`](examples).
+
+## Outputs
+
+Outputs: `job`, `join_service` and `notes`. The ACL policy is the resource `operator`. `driver = "raw_exec"` without `allow_raw_exec_nodes = true` is refused by the rule `raw_exec`; `examples/raw-exec.vars.hcl` is the allowed way. The job ID is `job_name`; the namespace and the region are the release's.
+
+## History
+
+The module was converted from the pack `nodescaler-operator` 0.11.0 of
+Norca's earlier package manager. Version 0.11.1 changes no resource: this
+README, the comments of the examples, the wording of the tests and the
+descriptions of the variables name Rigger's commands and modules instead of
+packs.

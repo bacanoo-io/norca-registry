@@ -3,7 +3,7 @@
 
 module {
   name        = "loadbalancer-operator"
-  version     = "0.5.0"
+  version     = "0.5.1"
   description = "The LoadBalancer operator of Norca as one release: the norca.io/LoadBalancer object kind (with its optional webhooks and limits), the norca.io/LoadBalancerClass kind of the providers, the ACL policy of the controller, an admission policy for service marks and the controller job."
   url         = "https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator"
 

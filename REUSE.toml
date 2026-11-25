@@ -1,6 +1,6 @@
 version = 1
 
-# The packs, their examples, scripts and documentation: MPL 2.0. The files
+# The modules, the operators, scripts and documentation: MPL 2.0. The files
 # carry SPDX headers; files that can't are covered here.
 [[annotations]]
 path = ["**"]

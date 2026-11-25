@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 variable "job_name" {
-  description = "Name of the job. Empty uses the pack name (\"rustfs\"). It is also the name of the S3 service (<job>) and of the console service (<job>-console)."
+  description = "Name of the job. Empty uses the name of the release. It is also the name of the S3 service (<job>) and of the console service (<job>-console)."
   type        = string
   default     = ""
 
@@ -60,7 +60,7 @@ variable "mode" {
 }
 
 variable "nodes" {
-  description = "Distributed mode: the addresses of the nodes that run a server, as the other servers reach them (at least 2; 4 or more for erasure coding that survives the loss of a node). The job places one server on each of them and lists them in RUSTFS_VOLUMES; the list can't change without a new cluster (expansion with a server pool is not supported by the pack)."
+  description = "Distributed mode: the addresses of the nodes that run a server, as the other servers reach them (at least 2; 4 or more for erasure coding that survives the loss of a node). The job places one server on each of them and lists them in RUSTFS_VOLUMES; the list can't change without a new cluster (expansion with a server pool is not supported by the module)."
   type        = list(string)
   default     = []
 
@@ -150,7 +150,7 @@ variable "extra_env" {
 # ---------------------------------------------------------------------------
 
 variable "metrics_enabled" {
-  description = "Send the metrics of RustFS over OTLP/HTTP to otlp_endpoint (RUSTFS_OBS_METRIC_ENDPOINT), by default the OpenTelemetry Collector of the otel-collector pack on the same node. RustFS has no Prometheus endpoint; it only pushes OTLP. Logs stay in the task's stdout."
+  description = "Send the metrics of RustFS over OTLP/HTTP to otlp_endpoint (RUSTFS_OBS_METRIC_ENDPOINT), by default the OpenTelemetry Collector of the otel-collector module on the same node. RustFS has no Prometheus endpoint; it only pushes OTLP. Logs stay in the task's stdout."
   type        = bool
   default     = false
 }
@@ -162,7 +162,7 @@ variable "traces_enabled" {
 }
 
 variable "otlp_endpoint" {
-  description = "Base URL of the OTLP/HTTP receiver (/v1/metrics and /v1/traces are appended). The default is the collector of the otel-collector pack on the node of the server (host port 4318 on the node address)."
+  description = "Base URL of the OTLP/HTTP receiver (/v1/metrics and /v1/traces are appended). The default is the collector of the otel-collector module on the node of the server (host port 4318 on the node address)."
   type        = string
   default     = "http://$${attr.unique.network.ip-address}:4318"
 
@@ -284,7 +284,7 @@ variable "healthy_deadline" {
 
 # ---------------------------------------------------------------------------
 # Rules: conditions on the items of lists and maps and across variables,
-# checked before rendering by the CLI and by the servers that render the pack.
+# checked before rendering by rigger and by the servers that render the module.
 # ---------------------------------------------------------------------------
 
 rule "constraints" {

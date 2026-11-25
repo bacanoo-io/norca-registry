@@ -7,7 +7,7 @@
 # secret norca/bus/leaf holds the token of a policy with
 # cdc { receive = [...] leaf = true } and the CA of the Norca servers:
 #   norca secret put norca/bus/leaf token=<secret ID> ca=@/etc/norca.d/ca.pem
-#   norca pack run nats --registry=norca --name=nats-cdc -f examples/nats/norca-bus-leaf.hcl
+#   norca rigger install ./modules/nats -name nats-cdc -f modules/nats/examples/norca-bus-leaf.vars.hcl
 job_name          = "nats-cdc"
 count             = 1
 client_port       = 4322

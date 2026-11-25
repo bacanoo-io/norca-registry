@@ -78,7 +78,7 @@ variable "driver" {
 }
 
 variable "allow_raw_exec_nodes" {
-  description = "Let the job run on nodes where the raw_exec driver is enabled, and with driver = raw_exec. Off by default (review finding JOG-19): a raw_exec task, or alloc-node-exec, on such a node runs as the user of the agent and reads the secrets directory of every allocation of the node, so the workload identity token of this job and the ACL policies bound to it. Without it the job keeps off nodes whose attribute driver.raw_exec is set, and the pack refuses to render with driver = raw_exec. Turn it on only where every token that may place raw_exec work or use alloc-node-exec on those nodes may hold the policies of the operator anyway (a lab, a single-tenant cluster)."
+  description = "Let the job run on nodes where the raw_exec driver is enabled, and with driver = raw_exec. Off by default (review finding JOG-19): a raw_exec task, or alloc-node-exec, on such a node runs as the user of the agent and reads the secrets directory of every allocation of the node, so the workload identity token of this job and the ACL policies bound to it. Without it the job keeps off nodes whose attribute driver.raw_exec is set, and the module refuses driver = raw_exec (the rule raw_exec). Turn it on only where every token that may place raw_exec work or use alloc-node-exec on those nodes may hold the policies of the operator anyway (a lab, a single-tenant cluster)."
   type        = bool
   default     = false
 }
@@ -210,7 +210,7 @@ variable "http01_enabled" {
 }
 
 variable "http01_entrypoints" {
-  description = "The http entrypoints of the Traefik pack the challenge is routed on (the entrypoints of port 80). The service of the job carries the router as catalog tags; the Traefik pack must have acme_challenge = true and the namespace of this job in its catalog_namespaces (with the ACL policy for that namespace its output prints). Empty: no tags, route the path by other means."
+  description = "The http entrypoints of the traefik module the challenge is routed on (the entrypoints of port 80). The service of the job carries the router as catalog tags; the traefik module must have acme_challenge = true and the namespace of this job in its catalog_namespaces (with the ACL policy for that namespace its output prints). Empty: no tags, route the path by other means."
   type        = list(string)
   default     = ["web"]
 }

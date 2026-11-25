@@ -3,8 +3,8 @@
 
 module {
   name        = "seaweedfs"
-  version     = "0.1.0"
-  description = "A single SeaweedFS server (Apache-2.0, release archive referenced, never shipped): master, volume server and filer in one weed process with raw_exec, data in a directory of the node, the master, volume and filer in the native catalog. The storage of the seaweedfs-csi pack."
+  version     = "0.1.1"
+  description = "A single SeaweedFS server (Apache-2.0, release archive referenced, never shipped): master, volume server and filer in one weed process with raw_exec, data in a directory of the node, the master, volume and filer in the native catalog. The storage of the seaweedfs-csi module."
   url         = "https://github.com/seaweedfs/seaweedfs"
 
   requires {

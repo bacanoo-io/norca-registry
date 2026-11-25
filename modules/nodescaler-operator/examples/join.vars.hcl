@@ -5,7 +5,7 @@
 # operator's nodes, behind a stable name, certificates of 7 days renewed at
 # two thirds. The machines of the node groups need norca-join
 # (/usr/local/bin/norca-join, the item join_binary of the bootstrap).
-#   norca pack run nodescaler-operator --registry=norca -f examples/nodescaler-operator/join.hcl
+#   norca rigger install ./modules/nodescaler-operator -name nodescaler-operator -namespace norca-system -f modules/nodescaler-operator/examples/join.vars.hcl
 #   norca object events norca.io/NodeGroup workers-dc-a   # CertificateIssued, CertificateRenewed
 node_pool     = "system"
 join_enabled  = true

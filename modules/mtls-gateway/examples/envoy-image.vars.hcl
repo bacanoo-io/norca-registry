@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Norca contributors
 # SPDX-License-Identifier: MPL-2.0
 
-# Two gateways (a service job) with an Envoy task defined by the pack: a
+# Two gateways (a service job) with an Envoy task defined by the module: a
 # pinned image from an internal mirror, more resources than the injected task.
-#   norca pack run mtls-gateway --registry=norca -f examples/mtls-gateway/envoy-image.hcl
+#   norca rigger install ./modules/mtls-gateway -name mtls-gateway -f modules/mtls-gateway/examples/envoy-image.vars.hcl
 job_type = "service"
 count    = 2
 
@@ -17,5 +17,5 @@ envoy_resources = {
   memory = 256
 }
 
-# The statistics of Envoy (/stats/prometheus) for the otel-collector pack.
+# The statistics of Envoy (/stats/prometheus) for the otel-collector module.
 metrics_enabled = true

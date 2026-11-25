@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 # norca-acme for issuers of the Let's Encrypt staging directory, with the
-# HTTP-01 challenge behind the Traefik pack and DNS-01 for the zones of
+# HTTP-01 challenge behind the traefik module and DNS-01 for the zones of
 # norca-provider. The issuer is an object of its own:
 #
 #   kind = "norca.io/CertificateIssuer"
@@ -20,7 +20,7 @@
 #     }
 #   }
 #
-#   norca pack run norca-acme --registry=norca -f examples/norca-acme/letsencrypt-staging.hcl
+#   norca rigger install ./modules/norca-acme -name norca-acme -namespace norca-system -f modules/norca-acme/examples/letsencrypt-staging.vars.hcl
 datacenters        = ["dc1", "dc2"]
 http01_entrypoints = ["web"]
 retry_base         = "2m"

@@ -7,6 +7,4 @@
 # and the ACL policy of the module grants the lease, the Variable
 # controller-lease/norca-dns in the namespace of the job.
 #
-# An example of the module alone: the pack has no such variables
-# (scripts/compare-packs.sh does not compare it).
 count = 2

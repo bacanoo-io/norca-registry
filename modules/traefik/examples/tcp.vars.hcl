@@ -6,7 +6,7 @@
 # SNI name is mq.example.com go unterminated to a backend that holds its own
 # certificate, the others are HTTPS of Traefik. A UDP entrypoint (DNS on 53)
 # shows the same for UDP.
-#   norca pack run traefik --registry=norca --name=traefik -f examples/traefik/tcp.hcl
+#   norca rigger install ./modules/traefik -name traefik -f modules/traefik/examples/tcp.vars.hcl
 entrypoints = [
   { name = "websecure", port = 443, protocol = "https" },
   { name = "postgres", port = 5432, protocol = "tcp" },

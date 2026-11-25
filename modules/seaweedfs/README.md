@@ -61,17 +61,29 @@ Mirror the archive for air-gapped clusters (`artifact_url`), or install
 
 ## Install
 
+From the global registry, synced once in the region
+(`norca rigger registry sync global`):
+
+```shell
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "seaweedfs", "Registry": "global", "Module": "norca/seaweedfs", "Version": "~> 0.1",
+ "ValuesJSON": {"node": "storage-1"}}
+EOF
+```
+
+In a stack the module is `source = "norca/seaweedfs"`. From the root of a
+checkout of this registry:
+
 ```shell
 rigger install ./modules/seaweedfs -name seaweedfs -var node=storage-1
 ```
 
 Outputs: `job`, `filer_service` (the `filer_service` of seaweedfs-csi) and
-`notes`.
-
-## From the pack
-
-Converted from the pack `seaweedfs` 0.1.0 with `rigger convert pack`; for the
-defaults and every example it renders the job of the pack
-(`scripts/compare-packs.sh seaweedfs`). The job ID is `job_name`, or the
-release's name when empty (the pack took the pack's name); the
+`notes`. The job ID is `job_name`, or the release's name when empty; the
 namespace and the region are the release's.
+
+## History
+
+The module was converted from the pack `seaweedfs` 0.1.0 of Norca's earlier
+package manager. Version 0.1.1 changes no resource: this README and the
+descriptions name Rigger's modules instead of packs.

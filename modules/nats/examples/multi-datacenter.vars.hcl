@@ -5,7 +5,7 @@
 # datacenter, kept apart by the fork's separate rule on the datacenter, so the
 # servers and the JetStream streams survive the loss of a datacenter.
 #   norca secret put nats/users/app password=-
-#   norca pack run nats --registry=norca --name=nats -f examples/nats/multi-datacenter.hcl
+#   norca rigger install ./modules/nats -name nats -f modules/nats/examples/multi-datacenter.vars.hcl
 datacenters       = ["eu-a", "eu-b", "eu-c"]
 count             = 3
 separate_scope    = "$${node.datacenter}"

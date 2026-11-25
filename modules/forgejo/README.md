@@ -144,15 +144,22 @@ store is part of Norca's backups.
 
 ## Install
 
+From the global registry, synced once in the region:
+
 ```shell
-norca module registry add norca https://github.com/bacanoo-io/norca-registry --ref=<tag>
-norca module run forgejo --registry=norca --name=forgejo -f forgejo.hcl
+norca rigger registry sync global
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "forgejo", "Registry": "global", "Module": "norca/forgejo", "Version": "~> 0.2",
+ "ValuesJSON": {"domain": "git.example.com"}}
+EOF
 norca service info -verbose forgejo
 norca alloc logs -task create-admin <alloc ID>     # "admin forgejo-admin created"
 ```
 
-From a checkout of this registry: `norca module run ./modules/forgejo -f examples/forgejo/registry-https.hcl`.
-Example variable files are in [`examples/forgejo`](../../examples/forgejo).
+In a stack the module is `source = "norca/forgejo"`. From a checkout of this
+registry:
+`norca rigger install <checkout>/modules/forgejo -name forgejo -f <checkout>/modules/forgejo/examples/registry-https.vars.hcl`.
+Example values are in [`examples/`](examples).
 
 The poststart task `create-admin` waits for `/api/healthz`, then runs
 `forgejo admin user create --admin` with the password of `forgejo/admin`. A
@@ -294,7 +301,7 @@ unless the release notes say otherwise.
 
 | Variable | Default | |
 | --- | --- | --- |
-| `job_name`, `namespace`, `region` | `""` | empty: `forgejo`, those of the release |
+| `job_name` | `""` | empty: the name of the release; the namespace and the region are those of the release |
 | `datacenters`, `node_pool`, `constraints` | `["*"]`, `""`, `[]` | placement (the host volume decides the node) |
 | `image`, `image_digest` | `codeberg.org/forgejo/forgejo:15.0.10-rootless`, `""` | |
 | `uid`, `gid` | `1000`, `1000` | container user, owner of the volume and of the secret files |
@@ -379,17 +386,13 @@ Planned, not built:
   but not run against a live cluster yet (the poststart admin task and the
   dump job in particular).
 
-## Install
+## Outputs
 
-```shell
-rigger install ./modules/forgejo -name forgejo -namespace platform -f modules/forgejo/examples/registry-https.vars.hcl
-```
+Outputs: `service`, `registry` and `notes`. The dump is the job `dump` (`dump_enabled`); the rule `ssh_port` checks the SSH port. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
 
-Outputs: `service`, `registry` and `notes`. The dump is the job `dump` (`dump_enabled`); the `fail` check of the pack is the rule `ssh_port`.
+## History
 
-## From the pack
-
-Converted from the pack `forgejo` 0.2.0 with `rigger convert pack`; for the
-defaults and every example it renders the jobs and other resources of the
-pack (`scripts/compare-packs.sh forgejo`). The job ID is `job_name`, or the release's name when empty (the pack took the pack's name). The namespace and the region are
-the release's.
+The module was converted from the pack `forgejo` 0.2.0 of Norca's earlier
+package manager. Version 0.2.1 changes no resource: this README, the
+comments of the examples and the descriptions of the variables name Rigger's
+commands and modules instead of packs.
