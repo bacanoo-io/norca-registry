@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/forgejo\"},\"image\":{\"docker-manifest-digest\":\"sha256:0f408bf00e6a09eca8501380245c3e431372517716397feed722e1b61823cf41\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"forgejo\",\"rigger.version\":\"0.2.0\"}}",
-  "signature": "MEUCIQDgqQ1uTWWVS2WOxPtWTfLO1327yKybShsZxi5hB1Mn0AIgDR2YF4dRRuDnFwjDspa4+oT/UfRcH5hFxFAyhosoumw="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/forgejo\"},\"image\":{\"docker-manifest-digest\":\"sha256:f935ab9a8277be2210920beb90f51ddf7eb2e7a0e1cb0c55a157431671de79ac\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"forgejo\",\"rigger.version\":\"0.2.1\"}}",
+  "signature": "MEQCICW/vFnfsdAmquPwiM+SXHerJVCagiWHdo9CgYPGe73mAiAeN7rGxTtCj59zIevtqvPd+vb9OwkewLdXX66kbQpAhQ=="
 }
