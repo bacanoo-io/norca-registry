@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/norca-acme\"},\"image\":{\"docker-manifest-digest\":\"sha256:34fd4b3f5ad72250a371de53b370fbeb018f4aabcbffea81282fae3291929c52\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"norca-acme\",\"rigger.version\":\"0.3.0\"}}",
-  "signature": "MEUCICAQZIJQydV0EygtDb+cpcPThkU5GqkTTkYz/hTWasP6AiEArlJHDDoNaIIt6VEtsoN1hZkKHGsR6EzTW3l2J0CTAOU="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/norca-acme\"},\"image\":{\"docker-manifest-digest\":\"sha256:ac8b1a4e698dd738ca6f78ed8c238997f87e0504b0d3845cb8156cabe80a51cf\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"norca-acme\",\"rigger.version\":\"0.3.1\"}}",
+  "signature": "MEYCIQD776ZKAFpQKVhh+P9rTxmXfVN1dWP/8HcFPJx+CSbFsgIhAMEEDzu296LqUwC/VonAZCBUtMlaO0URVhJgBz++bhmt"
 }
