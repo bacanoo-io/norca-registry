@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/seaweedfs-csi\"},\"image\":{\"docker-manifest-digest\":\"sha256:4859201fb529309da1045278296f5d63171d771ed6b5ad28bb95bfe968f57475\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"seaweedfs-csi\",\"rigger.version\":\"0.1.0\"}}",
-  "signature": "MEYCIQC7YLlviNoNUktYXHtHxxGp5jX9AIw9F3kscpv7F5pmVgIhAOK2VSsdXyAs0RmzSHF+44w5WQa2+QkYQwZcfgLrtDKA"
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/seaweedfs-csi\"},\"image\":{\"docker-manifest-digest\":\"sha256:628a60397fa67b67f3dc8f0c465a6cdbf7b4362ce26396a18934f0c0ef4c2df8\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"seaweedfs-csi\",\"rigger.version\":\"0.1.1\"}}",
+  "signature": "MEQCICGsjEg6eF7E9AjivTcgO3F81h9oSqCmX2fjrFu7zOjOAiAFV+jeGf1ih7e63i0mS0ngRV24i/kABF/3Tp8PUxa9KQ=="
 }
