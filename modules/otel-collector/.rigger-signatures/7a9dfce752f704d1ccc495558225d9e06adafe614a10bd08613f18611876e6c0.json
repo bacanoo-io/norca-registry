@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/otel-collector\"},\"image\":{\"docker-manifest-digest\":\"sha256:b046fe882828eabd292b71d70a7069796a58d4e6dbe625d5b49ad2db6b0a888d\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"otel-collector\",\"rigger.version\":\"0.1.2\"}}",
-  "signature": "MEUCIQDlvIvzJRFw7KnhJcmBf/Mlv/EBCYC5lQJgQZLBwS6J8QIgcveKKdIyVyS/BU3NvJEXSn/T+zeGYY8V4E8ClofEIt4="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/otel-collector\"},\"image\":{\"docker-manifest-digest\":\"sha256:5e361fdb8d145624c5572ed46f86ae7c8b1ac874aecb48393ad72c93be895881\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"otel-collector\",\"rigger.version\":\"0.1.3\"}}",
+  "signature": "MEUCIDtxb48ItZfNDGAWZIJtgjuaeHeXuTvVKAk9A/uwFLFfAiEAvrMxCWDPrZrpgeiGsICCPMtc2iCawUyO8egG3sEXJH8="
 }
