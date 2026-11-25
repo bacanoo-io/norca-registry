@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/redis\"},\"image\":{\"docker-manifest-digest\":\"sha256:da6db321626dd1a2a7df13458af9aed925335a783f2352e683f905240b76c04a\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"redis\",\"rigger.version\":\"0.4.0\"}}",
-  "signature": "MEQCIGPSQBwI3b6sC8tOiDjxhxSgHkpXiFNYOnjJjZi7f2pwAiBEvKUW1AezkL7Q5D2EU9QcB1e3yWuVFwoujaRuctn0Jw=="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/redis\"},\"image\":{\"docker-manifest-digest\":\"sha256:a3349212de8fa90b6e70472dceaa6bb2b5852c620ebfb9ed01948f7d12bef6de\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"redis\",\"rigger.version\":\"0.4.1\"}}",
+  "signature": "MEQCIH6nL/NcvR5Oucawy5v/04krSIpGljlxHEJsY2feQv9xAiBKl7MIIpheFAJmAqA4JPAOYPNpu6GHn0OkMN6M7qHBGg=="
 }
