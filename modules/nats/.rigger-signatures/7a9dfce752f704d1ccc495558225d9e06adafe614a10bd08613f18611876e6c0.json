@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/nats\"},\"image\":{\"docker-manifest-digest\":\"sha256:19ed6ee98dbe09e2bd98082098fda4dcb5297390ad4e47679a14acd76b0919b3\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"nats\",\"rigger.version\":\"2.0.0\"}}",
-  "signature": "MEQCIBa3B3B1d5lcGwgH3CxCd7PBpHqR1dlrY85YrHgN6FHnAiBFuKKMJKUDTAge3RTa714ViL6PtfalwcH6byBxHeKTUg=="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/nats\"},\"image\":{\"docker-manifest-digest\":\"sha256:60b09c26641e852b3f18d06a1d51b978049c3b50eb75c4af4740b91629cdec97\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"nats\",\"rigger.version\":\"2.0.1\"}}",
+  "signature": "MEUCIQD3iHQVWQIrAceC0rMjIUhZMovoL018+wtGTeQQGajxJQIgAg/MXOnlokkB1v5mg/rjMsYNR5Xb/G00s0MEIpPvU8I="
 }
