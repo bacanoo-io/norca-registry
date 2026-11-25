@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/consul\"},\"image\":{\"docker-manifest-digest\":\"sha256:15aac6b6805c8492e74dba34d7c00d14101bcc2d6c8ea41099c7bf53993d2be6\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"consul\",\"rigger.version\":\"0.2.1\"}}",
-  "signature": "MEYCIQCO4sIcBFSYp20QZqMb92Axk45kUxt5MuG+kDOxcsfeKAIhALUOZMeB2GzBsoff2dOrkgBNWinD6kh9f3lKd+JCiaOI"
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/consul\"},\"image\":{\"docker-manifest-digest\":\"sha256:6015172055df29be0ad66160dff0a7dbee3bced2f5df8394111dffe406799c75\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"consul\",\"rigger.version\":\"0.2.2\"}}",
+  "signature": "MEUCIAkSb+O8WJ95ohA/xfIg7aM4jSAwTuh6bY3afHYyXiWYAiEA97ayFmWOhxujvCD28C4ApHmHdWmVjnSe9RsMsBtj5pU="
 }
