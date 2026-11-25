@@ -234,4 +234,7 @@ Outputs: `service`, `entrypoints` and `notes`. The checks of the entrypoints and
 The module was converted from the pack `traefik` 0.3.0 of Norca's earlier
 package manager. Version 0.3.1 changes no resource: this README, the
 comments of the examples and the descriptions of the variables name Rigger's
-commands and modules instead of packs.
+commands and modules instead of packs. Version 0.3.2 writes the condition
+of the form for the count as a condition (`show_if = "job_type ==
+\"service\""`): 0.3.1 wrote it in the form of the packs, which the install
+form did not read (Rigger now warns of it). The resources are the same.

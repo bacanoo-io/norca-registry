@@ -74,7 +74,7 @@ variable "count" {
     tab     = "general"
     group   = "Placement"
     widget  = "slider"
-    show_if = { field = "job_type", equals = "service" }
+    show_if = "job_type == \"service\""
   }
 
   validation {

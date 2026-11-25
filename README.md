@@ -40,11 +40,11 @@ in the documentation for an overview of every module.
 | [otel-collector](modules/otel-collector/README.md) | 0.1.3 | The OpenTelemetry Collector on every node: host, agent and service metrics, OTLP, export to OpenObserve |
 | [postgres](modules/postgres/README.md) | 0.4.1 | A single PostgreSQL server: databases and roles from the secret store, optional TLS and dumps to S3 |
 | [postgres-demo](modules/postgres-demo/README.md) | 0.3.1 | A demonstration of the language of the modules: a single PostgreSQL server |
-| [redis](modules/redis/README.md) | 0.4.1 | One Redis server with a password the server requires and optional persistence |
+| [redis](modules/redis/README.md) | 0.4.2 | One Redis server with a password the server requires and optional persistence |
 | [rustfs](modules/rustfs/README.md) | 0.2.1 | RustFS (Apache-2.0) as the S3 store of the Norca backups: single node or distributed |
 | [seaweedfs](modules/seaweedfs/README.md) | 0.1.1 | A single SeaweedFS server (Apache-2.0, referenced, never shipped): the storage of seaweedfs-csi |
 | [seaweedfs-csi](modules/seaweedfs-csi/README.md) | 0.1.1 | The SeaweedFS CSI driver on every node: the mount service and the CSI plugin |
-| [traefik](modules/traefik/README.md) | 0.3.1 | Traefik Proxy (MIT) as the edge router of a region: entrypoints, certificates, routes from the catalog |
+| [traefik](modules/traefik/README.md) | 0.3.2 | Traefik Proxy (MIT) as the edge router of a region: entrypoints, certificates, routes from the catalog |
 | lib/placement | 1.1.0 | A library the other modules call for the placement of a job and the reference of an image; not installed on its own |
 
 Each module's README describes what it deploys, its prerequisites, its
