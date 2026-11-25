@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/loadbalancer-operator\"},\"image\":{\"docker-manifest-digest\":\"sha256:903f857c224be8067c8fdab6ea9ae65aefceff5fe174f4fe54036735d0635f14\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"loadbalancer-operator\",\"rigger.version\":\"0.5.0\"}}",
-  "signature": "MEQCIDCnCx8b812M0GtzGSv+B59HagWzfwfAVW/wdaya3Xz7AiBbC9InaPht2CHHU1MImU4iF4ELGNM1i9aV9YEf26WGiA=="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/loadbalancer-operator\"},\"image\":{\"docker-manifest-digest\":\"sha256:7d9c98eff071768112ea20af09d5aa515534e626028b7a501ee0387bcde165ce\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"loadbalancer-operator\",\"rigger.version\":\"0.5.1\"}}",
+  "signature": "MEUCIANlypLivV+BUcutHq6ameKVu7T+8GLwqN4htVdCeg+DAiEA9f7T3g+2KPDI7r88dg60v4skI7uTuIB2TF64JgxP8K4="
 }
