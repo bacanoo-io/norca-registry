@@ -1,4 +1,4 @@
 {
-  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/rustfs\"},\"image\":{\"docker-manifest-digest\":\"sha256:c3ddbfa6233000d4cb53947c1918855e32119e55073894e19530c359de662dae\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"rustfs\",\"rigger.version\":\"0.2.0\"}}",
-  "signature": "MEUCIBANu1MzmKa9UMKdSk3FO/bgr8/jjWZhzvtNVT/0s6asAiEA15X0u1BRswHoN4Tr5/c0Y7UwgPxwmqfpyZGZl+RBiso="
+  "payload": "{\"critical\":{\"identity\":{\"docker-reference\":\"rigger/rustfs\"},\"image\":{\"docker-manifest-digest\":\"sha256:21f9a50a4049c0eeb05b60a747466b72c7573090b30da34b9175cd35a14ffc02\"},\"type\":\"cosign container image signature\"},\"optional\":{\"rigger.module\":\"rustfs\",\"rigger.version\":\"0.2.1\"}}",
+  "signature": "MEUCIG4jMDxOY1COkbjW2/IgGtbN4Bde46EOAj8z3vUOpUFRAiEAhlbDw1SYSAhhxerQ1bvx3kL/JZsgaATiHt9pPuH0vKk="
 }
