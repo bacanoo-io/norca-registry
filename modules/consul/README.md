@@ -157,7 +157,7 @@ workload identity) generates:
 | gossip encryption key | `norca operator gossip keyring generate` (32 bytes, AES-256) |
 | CA and CA key | `norca tls ca create` (`ca_days`, default 5 years) |
 | server certificate | `norca tls cert create -server -region <datacenter> -domain <domain>`: valid for `server.<datacenter>.<domain>` (Consul's `verify_server_hostname` name), `localhost` and 127.0.0.1 (`cert_days`, default 1 year) |
-| ACL tokens | random UUIDs: the `initial_management` token, the agent token and the snapshot token, with fixed accessor IDs |
+| ACL tokens | random UUIDs: the `initial_management` token, the agent token, the snapshot token and the DNS token, with fixed accessor IDs |
 
 and stores them in Norca Variables (encrypted at rest by the keyring of the
 Norca servers):
@@ -166,7 +166,7 @@ Norca servers):
 |---|---|---|
 | `nomad/jobs/consul/servers/bootstrap` | all, including `ca_key` (the source of truth) | only the bootstrap task |
 | `nomad/jobs/consul/servers` | all but `ca_key` | the server and acl-setup tasks |
-| `nomad/jobs/consul-clients` | `gossip_key`, `ca_cert`, `agent_token` | the client job |
+| `nomad/jobs/consul-clients` | `gossip_key`, `ca_cert`, `agent_token`, `dns_token` | the client job |
 | `nomad/jobs/consul-snapshot/snapshot` | `consul_token` | the snapshot job (only with `snapshot_enabled`) |
 
 The source Variable is created with check-and-set (`-check-index=0`): when
@@ -187,8 +187,15 @@ leader election: there is no `consul acl bootstrap` step and no token to copy.
 The `acl-setup` poststart task then waits for a leader and creates,
 idempotently, the `norca-agent` policy (`node_prefix "" write`,
 `service_prefix "" read`) with the agent token (used by every agent as
-`acl.tokens.agent`) and, with snapshots, the `norca-snapshot` policy
-(`acl = "write"`, which `consul snapshot save` needs) with the snapshot token.
+`acl.tokens.agent`), the `norca-dns` policy (`node_prefix ""`,
+`service_prefix ""` and `query_prefix ""`, all `read`) with the DNS token
+(used by every agent as `acl.tokens.dns`, so the DNS interface answers) and,
+with snapshots, the `norca-snapshot` policy (`acl = "write"`, which
+`consul snapshot save` needs) with the snapshot token.
+
+A source Variable of version 0.2.1 or older has no DNS token: the bootstrap
+task adds one on the next server start, with check-and-set on the index of
+the Variable, so the servers that start together keep the same token.
 
 The management token, for operators:
 
@@ -202,7 +209,10 @@ The module applies the interim security minimum of the plan to every install:
 
 - **ACLs are mandatory**: `enabled = true`, `default_policy = "deny"`,
   `down_policy = "extend-cache"`; there is no anonymous access (no default
-  token). This is not configurable.
+  token). This is not configurable. The DNS interface answers with the DNS
+  token, which reads nodes, services and prepared queries: whoever can reach
+  the DNS port (localhost by default, `dns_address`) can read the catalog
+  through it.
 - **Gossip encryption** with incoming and outgoing verification.
 - **TLS** (`tls_enabled`, default on): verified server names for RPC
   (`verify_incoming`, `verify_outgoing`, `verify_server_hostname`), client
@@ -490,3 +500,11 @@ The module was converted from the pack `consul` 0.2.0 of Norca's earlier
 package manager. Version 0.2.1 changes no resource: this README, the
 comments of the examples and the descriptions of the variables name Rigger's
 commands and modules instead of packs.
+
+Version 0.2.2 gives the DNS interface a token: the `norca-dns` policy and
+token, set as `acl.tokens.dns` on every agent. Before it the DNS interface
+answered nothing under the default deny policy, so a host that forwards the
+`consul` domain to the agent (`consul.dns_forwarding` of norca-deployer)
+resolved no name. An existing install gets the token on its next server
+start. `acl.tokens.dns` needs Consul 1.17 or newer (`consul_version`,
+default 2.1.0).

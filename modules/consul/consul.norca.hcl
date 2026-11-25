@@ -369,7 +369,7 @@ job "consul" {
       }
 
       dynamic "template" {
-        for_each = ["management_token", "agent_token", "snapshot_token"]
+        for_each = ["management_token", "agent_token", "snapshot_token", "dns_token"]
 
         content {
           destination = "secrets/${template.value}"
@@ -385,6 +385,7 @@ job "consul" {
           {{- with nomadVar "${local.server_var}" }}
           AGENT_ACCESSOR={{ .agent_accessor.Value | trimSpace }}
           SNAPSHOT_ACCESSOR={{ .snapshot_accessor.Value | trimSpace }}
+          DNS_ACCESSOR={{ .dns_accessor.Value | trimSpace }}
           {{- end }}
         EOT
       }
@@ -396,6 +397,23 @@ job "consul" {
             policy = "write"
           }
           service_prefix "" {
+            policy = "read"
+          }
+        EOT
+      }
+
+      # The DNS interface answers with the DNS token: the reads of the
+      # catalog a lookup needs (nodes, services, prepared queries).
+      template {
+        destination = "local/dns-policy.hcl"
+        data        = <<-EOT
+          node_prefix "" {
+            policy = "read"
+          }
+          service_prefix "" {
+            policy = "read"
+          }
+          query_prefix "" {
             policy = "read"
           }
         EOT

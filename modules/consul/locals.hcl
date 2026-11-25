@@ -126,7 +126,8 @@ locals {
       "",
       "# Mandatory ACLs, default deny, no anonymous access. The",
       "# initial_management token bootstraps the ACL system on the first",
-      "# leader election; the acl-setup task creates the agent token.",
+      "# leader election; the acl-setup task creates the agent token and the",
+      "# DNS token (the DNS interface answers with it).",
       "acl {",
       "  enabled                  = true",
       "  default_policy           = \"deny\"",
@@ -135,6 +136,7 @@ locals {
       "  tokens {",
       "    initial_management = \"{{ .management_token.Value | trimSpace }}\"",
       "    agent              = \"{{ .agent_token.Value | trimSpace }}\"",
+      "    dns                = \"{{ .dns_token.Value | trimSpace }}\"",
       "  }",
       "}",
     ],
@@ -208,6 +210,7 @@ locals {
       "  enable_token_persistence = true",
       "  tokens {",
       "    agent = \"{{ .agent_token.Value | trimSpace }}\"",
+      "    dns   = \"{{ .dns_token.Value | trimSpace }}\"",
       "  }",
       "}",
     ],
@@ -262,7 +265,7 @@ locals {
         mv norca-agent-ca-key.pem ca_key
         mv "${var.datacenter}-server-${var.domain}.pem" server_cert
         mv "${var.datacenter}-server-${var.domain}-key.pem" server_key
-        for t in management_token agent_token agent_accessor snapshot_token snapshot_accessor; do
+        for t in management_token agent_token agent_accessor snapshot_token snapshot_accessor dns_token dns_accessor; do
           cat /proc/sys/kernel/random/uuid >"$t"
         done
         # Created only if it does not exist: when several servers start at
@@ -271,26 +274,50 @@ locals {
           gossip_key=@gossip_key ca_cert=@ca_cert ca_key=@ca_key \
           server_cert=@server_cert server_key=@server_key \
           management_token=@management_token agent_token=@agent_token agent_accessor=@agent_accessor \
-          snapshot_token=@snapshot_token snapshot_accessor=@snapshot_accessor ||
+          snapshot_token=@snapshot_token snapshot_accessor=@snapshot_accessor \
+          dns_token=@dns_token dns_accessor=@dns_accessor ||
           echo "bootstrap: $src was created by another server, using it"
+        rm -f ./*
+      fi
+
+      # A source of version 0.2.1 or older has no DNS token: it is added
+      # once, with check-and-set on the index of the source, so that the
+      # servers that start at the same time keep the token of the first.
+      if ! "$norca" var get -item=dns_token "$src" >/dev/null 2>&1; then
+        echo "bootstrap: adding the DNS token to $src"
+        index=$("$norca" var get -out=json "$src" | sed -n 's/^ *"ModifyIndex": *\([0-9][0-9]*\).*/\1/p' | head -n 1)
+        for item in gossip_key ca_cert ca_key server_cert server_key management_token agent_token agent_accessor snapshot_token snapshot_accessor; do
+          "$norca" var get -item="$item" "$src" >"$item"
+        done
+        for t in dns_token dns_accessor; do
+          cat /proc/sys/kernel/random/uuid >"$t"
+        done
+        "$norca" var put -out=none -check-index="$index" "$src" \
+          gossip_key=@gossip_key ca_cert=@ca_cert ca_key=@ca_key \
+          server_cert=@server_cert server_key=@server_key \
+          management_token=@management_token agent_token=@agent_token agent_accessor=@agent_accessor \
+          snapshot_token=@snapshot_token snapshot_accessor=@snapshot_accessor \
+          dns_token=@dns_token dns_accessor=@dns_accessor ||
+          echo "bootstrap: $src was changed by another server, using it"
         rm -f ./*
       fi
 
       # The Variables the tasks read are derived from the source on every
       # start (the CA key stays in the source only).
-      items="gossip_key ca_cert server_cert server_key management_token agent_token agent_accessor snapshot_token snapshot_accessor"
+      items="gossip_key ca_cert server_cert server_key management_token agent_token agent_accessor snapshot_token snapshot_accessor dns_token dns_accessor"
       for item in $items; do
         "$norca" var get -item="$item" "$src" >"$item"
       done
       "$norca" var put -out=none -force "${local.server_var}" \
         gossip_key=@gossip_key ca_cert=@ca_cert server_cert=@server_cert server_key=@server_key \
         management_token=@management_token agent_token=@agent_token agent_accessor=@agent_accessor \
-        snapshot_token=@snapshot_token snapshot_accessor=@snapshot_accessor
+        snapshot_token=@snapshot_token snapshot_accessor=@snapshot_accessor \
+        dns_token=@dns_token dns_accessor=@dns_accessor
     EOT
     ,
     var.clients_enabled ? <<-EOT
       "$norca" var put -out=none -force "${local.client_var}" \
-        gossip_key=@gossip_key ca_cert=@ca_cert agent_token=@agent_token
+        gossip_key=@gossip_key ca_cert=@ca_cert agent_token=@agent_token dns_token=@dns_token
     EOT
     : "",
     var.snapshot_enabled ? <<-EOT
@@ -352,6 +379,10 @@ locals {
         "$NORCA_TASK_DIR/agent-policy.hcl"
       ensure_token "$AGENT_ACCESSOR" "$NORCA_SECRETS_DIR/agent_token" norca-agent \
         "Agent token of the Consul agents of job ${local.job}"
+      ensure_policy norca-dns "DNS interface of the Consul agents installed by the Norca consul module" \
+        "$NORCA_TASK_DIR/dns-policy.hcl"
+      ensure_token "$DNS_ACCESSOR" "$NORCA_SECRETS_DIR/dns_token" norca-dns \
+        "DNS token of the Consul agents of job ${local.job}"
     EOT
     ,
     var.metrics_enabled ? <<-EOT
