@@ -19,7 +19,7 @@ Each module has its own version and is released by a signed tag
 `<module>/v<version>`. The
 [global registry](https://github.com/bacanoo-io/norca-global-registry) of
 Rigger lists the released versions as `norca/<module>`. See the
-[Norca registry](https://github.com/bacanoo-io/norca-doc/blob/main/content/docs/features/packages/registry.md)
+[Norca registry](https://bacanoo-io.github.io/norca-doc/docs/rigger/norca-registry/)
 in the documentation for an overview of every module.
 
 ## Modules
@@ -225,7 +225,7 @@ infrastructure that runs on Norca. Every commit needs a DCO sign-off
 (`git commit -s`), like the Norca repository.
 
 - Write modules as described in Norca's
-  [modules and stacks](https://github.com/bacanoo-io/norca-doc/blob/main/content/docs/features/packages/modules.md):
+  [modules and stacks](https://bacanoo-io.github.io/norca-doc/docs/rigger/writing-a-module/):
   `validation` blocks and `rule` blocks in `variables.hcl` for anything the
   variable types can't express, tests in `tests/`, example values in
   `examples/`.
