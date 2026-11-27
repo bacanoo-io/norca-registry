@@ -26,7 +26,7 @@ in the documentation for an overview of every module.
 
 | Module | Version | |
 | --- | --- | --- |
-| [consul](modules/consul/README.md) | 0.2.2 | The official HashiCorp Consul release (BSL 1.1, referenced, never shipped; accepted by the user at install): servers, client agents, gossip, TLS and ACL bootstrap, optional snapshots to S3 |
+| [consul](modules/consul/README.md) | 0.3.1 | The official HashiCorp Consul release (BSL 1.1, referenced, never shipped; accepted by the user at install): servers, client agents, gossip, TLS and ACL bootstrap, optional snapshots to S3 |
 | [forgejo](modules/forgejo/README.md) | 0.2.1 | Forgejo (GPL-3.0-or-later, referenced, never shipped) as the internal git server and container registry |
 | [loadbalancer-operator](modules/loadbalancer-operator/README.md) | 0.5.1 | The LoadBalancer operator: its object kinds, ACL and admission policies and the controller job |
 | [mtls-gateway](modules/mtls-gateway/README.md) | 0.2.2 | The cross-region native mTLS gateway of a region: an SNI passthrough Envoy on the gateway nodes |

@@ -479,17 +479,17 @@ constraints with `server_node_meta = ""` (then do not run the clients there:
 - No automatic certificate renewal or gossip key rotation (documented manual
   steps above); a Consul operator could automate them later
   (`kubernetes-features-spec.md` item 8).
-- Consul DNS on the agents has no token: with default deny it answers only
-  after you give it one (e.g. a policy with `node_prefix`, `service_prefix`
-  read and `consul acl set-agent-token default <token>` on the agents, which
-  also applies to anonymous local HTTP requests). Norca's native DNS is the
+- Consul DNS answers with the DNS token of the module (the `norca-dns`
+  policy: nodes, services and prepared queries, `read`), so whoever reaches
+  the DNS port of an agent can read the catalog. Norca's native DNS is the
   recommended resolver.
 - One Consul datacenter per module install; WAN federation between Norca
   regions is not configured (the WAN port is reserved on the servers).
 - The bootstrap task needs the `exec` or `raw_exec` driver with the `norca`
   binary on the server nodes; the snapshot upload needs `docker`.
-- Consul 1.14 or newer (the `tls` stanza, `grpc_tls` port and
-  `initial_management` token names).
+- Consul 1.17 or newer: `acl.tokens.dns` (the DNS token) needs 1.17; the
+  `tls` stanza, the `grpc_tls` port and the `initial_management` token name
+  need 1.14.
 
 ## Outputs
 
@@ -516,3 +516,7 @@ objects of Consul configuration, written as the JSON file
 the module: a values file writes them as HCL itself (for example
 `client_extra_config = { log_json = true }`) rather than as a heredoc. Text
 is refused (the rule `extra_config`).
+
+Version 0.3.1 changes no resource: the limitations of this README name the
+DNS token of 0.2.2 instead of a DNS interface without a token, and the
+lowest Consul version is 1.17, which `acl.tokens.dns` needs.
