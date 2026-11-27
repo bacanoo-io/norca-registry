@@ -12,6 +12,9 @@ every node of a Norca cluster (a system job), shipping to
 - **metrics of the node and the platform**, on by default: the host, the
   Norca agent, and the NATS, Forgejo, mTLS gateway, Consul and PostgreSQL
   instances of the node, found through the native catalog;
+- the **Norca agent** either scraped (its Prometheus output, the default) or,
+  in the **OTLP mode** (`nomad_otlp_enabled`), pushing OTLP to the collector
+  on `127.0.0.1:4317`;
 - an **OTLP receiver on every node** (gRPC 4317, HTTP 4318) for the traces,
   metrics and logs of the applications (APM);
 - export over **OTLP/HTTP** with the ingest credentials the openobserve module
@@ -45,16 +48,40 @@ digest with `image_digest`; mirror the image for air-gapped clusters.
    secret `ingest_secret_path` (`openobserve/ingest`) its bootstrap task
    writes, and finds OpenObserve as the catalog service `openobserve_service`
    of its namespace. The task waits up to 15 minutes for the secret.
-2. **The agents' Prometheus metrics** (`telemetry { prometheus_metrics = true }`
-   in the configuration of every agent):
+2. **The agents' telemetry**, in one of two modes, in the configuration of
+   every agent on the nodes of the collector:
 
-   ```hcl
-   telemetry {
-     prometheus_metrics         = true
-     publish_allocation_metrics = true
-     publish_node_metrics       = true
-   }
-   ```
+   - **Scrape mode** (default, `nomad_otlp_enabled = false`): the agent's
+     Prometheus output, which the collector scrapes:
+
+     ```hcl
+     telemetry {
+       publish_allocation_metrics = true
+       publish_node_metrics       = true
+
+       prometheus {
+         enabled = true
+       }
+     }
+     ```
+
+   - **OTLP mode** (`nomad_otlp_enabled = true`): the agent pushes OTLP/gRPC
+     to the collector of its node, in plain text on the loopback interface
+     (the defaults of the `otlp` block); the agent needs no Prometheus output:
+
+     ```hcl
+     telemetry {
+       publish_allocation_metrics = true
+       publish_node_metrics       = true
+
+       otlp {
+         endpoint = "127.0.0.1:4317"   # the default; nomad_otlp_port of the module
+       }
+     }
+     ```
+
+   See [Agents in the OTLP mode](#agents-in-the-otlp-mode) for servers that
+   run no client.
 
 3. **The host's root directory as a host volume** on every client, read-only,
    for the host metrics (the Docker driver does not mount host paths unless
@@ -86,7 +113,7 @@ From the global registry, synced once in the region:
 norca rigger registry sync global
 norca secret put -namespace observability norca/agent-ca ca=@/etc/norca.d/tls/norca-agent-ca.pem
 norca operator api -namespace observability -X PUT /v1/rigger/install <<'EOF'
-{"Release": "otel-collector", "Registry": "global", "Module": "norca/otel-collector", "Version": "~> 0.1",
+{"Release": "otel-collector", "Registry": "global", "Module": "norca/otel-collector", "Version": "~> 0.2",
  "ValuesJSON": {"nomad_address": "https://127.0.0.1:4646", "nomad_ca_secret_path": "norca/agent-ca"}}
 EOF
 norca job status -namespace observability otel-collector
@@ -111,7 +138,8 @@ the catalog are filtered by the node ID of the instance
 | Source | Variable (default) | How | Needs |
 | --- | --- | --- | --- |
 | Host | `hostmetrics_enabled` (on) | `host_metrics` receiver, `root_path: /hostfs`: cpu, memory, load, disk, filesystem, network, paging (no per-process metrics, they need root) | the `hostfs` host volume |
-| Norca agent | `nomad_metrics_enabled` (on) | Prometheus scrape of `<nomad_address>/v1/metrics?format=prometheus`: servers, clients, allocations, the jobs of the node | `telemetry { prometheus_metrics = true }`; **no ACL token** (the endpoint has no ACL check in Nomad 1.6.5/Norca) |
+| Norca agent | `nomad_metrics_enabled` (on) | Prometheus scrape of `<nomad_address>/v1/metrics?format=prometheus`: servers, clients, allocations, the jobs of the node | `telemetry { prometheus { enabled = true } }`; **no ACL token** (the endpoint has no ACL check in Nomad 1.6.5/Norca) |
+| Norca agent, OTLP mode | `nomad_otlp_enabled` (off) | the agent pushes OTLP/gRPC to the receiver `otlp/agent` on `127.0.0.1:<nomad_otlp_port>` (4317); the scrape above is off | the agent's `otlp` block |
 | NATS | `nats_metrics_enabled` (on) | service `nats-metrics` (the exporter of the nats module, `metrics_enabled = true` there): `/metrics` | nats-server has no Prometheus endpoint, hence the exporter |
 | RustFS | (rustfs module: `metrics_enabled`) | RustFS 1.0.1 has no Prometheus endpoint; it **pushes** OTLP/HTTP to the OTLP receiver of the collector of its node | `otlp_enabled` (on) |
 | Forgejo | `forgejo_metrics_enabled` (on) | service `forgejo` with the tag `metrics` (`metrics_enabled` of the forgejo module): `/metrics` with `Authorization: Bearer` from the secret `forgejo/metrics` (item `token`, optional); HTTPS for instances tagged `https` (`forgejo_tls_server_name`) | |
@@ -166,6 +194,58 @@ network (`host_network`) and away from the public interface. Traces, metrics
 and logs go through `memory_limiter`, `resource` (adds `host.name` and
 `norca.node.id` where missing) and `batch` to OpenObserve.
 
+## Agents in the OTLP mode
+
+With `nomad_otlp_enabled = true` every collector runs a second OTLP receiver,
+`otlp/agent`, for the Norca agent of its node: **gRPC on
+`127.0.0.1:<nomad_otlp_port>` (4317), plain text, reachable from the node
+only**. It is the default target of the agent's `otlp` block, and plain text
+to a loopback address is the agent's default, so `telemetry { otlp {} }` is
+enough. Then:
+
+- the Prometheus scrape of the agent is off (`nomad_metrics_enabled` is
+  ignored) and the agents need no `prometheus` block;
+- `nomad_address` still serves the discovery of the other sources;
+- the receiver of the applications on the node address (`otlp_enabled`)
+  stays as it is;
+- the agent's OTLP goes through the same processors to OpenObserve; the
+  agent sets `host.name` and `norca.node.id` itself.
+
+The metric names differ by mode: OTLP keeps the dots of the agent's names
+(`norca.server.rpc.request`), the scrape gives the Prometheus form
+(`norca_server_rpc_request`). Dashboards and alerts follow the mode.
+
+**Servers without a client.** The collector is a system job and runs only on
+client nodes (of its `node_pool` and `datacenters`). An agent on a node
+without a collector, a server-only node in particular, still sends to
+`127.0.0.1:4317` by default; the export then fails, which the agent logs at
+most once a minute and counts in `norca.agent.otlp.export_errors`. Give such
+a node either
+
+1. **a collector on the host** that listens on `127.0.0.1:4317` and forwards
+   to the backend, or
+2. **a direct endpoint** in its `otlp` block: an OTLP/gRPC receiver reached
+   over TLS, authenticated with headers and/or a client certificate (the
+   receivers of this module have neither TLS nor authentication, so this is a
+   collector or backend outside the module):
+
+   ```hcl
+   telemetry {
+     otlp {
+       endpoint     = "otlp.example.com:4317"
+       headers_file = "/etc/norca.d/otlp-headers"     # authorization=Bearer ...
+
+       tls {
+         ca_file   = "/etc/norca.d/tls/otlp-ca.pem"
+         cert_file = "/etc/norca.d/tls/otlp-client.pem" # mTLS, optional
+         key_file  = "/etc/norca.d/tls/otlp-client-key.pem"
+       }
+     }
+   }
+   ```
+
+The same holds for clients outside the node pool of the collector.
+
 ## Export and TLS
 
 The exporter `otlp_http/openobserve` sends to
@@ -208,6 +288,7 @@ exports fail until the collector restarted.
 | `openobserve_organization`, `ingest_secret_path` | `""`, `openobserve/ingest` | |
 | `hostmetrics_enabled`, `host_root_volume` | `true`, `hostfs` | |
 | `nomad_metrics_enabled`, `nomad_address`, `nomad_ca_secret_path` | `true`, `http://127.0.0.1:4646`, `""` | the local agent (metrics and discovery) |
+| `nomad_otlp_enabled`, `nomad_otlp_port` | `false`, `4317` | the OTLP mode: the agent pushes to `127.0.0.1:<nomad_otlp_port>`, no scrape of the agent |
 | `discovery_namespaces` | `["default"]` | |
 | `nats_metrics_enabled`, `nats_metrics_service` | `true`, `nats-metrics` | |
 | `forgejo_metrics_enabled`, `forgejo_service`, `forgejo_metrics_secret_path`, `forgejo_tls_server_name` | `true`, `forgejo`, `forgejo/metrics`, `forgejo.internal` | |
@@ -235,12 +316,16 @@ readiness check.
 - Only the instances on the collector's own node are scraped; components on
   nodes without a collector (another node pool) are not.
 - PostgreSQL is discovered in the namespace of the job only.
-- The OTLP receiver is unauthenticated plain text on the node address.
+- The OTLP receiver of the applications is unauthenticated plain text on the
+  node address; the agents' receiver of the OTLP mode is plain text on
+  `127.0.0.1` only.
+- The OTLP mode does not reach agents on nodes without a collector (see
+  [Agents in the OTLP mode](#agents-in-the-otlp-mode)).
 - No per-process host metrics (they need root in the container).
 
 ## Outputs
 
-Outputs: `otlp` and `notes`. The configuration of the collector is built line by line (`locals.hcl`); the checks of the values are rules. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
+Outputs: `otlp`, `agent_otlp_endpoint` (the agents' `endpoint` in the OTLP mode, null otherwise) and `notes`. The configuration of the collector is built line by line (`locals.hcl`); the checks of the values are rules. The job ID is `job_name`, or the release's name when empty; the namespace and the region are the release's.
 
 ## History
 
@@ -248,3 +333,10 @@ The module was converted from the pack `otel-collector` 0.1.2 of Norca's
 earlier package manager. Version 0.1.3 changes no resource: this README, the
 comments of the examples and the descriptions of the variables name Rigger's
 commands and modules instead of packs.
+
+Version 0.2.0 adds the OTLP mode (`nomad_otlp_enabled`, `nomad_otlp_port`,
+the output `agent_otlp_endpoint`, the example `agent-otlp.vars.hcl`): a
+receiver for the agent on `127.0.0.1` and no scrape of the agent. The agent's
+Prometheus output is now the block `telemetry { prometheus { enabled = true } }`
+of the agent configuration. Without the new variables the rendered job is the
+one of 0.1.3.

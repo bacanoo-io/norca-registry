@@ -37,7 +37,7 @@ in the documentation for an overview of every module.
 | [norca-dns](modules/norca-dns/README.md) | 0.3.1 | The DNS records operator: the `norca.io/DNSRecord` kind and the controller that keeps the record sets |
 | [norca-provider](modules/norca-provider/README.md) | 0.5.1 | The provider application: node providers, load balancer classes and DNS zones of its configuration |
 | [openobserve](modules/openobserve/README.md) | 0.2.2 | OpenObserve (AGPL-3.0, referenced, never shipped) as the observability backend: a single node or a cluster |
-| [otel-collector](modules/otel-collector/README.md) | 0.1.3 | The OpenTelemetry Collector on every node: host, agent and service metrics, OTLP, export to OpenObserve |
+| [otel-collector](modules/otel-collector/README.md) | 0.2.0 | The OpenTelemetry Collector on every node: host, agent and service metrics (scraped or pushed over OTLP), OTLP, export to OpenObserve |
 | [postgres](modules/postgres/README.md) | 0.4.1 | A single PostgreSQL server: databases and roles from the secret store, optional TLS and dumps to S3 |
 | [postgres-demo](modules/postgres-demo/README.md) | 0.3.1 | A demonstration of the language of the modules: a single PostgreSQL server |
 | [redis](modules/redis/README.md) | 0.4.2 | One Redis server with a password the server requires and optional persistence |

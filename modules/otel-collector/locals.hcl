@@ -31,8 +31,18 @@ locals {
 # The configuration of the collector, line by line (a template of the task:
 # {{ }} is consul-template, ${env:...} the collector's environment).
 locals {
-  sd_any  = length(var.discovery_namespaces) > 0 && (var.nats_metrics_enabled || var.forgejo_metrics_enabled || var.mtls_gateway_metrics_enabled || var.consul_metrics_enabled)
-  scrapes = var.self_metrics_enabled || var.nomad_metrics_enabled || local.sd_any
+  sd_any = length(var.discovery_namespaces) > 0 && (var.nats_metrics_enabled || var.forgejo_metrics_enabled || var.mtls_gateway_metrics_enabled || var.consul_metrics_enabled)
+
+  # The agent's Prometheus output is scraped unless the agent pushes OTLP.
+  agent_scrape = var.nomad_metrics_enabled && !var.nomad_otlp_enabled
+  scrapes      = var.self_metrics_enabled || local.agent_scrape || local.sd_any
+
+  # The OTLP receivers: the applications' on the node address, the agent's
+  # on 127.0.0.1.
+  otlp_receivers = concat(
+    var.otlp_enabled ? ["otlp"] : [],
+    var.nomad_otlp_enabled ? ["otlp/agent"] : [],
+  )
 
   oo_scheme = var.openobserve_tls == "none" ? "http" : "https"
   nomad_url = regex("^([A-Za-z][A-Za-z0-9+.-]*)://([^/?#]*)", var.nomad_address)
@@ -72,7 +82,7 @@ locals {
       "          static_configs:",
       "            - targets: [\"127.0.0.1:$${env:NORCA_PORT_telemetry}\"]",
     ] : [],
-    var.nomad_metrics_enabled ? concat(
+    local.agent_scrape ? concat(
       [
         "        # The Norca agent of this node (/v1/metrics needs no ACL token).",
         "        - job_name: norca",
@@ -152,6 +162,14 @@ locals {
       "      http:",
       "        endpoint: $${env:NORCA_IP_otlp_http}:$${env:NORCA_PORT_otlp_http}",
     ] : [],
+    var.nomad_otlp_enabled ? [
+      "  # The Norca agent of this node pushes its telemetry here, in plain",
+      "  # text on the loopback interface (telemetry { otlp {} }).",
+      "  otlp/agent:",
+      "    protocols:",
+      "      grpc:",
+      "        endpoint: 127.0.0.1:${var.nomad_otlp_port}",
+    ] : [],
     var.hostmetrics_enabled ? concat(
       ["  host_metrics:", "    collection_interval: ${var.collection_interval}"],
       var.host_root_volume != "" ? ["    root_path: /hostfs"] : [],
@@ -212,7 +230,7 @@ locals {
   }
 
   pipeline_receivers = concat(
-    var.otlp_enabled ? ["otlp"] : [],
+    local.otlp_receivers,
     var.hostmetrics_enabled ? ["host_metrics"] : [],
     local.scrapes ? ["prometheus"] : [],
   )
@@ -279,13 +297,13 @@ locals {
       "      processors: [memory_limiter, resource, batch]",
       "      exporters: [otlp_http/openobserve]",
     ],
-    var.otlp_enabled ? [
+    length(local.otlp_receivers) > 0 ? [
       "    traces:",
-      "      receivers: [otlp]",
+      "      receivers: [${join(", ", local.otlp_receivers)}]",
       "      processors: [memory_limiter, resource, batch]",
       "      exporters: [otlp_http/openobserve]",
       "    logs:",
-      "      receivers: [otlp]",
+      "      receivers: [${join(", ", local.otlp_receivers)}]",
       "      processors: [memory_limiter, resource, batch]",
       "      exporters: [otlp_http/openobserve]",
     ] : [],

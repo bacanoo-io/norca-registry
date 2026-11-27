@@ -6,6 +6,11 @@ output "otlp" {
   description = "The OTLP ports of the collector on every node; null without OTLP."
 }
 
+output "agent_otlp_endpoint" {
+  value       = var.nomad_otlp_enabled ? "127.0.0.1:${var.nomad_otlp_port}" : null
+  description = "The endpoint of the agents' otlp block in the OTLP mode (nomad_otlp_enabled); null in the scrape mode."
+}
+
 output "notes" {
   value = join("\n", concat(
     [
@@ -14,7 +19,8 @@ output "notes" {
       "Sources:",
     ],
     var.hostmetrics_enabled ? ["  host metrics${var.host_root_volume != "" ? " (host volume ${var.host_root_volume} = / read-only on every node)" : ""}"] : [],
-    var.nomad_metrics_enabled ? ["  Norca agent: ${var.nomad_address}/v1/metrics (telemetry { prometheus_metrics = true } on the agents)"] : [],
+    local.agent_scrape ? ["  Norca agent: ${var.nomad_address}/v1/metrics (telemetry { prometheus { enabled = true } } on the agents)"] : [],
+    var.nomad_otlp_enabled ? ["  Norca agent: OTLP/gRPC on 127.0.0.1:${var.nomad_otlp_port} (telemetry { otlp {} } on the agents, endpoint 127.0.0.1:${var.nomad_otlp_port})"] : [],
     length(var.discovery_namespaces) > 0 ? [join("", concat(
       ["  catalog of the namespaces ${join(", ", var.discovery_namespaces)}, instances on the node only:"],
       var.nats_metrics_enabled ? [" ${var.nats_metrics_service}"] : [],

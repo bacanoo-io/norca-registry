@@ -229,9 +229,27 @@ variable "host_root_volume" {
 }
 
 variable "nomad_metrics_enabled" {
-  description = "Metrics of the Norca agent of the node (/v1/metrics?format=prometheus; needs telemetry { prometheus_metrics = true } in the agent configuration)."
+  description = "Scrape the metrics of the Norca agent of the node (/v1/metrics?format=prometheus; needs telemetry { prometheus { enabled = true } } in the agent configuration). Ignored when nomad_otlp_enabled is set."
   type        = bool
   default     = true
+}
+
+variable "nomad_otlp_enabled" {
+  description = "OTLP mode: the Norca agent of the node pushes its telemetry over OTLP/gRPC, in plain text, to a receiver of the collector on 127.0.0.1:nomad_otlp_port (telemetry { otlp {} } in the agent configuration), and the Prometheus scrape of the agent is off."
+  type        = bool
+  default     = false
+}
+
+variable "nomad_otlp_port" {
+  description = "Port of the OTLP/gRPC receiver for the agent on 127.0.0.1 (nomad_otlp_enabled). 4317 is the agent's default endpoint, 127.0.0.1:4317."
+  type        = number
+  default     = 4317
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 65535
+  }
 }
 
 variable "nomad_address" {
@@ -446,6 +464,6 @@ rule "openobserve_ca" {
 }
 
 rule "something_to_collect" {
-  condition     = var.otlp_enabled || var.hostmetrics_enabled || var.self_metrics_enabled || var.nomad_metrics_enabled
-  error_message = "enable at least one of otlp_enabled, hostmetrics_enabled, self_metrics_enabled, nomad_metrics_enabled."
+  condition     = var.otlp_enabled || var.hostmetrics_enabled || var.self_metrics_enabled || var.nomad_metrics_enabled || var.nomad_otlp_enabled
+  error_message = "enable at least one of otlp_enabled, hostmetrics_enabled, self_metrics_enabled, nomad_metrics_enabled, nomad_otlp_enabled."
 }
